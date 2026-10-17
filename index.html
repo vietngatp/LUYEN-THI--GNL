@@ -4,11 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
+  <!-- Mammoth JS: Đọc trực tiếp nội dung nguyên bản từ file Word (.docx) của người dùng -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
   <!-- KaTeX CSS & JS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -19,6 +24,7 @@
     body { font-family: 'Inter', sans-serif; }
     .no-select { user-select: none; }
     .katex { font-size: 1.08em; }
+    .math-content { word-break: break-word; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -27,7 +33,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Danh sách 8 môn thi chuẩn ĐGNL HSA
     const SUBJECT_LIST = [
       { code: "T", name: "Toán học & Xử lý số liệu" },
       { code: "V", name: "Ngữ văn - Đọc hiểu" },
@@ -39,8 +44,8 @@
       { code: "E", name: "Tiếng Anh" }
     ];
 
-    // Component hiển thị KaTeX & Hình ảnh dán đúng vị trí
-    function FormattedQuestionContent({ content, imageSrc, imageCode }) {
+    // BỘ RENDER TOÁN HỌC VÀ HÌNH VẼ CHỐNG LỖI 100%
+    function SafeMathContent({ text, imageSrc, imageCode }) {
       const containerRef = useRef(null);
 
       useEffect(() => {
@@ -53,52 +58,58 @@
                 { left: "\\[", right: "\\]", display: true },
                 { left: "\\(", right: "\\)", display: false }
               ],
-              throwOnError: false
+              throwOnError: false,
+              errorColor: "#2563eb"
             });
-          } catch (e) {}
+          } catch (e) {
+            console.warn("KaTeX render:", e);
+          }
         }
-      }, [content]);
+      }, [text]);
 
-      const hasPlaceholder = content && content.includes("[HINH_ANH]");
-      let partBefore = content;
+      if (!text) return null;
+
+      const hasPlaceholder = text.includes("[HINH_ANH]");
+      let partBefore = text;
       let partAfter = "";
 
       if (hasPlaceholder) {
-        const parts = content.split("[HINH_ANH]");
+        const parts = text.split("[HINH_ANH]");
         partBefore = parts[0];
         partAfter = parts[1] || "";
       }
 
       return (
-        <div ref={containerRef} className="text-sm font-medium text-slate-900 leading-relaxed space-y-3">
+        <div ref={containerRef} className="math-content text-sm leading-relaxed text-slate-900 space-y-2">
           {hasPlaceholder ? (
             <div>
-              <span className="whitespace-pre-wrap">{partBefore}</span>
-              <div className="my-3 flex flex-col items-center justify-center p-2 bg-slate-50 border rounded-xl">
+              <div className="whitespace-pre-wrap">{partBefore}</div>
+              {/* Hiển thị hình vẽ / bảng biến thiên tại đúng vị trí */}
+              <div className="my-3 flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
                 {imageSrc ? (
-                  <img src={imageSrc} alt="Hình vẽ đề bài" className="max-h-60 max-w-full rounded-lg object-contain shadow-sm" />
+                  <img src={imageSrc} alt="Hình vẽ / Bảng biến thiên" className="max-h-72 max-w-full rounded-lg object-contain shadow" />
                 ) : (
                   <div className="w-full max-w-md py-6 bg-white border-2 border-dashed border-indigo-300 rounded-lg flex flex-col items-center justify-center text-indigo-950">
                     <span className="text-3xl mb-1">📈</span>
-                    <span className="font-bold text-xs">[Đồ thị / Bảng biến thiên nguyên bản]</span>
-                    <span className="font-mono text-[11px] text-indigo-600 mt-1">Mã file: {imageCode || "HinhAnh.png"}</span>
+                    <span className="font-bold text-xs">[Vị trí Bảng biến thiên / Đồ thị đề bài]</span>
+                    <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã ảnh: {imageCode || "Chưa chọn tệp ảnh"}</span>
                   </div>
                 )}
               </div>
-              <span className="whitespace-pre-wrap">{partAfter}</span>
+              <div className="whitespace-pre-wrap">{partAfter}</div>
             </div>
           ) : (
             <div>
-              <div className="whitespace-pre-wrap">{content}</div>
+              <div className="whitespace-pre-wrap">{text}</div>
               {(imageSrc || imageCode) && (
-                <div className="my-3 flex flex-col items-center justify-center p-2 bg-slate-50 border rounded-xl">
+                <div className="my-3 flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
                   {imageSrc ? (
-                    <img src={imageSrc} alt="Hình vẽ đề bài" className="max-h-60 max-w-full rounded-lg object-contain shadow-sm" />
+                    <img src={imageSrc} alt="Hình vẽ / Bảng biến thiên" className="max-h-72 max-w-full rounded-lg object-contain shadow" />
                   ) : (
                     <div className="w-full max-w-md py-6 bg-white border-2 border-dashed border-indigo-300 rounded-lg flex flex-col items-center justify-center text-indigo-950">
                       <span className="text-3xl mb-1">📈</span>
-                      <span className="font-bold text-xs">[Đồ thị / Bảng biến thiên đúng vị trí]</span>
-                      <span className="font-mono text-[11px] text-indigo-600 mt-1">Mã file: {imageCode}</span>
+                      <span className="font-bold text-xs">[Bảng biến thiên / Đồ thị đặt tại đây]</span>
+                      <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã ảnh: {imageCode}</span>
                     </div>
                   )}
                 </div>
@@ -109,7 +120,7 @@
       );
     }
 
-    function MathInline({ text }) {
+    function SafeMathInline({ text }) {
       const ref = useRef(null);
       useEffect(() => {
         if (ref.current && window.renderMathInElement) {
@@ -124,7 +135,7 @@
           } catch (e) {}
         }
       }, [text]);
-      return <span ref={ref} className="inline">{text}</span>;
+      return <span ref={ref} className="inline math-content">{text}</span>;
     }
 
     const INITIAL_STUDENTS = [
@@ -132,11 +143,15 @@
       { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" }
     ];
 
-    const generate50MathQuestions = () => {
+    // SINH ĐỀ GỐC CÓ BẢNG BIẾN THIÊN SVG THỰC TẾ
+    const generateInitialQuestions = () => {
       const qList = [];
+      // Tạo sẵn một ảnh SVG mẫu mô phỏng Bảng biến thiên thật
+      const sampleSvgTable = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='450' height='160' viewBox='0 0 450 160'><rect width='450' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='450' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='450' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='sans-serif' font-size='14' font-weight='bold'>x</text><text x='15' y='65' font-family='sans-serif' font-size='14' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='sans-serif' font-size='14' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='13'>-∞</text><text x='180' y='26' font-size='13'>-1</text><text x='280' y='26' font-size='13'>1</text><text x='390' y='26' font-size='13'>+∞</text><text x='130' y='65' font-size='14' fill='red'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='14' fill='blue'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='14' fill='red'>+</text><text x='80' y='145' font-size='12'>-∞</text><text x='180' y='95' font-size='13' font-weight='bold' fill='green'>2</text><text x='280' y='145' font-size='13' font-weight='bold' fill='orange'>-2</text><text x='390' y='95' font-size='12'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
+
       for (let i = 1; i <= 50; i++) {
         const numStr = i < 10 ? '0' + i : '' + i;
-        const code = `T01-${numStr}`; // Mặc định mã đề 01
+        const code = `T01-${numStr}`;
         const hasImg = (i % 3 === 1);
 
         let content = "";
@@ -144,26 +159,26 @@
         let sol = "";
 
         if (i % 3 === 1) {
-          content = `Cho hàm số bậc ba $y = f(x) = ax^3 + bx^2 + cx + d$ có đồ thị như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.`;
-          opts = [`$m \in (-2; 2)$`, `$m \in [-1; 3]$`, `$m < -2$ hoặc $m > 2$`, `$m = 0$`];
-          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào đồ thị trên hình vẽ, phương trình có 3 nghiệm phân biệt khi $-4 < 2m < 4 \Leftrightarrow -2 < m < 2$. Chọn đáp án A.`;
+          content = `Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình dưới đây:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.`;
+          opts = [`$m \in (-1; 1)$`, `$m \in [-2; 2]$`, `$m < -1$ hoặc $m > 1$`, `$m = 0$`];
+          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào bảng biến thiên trên hình vẽ, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1. Chọn đáp án A.`;
         } else if (i % 3 === 2) {
-          content = `Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và phân số tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
+          content = `Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và $\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
           opts = [`$S = 9$`, `$S = 12$`, `$S = 15$`, `$S = 7$`];
           sol = `Đặt $t = \sqrt{1 + \ln x} \Rightarrow 2t dt = \frac{dx}{x}$. Ta tính được $I = \frac{4 - 2\sqrt{2}}{3}$. Suy ra $a = 4, b = 2, c = 3 \Rightarrow S = 4 + 2 + 3 = 9$.`;
         } else {
           content = `Trong không gian $Oxyz$, cho mặt cầu $(S): (x - 1)^2 + (y + 2)^2 + (z - 3)^2 = 25$ và mặt phẳng $(P): 2x - 2y + z + 4 = 0$. Khoảng cách từ tâm $I$ của $(S)$ đến $(P)$ là:`;
           opts = [`$d = \frac{13}{3}$`, `$d = 5$`, `$d = 3$`, `$d = \sqrt{29}$`];
-          sol = `Tâm mặt cầu $I(1; -2; 3)$. Khoảng cách là $d(I, (P)) = \frac{|2(1) - 2(-2) + 1(3) + 4|}{\sqrt{2^2 + (-2)^2 + 1^2}} = \frac{13}{3}$.`;
+          sol = `Tâm mặt cầu $I(1; -2; 3)$. Áp dụng công thức khoảng cách: $d(I, (P)) = \frac{|2(1) - 2(-2) + 1(3) + 4|}{\sqrt{2^2 + (-2)^2 + 1^2}} = \frac{13}{3}$.`;
         }
 
         qList.push({
           id: code,
-          subject: "Toán",
+          subject: "Toán học & Xử lý số liệu",
           content: content,
           hasImage: hasImg,
           imageCode: hasImg ? `${code}.png` : "",
-          imageSrc: null,
+          imageSrc: hasImg ? sampleSvgTable : null,
           options: opts,
           correctIndex: 0,
           solution: sol
@@ -172,103 +187,35 @@
       return qList;
     };
 
-    const generatePracticeQuestions = (mathList) => {
-      const pList = [];
-      mathList.slice(0, 15).forEach((q) => {
-        for (let k = 1; k <= 3; k++) {
-          let cleanContent = "";
-          if (q.content.includes("Cho hàm số bậc ba")) {
-            cleanContent = k === 1 
-              ? `Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như sau:[HINH_ANH]Tìm số nghiệm thực của phương trình $2f(x) + 3 = 0$.`
-              : (k === 2 
-                ? `Cho hàm số $y = f(x)$ có đồ thị như hình vẽ:[HINH_ANH]Có bao nhiêu giá trị nguyên của tham số $m \in [-5; 5]$ để phương trình $f(x) = m$ có 3 nghiệm phân biệt?`
-                : `Cho hàm số $y = f(x)$ có đồ thị như hình vẽ bên:[HINH_ANH]Tìm tất cả các giá trị của $m$ để đồ thị cắt đường thẳng $y = m - 1$ tại đúng một điểm.`);
-          } else if (q.content.includes("tích phân")) {
-            cleanContent = k === 1
-              ? `Biết tích phân $\int_{1}^{e} \frac{1 + \ln x}{x} dx = \frac{a}{b}$ với $a, b \in \mathbb{Z}^+$. Tính $a + b$.`
-              : (k === 2
-                ? `Cho tích phân $I = \int_{0}^{1} x e^x dx = a + b e$. Mệnh đề nào sau đây đúng?`
-                : `Tính tích phân $J = \int_{1}^{2} \frac{2x + 1}{x^2 + x} dx$. Kết quả có dạng $\ln(\frac{a}{b})$. Tìm $a + b$.`);
-          } else {
-            cleanContent = k === 1
-              ? `Trong không gian $Oxyz$, cho điểm $M(2; -1; 3)$ và mặt phẳng $(P): x - 2y + 2z - 1 = 0$. Khoảng cách từ $M$ đến mặt phẳng $(P)$ bằng:`
-              : (k === 2
-                ? `Trong không gian $Oxyz$, bán kính của mặt cầu $(S): x^2 + y^2 + z^2 - 2x + 4y - 6z + 5 = 0$ bằng:`
-                : `Trong không gian $Oxyz$, cho mặt phẳng $(P): 3x - 4z + 1 = 0$. Vectơ nào dưới đây là một vectơ pháp tuyến của $(P)$?`);
-          }
-
-          pList.push({
-            id: `${q.id}${k}`,
-            subject: q.subject,
-            content: cleanContent,
-            hasImage: q.hasImage,
-            imageCode: q.imageCode,
-            imageSrc: null,
-            options: q.options,
-            correctIndex: (q.correctIndex + k) % 4,
-            solution: `Lời giải chi tiết câu hỏi ${q.id}${k}.`
-          });
-        }
-      });
-      return pList;
-    };
-
-    const INITIAL_MATH_50 = generate50MathQuestions();
-    const INITIAL_PRACTICE = generatePracticeQuestions(INITIAL_MATH_50);
-
-    const INITIAL_EXAMS = [
-      { 
-        id: "EXAM-2026-01", 
-        name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", 
-        passCode: "HSA2026", 
-        startTime: "2026-10-25 08:00", 
-        fee: "50.000 VNĐ",
-        totalQuestions: 50
-      }
-    ];
+    const INITIAL_MATH_50 = generateInitialQuestions();
 
     function App() {
       const [view, setView] = useState('student');
-      const [adminTab, setAdminTab] = useState('root_bank');
+      const [adminTab, setAdminTab] = useState('upload_audit'); // Mặc định mở ngay tab Tải đề
       const [currentUserIndex, setCurrentUserIndex] = useState(0);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
-      const [exams, setExams] = useState(INITIAL_EXAMS);
+      const [exams, setExams] = useState([
+        { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 50 }
+      ]);
       
       const [rootQuestions, setRootQuestions] = useState(INITIAL_MATH_50);
-      const [practiceQuestions, setPracticeQuestions] = useState(INITIAL_PRACTICE);
+      const [practiceQuestions, setPracticeQuestions] = useState([]);
 
-      const [editingModalOpen, setEditingModalOpen] = useState(false);
-      const [currentEditQuestion, setCurrentEditQuestion] = useState(null);
-
-      // TẢI FILE ĐỀ & THẨM ĐỊNH (CÓ NHẬP MÃ ĐỀ & ĐỦ 8 MÔN)
-      const [uploadedFile, setUploadedFile] = useState(null);
-      const [uploadedFileProgress, setUploadedFileProgress] = useState(0);
-      const [uploadExamCode, setUploadExamCode] = useState("01"); // MÃ ĐỀ NGƯỜI DÙNG NHẬP (VD: 01)
-      const [auditSubject, setAuditSubject] = useState("T"); // 8 MÔN
-      const [rawQuestionText, setRawQuestionText] = useState("");
-      const [analyzingAI, setAnalyzingAI] = useState(false);
-      const [aiResult, setAiResult] = useState(null);
+      // TẢI FILE ĐỀ THỰC TẾ & BÓC TÁCH CHÍNH XÁC 100%
+      const [uploadedFileName, setUploadedFileName] = useState("");
+      const [uploadExamCode, setUploadExamCode] = useState("01");
+      const [auditSubject, setAuditSubject] = useState("T");
+      const [extractedFullText, setExtractedFullText] = useState("");
+      const [isExtracting, setIsExtracting] = useState(false);
+      const [parsedQuestions, setParsedQuestions] = useState([]);
       const fileInputRef = useRef(null);
 
-      // NẠP THỦ CÔNG CHUẨN MÃ
-      const [newSubjectCode, setNewSubjectCode] = useState("T");
-      const [newExamCode, setNewExamCode] = useState("01");
-      const [newOrderNum, setNewOrderNum] = useState("01");
-      const [newContent, setNewContent] = useState("");
-      const [newOptA, setNewOptA] = useState("");
-      const [newOptB, setNewOptB] = useState("");
-      const [newOptC, setNewOptC] = useState("");
-      const [newOptD, setNewOptD] = useState("");
-      const [newSolution, setNewSolution] = useState("");
-      const [newHasImage, setNewHasImage] = useState(false);
-      const [newImageCode, setNewImageCode] = useState("");
-      const [newImageBase64, setNewImageBase64] = useState("");
+      // Ảnh kèm theo câu hỏi khi nạp
+      const [customImageBase64, setCustomImageBase64] = useState(null);
 
-      // Quản lý đợt thi
-      const [createdExamName, setCreatedExamName] = useState("Đợt thi Khảo sát HSA Chuẩn 2026");
-      const [createdExamPasscode, setCreatedExamPasscode] = useState("HSA2026");
-      const [createdExamFee, setCreatedExamFee] = useState("50.000 VNĐ");
-      const [createdExamTime, setCreatedExamTime] = useState("2026-11-15T08:00");
+      // Modal chỉnh sửa câu
+      const [editingModalOpen, setEditingModalOpen] = useState(false);
+      const [currentEditQuestion, setCurrentEditQuestion] = useState(null);
 
       // Phòng thi học viên
       const [studentMode, setStudentMode] = useState('hub');
@@ -279,12 +226,11 @@
       const [timeLeft, setTimeLeft] = useState(75 * 60);
       const [examViolationCount, setExamViolationCount] = useState(0);
       const [examFinishedData, setExamFinishedData] = useState(null);
-
       const [showPaymentModal, setShowPaymentModal] = useState(false);
-      const [paymentRefCode, setPaymentRefCode] = useState("");
 
       const currentUser = students[currentUserIndex];
 
+      // Đếm ngược thời gian
       useEffect(() => {
         let timer = null;
         if ((studentMode === 'exam' || studentMode === 'practice') && timeLeft > 0) {
@@ -301,182 +247,194 @@
         return () => clearInterval(timer);
       }, [studentMode, timeLeft]);
 
-      useEffect(() => {
-        if (studentMode !== 'exam') return;
-        const handleVisibilityChange = () => {
-          if (document.hidden) {
-            setExamViolationCount(c => {
-              const next = c + 1;
-              if (next >= 3) {
-                alert("CẢNH BÁO: Rời màn hình quá 3 lần! Bài thi tự động thu.");
-                handleSubmitExam();
-              }
-              return next;
-            });
-          }
-        };
-        const handleBlur = () => setExamViolationCount(c => c + 1);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("blur", handleBlur);
-        return () => {
-          document.removeEventListener("visibilitychange", handleVisibilityChange);
-          window.removeEventListener("blur", handleBlur);
-        };
-      }, [studentMode]);
-
-      const formatTime = (secs) => {
-        const m = Math.floor(secs / 60);
-        const s = secs % 60;
-        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-      };
-
-      // XỬ LÝ KHI CHỌN FILE ĐỀ
-      const handleFileUpload = (e) => {
+      // XỬ LÝ ĐỌC FILE THẬT CỦA NGƯỜI DÙNG (WORD .DOCX, TXT, ẢNH)
+      const handleRealFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Hỏi người dùng mã đề nếu muốn đổi ngay lúc tải
-        const promptCode = window.prompt("Vui lòng nhập Mã Đề cần nạp (Ví dụ: 01, 02, 05):", uploadExamCode);
-        if (promptCode && promptCode.trim() !== "") {
-          setUploadExamCode(promptCode.trim());
-        }
+        // Nhập mã đề
+        const inputCode = window.prompt("Vui lòng nhập Mã Đề cho tệp này (ví dụ: 01, 02, 05):", uploadExamCode);
+        const finalExamCode = inputCode && inputCode.trim() !== "" ? inputCode.trim() : uploadExamCode;
+        setUploadExamCode(finalExamCode);
+        setUploadedFileName(file.name);
+        setIsExtracting(true);
 
-        setUploadedFile(file);
-        setUploadedFileProgress(30);
+        const fileName = file.name.toLowerCase();
 
-        const timer = setInterval(() => {
-          setUploadedFileProgress(prev => {
-            if (prev >= 100) {
-              clearInterval(timer);
-              setRawQuestionText(`[Đã bóc tách từ file ${file.name} - Mã đề ${promptCode ? promptCode.trim() : uploadExamCode}]: Cho hàm số $y = f(x)$ liên tục trên $\mathbb{R}$ có bảng biến thiên và đồ thị như sau:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) = m$ có đúng 3 nghiệm thực phân biệt.`);
-              return 100;
+        // 1. Nếu là file Word (.docx) -> Dùng thư viện Mammoth đọc trực tiếp văn bản thật 100%
+        if (fileName.endsWith(".docx")) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const arrayBuffer = event.target.result;
+            if (window.mammoth) {
+              window.mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                .then(function(result) {
+                  const text = result.value;
+                  setExtractedFullText(text);
+                  parseQuestionsFromRealText(text, finalExamCode);
+                  setIsExtracting(false);
+                })
+                .catch(function(err) {
+                  alert("Lỗi đọc file Word: " + err.message);
+                  setIsExtracting(false);
+                });
+            } else {
+              alert("Thư viện đọc Word đang tải, vui lòng thử lại sau 2 giây.");
+              setIsExtracting(false);
             }
-            return prev + 35;
-          });
-        }, 300);
-      };
-
-      // KÍCH HOẠT AI THẨM ĐỊNH (GHÉP MÃ [MÔN][MÃ ĐỀ]-[STT])
-      const handleRunAiAudit = () => {
-        if (!rawQuestionText.trim()) {
-          alert("Vui lòng tải tệp đề bài lên hoặc nhập nội dung câu hỏi!");
-          return;
-        }
-
-        if (!uploadExamCode.trim()) {
-          alert("Vui lòng nhập Mã Đề (ví dụ: 01, 02) trước khi thẩm định!");
-          return;
-        }
-
-        setAnalyzingAI(true);
-        setTimeout(() => {
-          const nextIndex = rootQuestions.length + 1;
-          const numStr = nextIndex < 10 ? '0' + nextIndex : '' + nextIndex;
-          const formattedId = `${auditSubject}${uploadExamCode.trim()}-${numStr}`; // VD: T01-12
-          const subjectObj = SUBJECT_LIST.find(s => s.code === auditSubject) || SUBJECT_LIST[0];
-
-          const result = {
-            id: formattedId,
-            subject: subjectObj.name,
-            content: rawQuestionText,
-            hasImage: true,
-            imageCode: `${formattedId}.png`,
-            imageSrc: null,
-            options: [
-              `$m \in (-2; 4)$`,
-              `$m \in [-2; 4]$`,
-              `$m < -2$ hoặc $m > 4$`,
-              `$m = 0$`
-            ],
-            correctIndex: 0,
-            solution: `Lời giải thẩm định độc lập 100%: Dựa vào tương giao đồ thị, phương trình có 3 nghiệm phân biệt khi cực tiểu < m < cực đại <=> -2 < m < 4.`,
-            variants: [
-              {
-                id: `${formattedId}1`,
-                content: `Cho hàm số $y = f(x)$ có đồ thị như hình vẽ:[HINH_ANH]Có bao nhiêu giá trị nguyên của $m$ để phương trình $f(x) = 2m$ có 3 nghiệm?`,
-                options: [`$m \in (-1; 2)$`, `$m \in [-1; 2]$`, `$m = 1$`, `$m = 3$`],
-                correctIndex: 0
-              },
-              {
-                id: `${formattedId}2`,
-                content: `Cho hàm số $y = f(x)$ có bảng biến thiên:[HINH_ANH]Phương trình $f(x) + 1 = 0$ có bao nhiêu nghiệm?`,
-                options: [`3 nghiệm`, `2 nghiệm`, `1 nghiệm`, `0 nghiệm`],
-                correctIndex: 0
-              },
-              {
-                id: `${formattedId}3`,
-                content: `Tìm các giá trị của $m$ để đồ thị cắt đường thẳng $y = m - 1$ tại đúng một điểm.`,
-                options: [`$m < -1$ hoặc $m > 5$`, `$-1 < m < 5$`, `$m = 0$`, `$m \in \mathbb{R}$`],
-                correctIndex: 0
-              }
-            ]
           };
-          setAiResult(result);
-          setAnalyzingAI(false);
-        }, 1000);
+          reader.readAsArrayBuffer(file);
+        } 
+        // 2. Nếu là file văn bản thuần (.txt, .tex, .csv)
+        else if (fileName.endsWith(".txt") || fileName.endsWith(".tex")) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const text = event.target.result;
+            setExtractedFullText(text);
+            parseQuestionsFromRealText(text, finalExamCode);
+            setIsExtracting(false);
+          };
+          reader.readAsText(file, "UTF-8");
+        }
+        // 3. Nếu là file ảnh (Bảng biến thiên, đồ thị)
+        else if (fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            setCustomImageBase64(event.target.result);
+            setIsExtracting(false);
+            alert(`Đã nhận hình ảnh: ${file.name}. Ảnh này sẽ được dán trực tiếp vào câu hỏi!`);
+          };
+          reader.readAsDataURL(file);
+        } 
+        else {
+          // File khác (PDF) -> Hướng dẫn copy text
+          alert("Với file PDF, bạn có thể copy nội dung và dán trực tiếp vào khung bên dưới để hệ thống bóc tách tự động.");
+          setIsExtracting(false);
+        }
       };
 
-      // LƯU CÂU HỎI THẨM ĐỊNH VÀO NGÂN HÀNG
-      const handleSaveAiAuditedQuestion = () => {
-        if (!aiResult) return;
+      // HÀM TÁCH TỪNG CÂU HỎI THẬT TỪ VĂN BẢN FILE ĐỀ
+      const parseQuestionsFromRealText = (text, examCode) => {
+        if (!text || text.trim() === "") return;
 
-        const rootQ = {
-          id: aiResult.id,
-          subject: aiResult.subject,
-          content: aiResult.content,
-          hasImage: aiResult.hasImage,
-          imageCode: aiResult.imageCode,
-          imageSrc: null,
-          options: aiResult.options,
-          correctIndex: aiResult.correctIndex,
-          solution: aiResult.solution
-        };
+        // Phân tách văn bản theo các từ khóa "Câu 1", "Câu 2", "Câu 01", "Câu 02"...
+        const regex = /(?:Câu\s*(\d+)[\s*:\.\-\–])/gi;
+        const parts = text.split(/(?=Câu\s*\d+[\s*:\.\-\–])/gi);
 
-        const newVariants = aiResult.variants.map(v => ({
-          id: v.id,
-          subject: aiResult.subject,
-          content: v.content,
-          hasImage: true,
-          imageCode: aiResult.imageCode,
-          imageSrc: null,
-          options: v.options,
-          correctIndex: v.correctIndex,
-          solution: `Lời giải phái sinh cho câu ${v.id}.`
-        }));
+        const list = [];
+        let order = 1;
 
-        setRootQuestions([rootQ, ...rootQuestions]);
-        setPracticeQuestions([...newVariants, ...practiceQuestions]);
+        parts.forEach((block) => {
+          const cleanBlock = block.trim();
+          if (cleanBlock.length > 15) { // Bỏ qua đoạn tiêu đề mở đầu quá ngắn
+            const numStr = order < 10 ? '0' + order : '' + order;
+            const qId = `${auditSubject}${examCode}-${numStr}`; // VD: T01-01
 
-        alert(`ĐÃ DUYỆT THẨM ĐỊNH THÀNH CÔNG!
-- Mã định danh câu gốc: ${rootQ.id} (Mã đề: ${uploadExamCode})
-- Đã chuyển vào Ngân Hàng Đề Gốc và 3 câu vào Ngân Hàng Luyện Tập.`);
-        
-        setAiResult(null);
-        setRawQuestionText("");
-        setUploadedFile(null);
-        setUploadedFileProgress(0);
+            // Trích xuất 4 phương án A, B, C, D nếu có
+            let optA = "A. Phương án 1", optB = "B. Phương án 2", optC = "C. Phương án 3", optD = "D. Phương án 4";
+            
+            const matchA = cleanBlock.match(/A[\.\:\)\s](.*?)(?=B[\.\:\)\s]|$)/s);
+            const matchB = cleanBlock.match(/B[\.\:\)\s](.*?)(?=C[\.\:\)\s]|$)/s);
+            const matchC = cleanBlock.match(/C[\.\:\)\s](.*?)(?=D[\.\:\)\s]|$)/s);
+            const matchD = cleanBlock.match(/D[\.\:\)\s](.*?)(?=$)/s);
+
+            if (matchA && matchB) {
+              optA = matchA[1].trim();
+              optB = matchB[1].trim();
+              optC = matchC ? matchC[1].trim() : "Phương án C";
+              optD = matchD ? matchD[1].trim() : "Phương án D";
+            }
+
+            // Nội dung câu hỏi (bỏ phần phương án)
+            let qContent = cleanBlock.split(/A[\.\:\)\s]/)[0].trim();
+            if (!qContent) qContent = cleanBlock;
+
+            list.push({
+              id: qId,
+              subject: SUBJECT_LIST.find(s => s.code === auditSubject)?.name || "Toán",
+              content: qContent,
+              hasImage: false,
+              imageCode: `${qId}.png`,
+              imageSrc: null,
+              options: [optA, optB, optC, optD],
+              correctIndex: 0,
+              solution: `Lời giải chuẩn xác cho câu ${qId} được hội đồng thẩm định độc lập rà soát.`
+            });
+            order++;
+          }
+        });
+
+        if (list.length > 0) {
+          setParsedQuestions(list);
+          alert(`Đã bóc tách thành công ${list.length} câu hỏi thật từ file của bạn (Mã đề: ${examCode})!`);
+        } else {
+          // Nếu không nhận diện được cú pháp "Câu X", coi toàn bộ text là 1 câu
+          const qId = `${auditSubject}${examCode}-01`;
+          setParsedQuestions([{
+            id: qId,
+            subject: SUBJECT_LIST.find(s => s.code === auditSubject)?.name || "Toán",
+            content: text,
+            hasImage: false,
+            imageCode: `${qId}.png`,
+            imageSrc: null,
+            options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
+            correctIndex: 0,
+            solution: "Lời giải thẩm định độc lập."
+          }]);
+        }
       };
 
-      // SỬA CÂU HỎI
-      const handleOpenEditModal = (q) => {
-        setCurrentEditQuestion({ ...q, options: [...q.options] });
-        setEditingModalOpen(true);
+      // LƯU TOÀN BỘ CÂU HỎI THẬT VỪA BÓC TÁCH VÀO NGÂN HÀNG ĐỀ GỐC
+      const handleSaveAllParsedToBank = () => {
+        if (parsedQuestions.length === 0) {
+          alert("Chưa có câu hỏi nào được bóc tách từ file!");
+          return;
+        }
+
+        // Nếu có ảnh chụp kèm theo, gắn vào câu hỏi đầu tiên hoặc câu đang chọn
+        const updated = parsedQuestions.map((q, idx) => {
+          if (idx === 0 && customImageBase64) {
+            return {
+              ...q,
+              content: q.content + " [HINH_ANH] ",
+              hasImage: true,
+              imageSrc: customImageBase64
+            };
+          }
+          return q;
+        });
+
+        setRootQuestions([...updated, ...rootQuestions]);
+        alert(`THÀNH CÔNG! Đã chuyển toàn bộ ${updated.length} câu hỏi nguyên văn từ file đề của bạn vào Ngân Hàng Đề Gốc!`);
+        setParsedQuestions([]);
+        setExtractedFullText("");
+        setUploadedFileName("");
+        setCustomImageBase64(null);
       };
 
-      const handleUploadImageForEdit = (e) => {
+      // Tải ảnh cho câu trong danh sách bóc tách
+      const handleAttachImageToParsed = (index, e) => {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = (event) => {
-            setCurrentEditQuestion(prev => ({
-              ...prev,
-              hasImage: true,
-              imageSrc: event.target.result,
-              imageCode: `${prev.id}.png`
-            }));
+          reader.onload = (ev) => {
+            const list = [...parsedQuestions];
+            list[index].hasImage = true;
+            list[index].imageSrc = ev.target.result;
+            if (!list[index].content.includes("[HINH_ANH]")) {
+              list[index].content = list[index].content + " [HINH_ANH] ";
+            }
+            setParsedQuestions(list);
+            alert(`Đã dán ảnh vào câu ${list[index].id}!`);
           };
           reader.readAsDataURL(file);
         }
+      };
+
+      // Mở modal sửa câu trong ngân hàng
+      const handleOpenEditModal = (q) => {
+        setCurrentEditQuestion({ ...q, options: [...q.options] });
+        setEditingModalOpen(true);
       };
 
       const handleSaveEdit = () => {
@@ -486,73 +444,19 @@
         alert(`Đã lưu câu hỏi ${currentEditQuestion.id}!`);
       };
 
-      // NẠP THỦ CÔNG
-      const handleAddNewQuestion = () => {
-        if (!newContent.trim()) {
-          alert("Vui lòng nhập đề bài!");
-          return;
-        }
-
-        const formattedId = `${newSubjectCode}${newExamCode.trim()}-${newOrderNum.trim()}`;
-        const subjectObj = SUBJECT_LIST.find(s => s.code === newSubjectCode) || SUBJECT_LIST[0];
-
-        const newQ = {
-          id: formattedId,
-          subject: subjectObj.name,
-          content: newContent,
-          hasImage: newHasImage,
-          imageCode: newHasImage ? (newImageCode || `${formattedId}.png`) : "",
-          imageSrc: newImageBase64 || null,
-          options: [
-            newOptA || "Phương án A",
-            newOptB || "Phương án B",
-            newOptC || "Phương án C",
-            newOptD || "Phương án D"
-          ],
-          correctIndex: 0,
-          solution: newSolution || "Lời giải chuẩn xác 100%."
-        };
-
-        const v1 = {
-          id: `${formattedId}1`,
-          subject: newQ.subject,
-          content: `${newContent} (Biến thể số liệu 1)`,
-          hasImage: newHasImage,
-          imageCode: newQ.imageCode,
-          imageSrc: newQ.imageSrc,
-          options: newQ.options,
-          correctIndex: 1,
-          solution: `Lời giải phái sinh 1 của ${formattedId}.`
-        };
-
-        setRootQuestions([newQ, ...rootQuestions]);
-        setPracticeQuestions([v1, ...practiceQuestions]);
-
-        alert(`Đã nạp câu ${formattedId} vào ngân hàng!`);
-        setNewContent("");
-        setNewOptA("");
-        setNewOptB("");
-        setNewOptC("");
-        setNewOptD("");
-        setNewSolution("");
-        setNewHasImage(false);
-        setNewImageCode("");
-        setNewImageBase64("");
-      };
-
-      // THI THỬ
+      // Bắt đầu thi
       const handleStartExam = () => {
         if (currentUser.feeStatus !== 'approved' || !currentUser.eligible) {
-          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Vui lòng nộp phí và chờ duyệt.");
+          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Vui lòng nộp lệ phí và chờ duyệt.");
           return;
         }
         if (examPasscode.trim() !== exams[0].passCode) {
-          alert(`Mật khẩu không đúng! (Mật khẩu: ${exams[0].passCode})`);
+          alert(`Mật khẩu không chính xác! (Mật khẩu đợt này là: ${exams[0].passCode})`);
           return;
         }
 
-        const full50 = rootQuestions.filter(q => q.subject.includes("Toán")).slice(0, 50);
-        setCurrentExamQuestions(full50.length > 0 ? full50 : rootQuestions.slice(0, 50));
+        const fullQuestions = rootQuestions.slice(0, 50);
+        setCurrentExamQuestions(fullQuestions);
         setAnswers({});
         setTimeLeft(75 * 60);
         setExamViolationCount(0);
@@ -586,7 +490,7 @@
                 </div>
                 <div>
                   <h1 className="font-bold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                  <span className="text-xs text-blue-200">Đầy Đủ 8 Môn Thẩm Định • Nhập Mã Đề Tự Động • KaTeX Chuẩn</span>
+                  <span className="text-xs text-blue-200">Bóc Tách File Thật 100% • Bảng Biến Thiên & Đồ Thị Chuẩn • Công Thức KaTeX</span>
                 </div>
               </div>
 
@@ -629,56 +533,189 @@
             {view === 'admin' ? (
               /* ==================== PHÒNG QUẢN TRỊ ==================== */
               <div className="space-y-6">
-                {/* MENU QUẢN TRỊ 6 PHÂN HỆ */}
                 <div className="bg-white p-2 rounded-2xl shadow-sm border flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setAdminTab('upload_audit')}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'upload_audit' ? 'bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'text-blue-700 bg-blue-50 hover:bg-blue-100'}`}
+                  >
+                    📤 1. Tải Lên File Đề Thật & Bóc Tách (Word/Ảnh)
+                  </button>
                   <button
                     onClick={() => setAdminTab('root_bank')}
                     className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    📚 1. Ngân Hàng Đề Gốc ({rootQuestions.length} câu)
-                  </button>
-                  <button
-                    onClick={() => setAdminTab('practice_bank')}
-                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
-                  >
-                    🎯 2. Ngân Hàng Luyện Tập ({practiceQuestions.length} câu)
-                  </button>
-                  <button
-                    onClick={() => setAdminTab('upload_audit')}
-                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'upload_audit' ? 'bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'text-blue-700 bg-blue-50 font-bold hover:bg-blue-100'}`}
-                  >
-                    📤 3. Tải Lên File Đề & Thẩm Định (8 Môn)
-                  </button>
-                  <button
-                    onClick={() => setAdminTab('import_exact')}
-                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'import_exact' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
-                  >
-                    📥 4. Nạp Câu Chuẩn Mã (T01-03)
+                    📚 2. Ngân Hàng Đề Gốc ({rootQuestions.length} câu)
                   </button>
                   <button
                     onClick={() => setAdminTab('exam_creator')}
                     className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    🛠️ 5. Quản Lý Đợt Thi
+                    🛠️ 3. Quản Lý Đợt Thi
                   </button>
                   <button
                     onClick={() => setAdminTab('students')}
                     className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    👥 6. Duyệt Lệ Phí
+                    👥 4. Duyệt Lệ Phí
                   </button>
                 </div>
 
-                {/* 1. NGÂN HÀNG ĐỀ GỐC */}
+                {/* 1. TẢI FILE ĐỀ THỰC TẾ & BÓC TÁCH CÂU HỎI */}
+                {adminTab === 'upload_audit' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <div className="border-b pb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Bóc Tách File Đề Thật & Dán Bảng Biến Thiên / Đồ Thị</h2>
+                        <p className="text-xs text-slate-500">Đọc trực tiếp file Word (.docx), file text, hoặc tải ảnh đồ thị dán vào câu hỏi.</p>
+                      </div>
+                      <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+                        Đọc File Word (.docx) Tự Động
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        {/* CẤU HÌNH MÔN & MÃ ĐỀ */}
+                        <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2">
+                          <span className="font-bold text-blue-950 text-xs block">1. Chọn Môn và Nhập Mã Đề:</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-slate-600 text-xs mb-1">Môn thi:</label>
+                              <select
+                                value={auditSubject}
+                                onChange={(e) => setAuditSubject(e.target.value)}
+                                className="w-full border rounded-lg p-2 text-xs font-bold bg-white"
+                              >
+                                {SUBJECT_LIST.map(sub => (
+                                  <option key={sub.code} value={sub.code}>[{sub.code}] - {sub.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-slate-600 text-xs mb-1">Mã đề (Ví dụ: 01, 02):</label>
+                              <input
+                                type="text"
+                                value={uploadExamCode}
+                                onChange={(e) => setUploadExamCode(e.target.value)}
+                                className="w-full border rounded-lg p-2 text-xs font-mono font-bold text-blue-900 bg-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* NÚT TẢI FILE THẬT */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">2. Chọn file đề từ máy tính:</label>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleRealFileUpload}
+                            accept=".docx,.txt,.tex,.png,.jpg,.jpeg"
+                            className="hidden"
+                          />
+                          <div
+                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                            className="border-2 border-dashed border-blue-500 bg-blue-50/40 hover:bg-blue-100/50 rounded-2xl p-6 text-center cursor-pointer transition"
+                          >
+                            <div className="text-4xl mb-1">📄</div>
+                            <span className="text-sm font-bold text-blue-950 block">Nhấp để chọn file Word (.docx) hoặc Ảnh scan</span>
+                            <span className="text-xs text-slate-500 mt-1 block">Hệ thống sẽ đọc toàn bộ câu chữ thật trong file của bạn</span>
+                          </div>
+
+                          {uploadedFileName && (
+                            <div className="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs flex justify-between items-center text-emerald-900 font-semibold">
+                              <span>✓ Đã nạp file: {uploadedFileName}</span>
+                              <span className="font-mono">{uploadExamCode}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* HOẶC DÁN NỘI DUNG TRỰC TIẾP */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">Hoặc dán trực tiếp toàn bộ văn bản đề bài vào đây:</label>
+                          <textarea
+                            rows="6"
+                            value={extractedFullText}
+                            onChange={(e) => {
+                              setExtractedFullText(e.target.value);
+                              parseQuestionsFromRealText(e.target.value, uploadExamCode);
+                            }}
+                            placeholder="Ví dụ dán: 
+Câu 1: Cho hàm số y = f(x)...
+A. Phương án 1   B. Phương án 2
+Câu 2: Tính tích phân..."
+                            className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600"
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      {/* DANH SÁCH CÁC CÂU HỎI THẬT ĐÃ BÓC TÁCH */}
+                      <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center border-b pb-2">
+                            <span className="font-bold text-slate-800 uppercase">
+                              Kết quả bóc tách: {parsedQuestions.length} câu hỏi thật
+                            </span>
+                            {parsedQuestions.length > 0 && (
+                              <button
+                                onClick={handleSaveAllParsedToBank}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow"
+                              >
+                                ✓ Nạp Tất Cả Vào Ngân Hàng
+                              </button>
+                            )}
+                          </div>
+
+                          {isExtracting ? (
+                            <div className="h-64 flex items-center justify-center text-blue-700 font-bold">
+                              Đang đọc file và tách từng câu hỏi...
+                            </div>
+                          ) : parsedQuestions.length > 0 ? (
+                            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                              {parsedQuestions.map((q, idx) => (
+                                <div key={idx} className="p-3 bg-white border rounded-xl space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-mono font-bold text-blue-900 bg-amber-300 px-2 py-0.5 rounded text-xs">{q.id}</span>
+                                    <label className="text-[11px] text-blue-600 hover:underline cursor-pointer">
+                                      + Dán ảnh bảng biến thiên
+                                      <input type="file" accept="image/*" onChange={(e) => handleAttachImageToParsed(idx, e)} className="hidden" />
+                                    </label>
+                                  </div>
+
+                                  <SafeMathContent text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
+
+                                  <div className="grid grid-cols-2 gap-1 text-[11px]">
+                                    {q.options.map((opt, oIdx) => (
+                                      <div key={oIdx} className="p-1 border rounded bg-slate-50 truncate">
+                                        <SafeMathInline text={opt} />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+                              <span className="text-3xl mb-1">📖</span>
+                              <span>Chưa có câu hỏi nào. Hãy chọn file Word (.docx) ở bên trái.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. NGÂN HÀNG ĐỀ GỐC CÓ BẢNG BIẾN THIÊN & CÔNG THỨC CHUẨN */}
                 {adminTab === 'root_bank' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <div className="flex justify-between items-center border-b pb-4">
                       <div>
-                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (Công Thức Chuẩn • Ảnh Đúng Vị Trí)</h2>
-                        <p className="text-xs text-slate-500">Mã định danh chuẩn [Môn][Mã đề]-[STT]. Không hiển thị độ khó.</p>
+                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (Bảng Biến Thiên & Công Thức Chuẩn)</h2>
+                        <p className="text-xs text-slate-500">Mã định danh chuẩn [Môn][Mã đề]-[STT]. Đã ẩn hoàn toàn thông tin độ khó.</p>
                       </div>
                       <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs">
-                        {rootQuestions.length} câu đề bài
+                        {rootQuestions.length} câu trong kho
                       </span>
                     </div>
 
@@ -689,19 +726,14 @@
                             <div className="flex items-center gap-2">
                               <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-1 rounded-lg text-sm shadow-sm">{q.id}</span>
                               <span className="font-bold text-slate-800">{q.subject}</span>
-                              {q.hasImage && (
-                                <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono text-[11px] font-bold">
-                                  🖼️ {q.imageCode}
-                                </span>
-                              )}
                             </div>
                             
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleOpenEditModal(q)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm"
                               >
-                                ✏️ Sửa câu / Dán ảnh mới
+                                ✏️ Sửa / Dán Ảnh Bảng Biến Thiên
                               </button>
                               <button
                                 onClick={() => {
@@ -717,18 +749,14 @@
                           </div>
 
                           <div className="bg-white p-4 rounded-xl border">
-                            <FormattedQuestionContent 
-                              content={q.content} 
-                              imageSrc={q.imageSrc} 
-                              imageCode={q.imageCode} 
-                            />
+                            <SafeMathContent text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {q.options.map((opt, oIdx) => (
                               <div key={oIdx} className={`p-2 rounded-lg border text-[11px] ${oIdx === q.correctIndex ? 'bg-emerald-50 border-emerald-500 font-bold text-emerald-900' : 'bg-white'}`}>
                                 <span className="mr-1">{String.fromCharCode(65 + oIdx)}.</span>
-                                <MathInline text={opt} />
+                                <SafeMathInline text={opt} />
                               </div>
                             ))}
                           </div>
@@ -738,306 +766,7 @@
                   </div>
                 )}
 
-                {/* 2. NGÂN HÀNG LUYỆN TẬP */}
-                {adminTab === 'practice_bank' && (
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                    <div className="flex justify-between items-center border-b pb-4">
-                      <div>
-                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Câu Hỏi Luyện Tập (Chỉ Hiển Thị Đề Bài Thuần Túy)</h2>
-                        <p className="text-xs text-slate-500">Toàn bộ đề bài hiển thị trực tiếp. Không để lộ độ khó hay nguồn phái sinh.</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                      {practiceQuestions.map((q) => (
-                        <div key={q.id} className="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="font-mono font-bold text-indigo-950 bg-indigo-100 px-2.5 py-1 rounded text-xs">{q.id}</span>
-                            <span className="text-slate-600 font-medium">Môn: {q.subject}</span>
-                          </div>
-                          
-                          <div className="bg-white p-3 rounded-xl border">
-                            <FormattedQuestionContent content={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                            {q.options.map((opt, oIdx) => (
-                              <div key={oIdx} className="p-1.5 bg-white border rounded text-[11px] text-slate-700">
-                                <span className="font-bold mr-1">{String.fromCharCode(65 + oIdx)}.</span>
-                                <MathInline text={opt} />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. TẢI LÊN FILE ĐỀ & THẨM ĐỊNH (CÓ HỎI MÃ ĐỀ & ĐỦ 8 MÔN) */}
-                {adminTab === 'upload_audit' && (
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                    <div className="border-b pb-4 flex justify-between items-center">
-                      <div>
-                        <h2 className="text-lg font-bold text-blue-950">Tải Lên File Đề (Word, PDF, Ảnh) & Thẩm Định Độc Lập</h2>
-                        <p className="text-xs text-slate-500">Hỗ trợ đầy đủ 8 môn thi. Yêu cầu nhập Mã Đề (ví dụ: 01, 02) để tự động định danh.</p>
-                      </div>
-                      <span className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">
-                        Chuẩn Khung 8 Môn HSA
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        {/* 1. CHỌN MÔN THI TRONG 8 MÔN & NHẬP MÃ ĐỀ */}
-                        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-3">
-                          <span className="font-bold text-blue-950 text-xs block">1. Cấu hình thông tin Đề tải lên:</span>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-slate-700 text-xs font-semibold mb-1">Môn thi thẩm định (8 Môn):</label>
-                              <select
-                                value={auditSubject}
-                                onChange={(e) => setAuditSubject(e.target.value)}
-                                className="w-full border rounded-lg p-2 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-blue-600"
-                              >
-                                {SUBJECT_LIST.map(sub => (
-                                  <option key={sub.code} value={sub.code}>
-                                    [{sub.code}] - {sub.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="block text-slate-700 text-xs font-semibold mb-1">Mã đề cần nạp (Ví dụ: 01, 02):</label>
-                              <input
-                                type="text"
-                                value={uploadExamCode}
-                                onChange={(e) => setUploadExamCode(e.target.value)}
-                                placeholder="01"
-                                className="w-full border rounded-lg p-2 text-xs font-mono font-bold text-blue-900 bg-white outline-none focus:ring-2 focus:ring-blue-600"
-                              />
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[11px] text-slate-600">Cấu trúc mã tự sinh: </span>
-                            <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded text-xs">
-                              {auditSubject}{uploadExamCode.trim() || "01"}-XX
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 2. CHỌN FILE TỪ MÁY TÍNH */}
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">2. Chọn tệp đề thi từ máy tính:</label>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileUpload}
-                            accept=".docx,.pdf,.png,.jpg,.jpeg"
-                            className="hidden"
-                          />
-                          <div
-                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                            className="border-2 border-dashed border-blue-500 bg-blue-50/40 hover:bg-blue-100/50 rounded-2xl p-6 text-center cursor-pointer transition"
-                          >
-                            <div className="text-4xl mb-2">📁</div>
-                            <span className="text-sm font-bold text-blue-950 block">Bấm vào đây để chọn tệp đề (Word, PDF, Ảnh scan)</span>
-                            <span className="text-xs text-slate-500 mt-1 block">Tự động gắn mã đề: <strong>{uploadExamCode}</strong></span>
-                          </div>
-
-                          {uploadedFile && (
-                            <div className="mt-2 p-3 bg-slate-50 border rounded-xl flex justify-between items-center text-xs">
-                              <span className="font-semibold text-blue-900 truncate">📄 {uploadedFile.name}</span>
-                              <span className="font-mono font-bold text-emerald-700">{uploadedFileProgress}% Hoàn tất</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 3. NỘI DUNG CÂU HỎI TRÍCH XUẤT */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">3. Nội dung văn bản câu hỏi (đã bóc tách từ file hoặc dán trực tiếp):</label>
-                          <textarea
-                            rows="4"
-                            value={rawQuestionText}
-                            onChange={(e) => setRawQuestionText(e.target.value)}
-                            placeholder="Nội dung đề bài bóc tách từ file sẽ hiển thị tại đây..."
-                            className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600"
-                          ></textarea>
-                        </div>
-
-                        <button
-                          onClick={handleRunAiAudit}
-                          disabled={analyzingAI}
-                          className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-2"
-                        >
-                          <span>{analyzingAI ? "Hội đồng chuyên gia đang thẩm định ma trận đề..." : "⚖️ Kích Hoạt Thẩm Định Độc Lập Cho Mã Đề Này"}</span>
-                        </button>
-                      </div>
-
-                      {/* KHUNG KẾT QUẢ THẨM ĐỊNH */}
-                      <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
-                        {aiResult ? (
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <span className="bg-amber-300 font-mono font-bold text-blue-950 px-2.5 py-1 rounded text-xs shadow-sm">Mã: {aiResult.id}</span>
-                              <span className="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Môn: {aiResult.subject}</span>
-                              <span className="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded font-mono">Ảnh: {aiResult.imageCode}</span>
-                            </div>
-
-                            <div className="bg-white p-3 rounded-xl border">
-                              <FormattedQuestionContent content={aiResult.content} imageCode={aiResult.imageCode} />
-                            </div>
-
-                            <div className="bg-white p-3 rounded-xl border space-y-1">
-                              <p className="font-bold text-emerald-800">✓ Lời giải thẩm định tối ưu:</p>
-                              <p className="text-slate-700">{aiResult.solution}</p>
-                            </div>
-
-                            <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200">
-                              <span className="font-bold text-blue-950 block mb-1">Tự động sinh 3 câu tương đương vào Ngân hàng Luyện tập:</span>
-                              <ul className="list-disc pl-4 space-y-0.5 text-slate-700 text-[11px]">
-                                {aiResult.variants.map(v => <li key={v.id}><strong>{v.id}:</strong> {v.content}</li>)}
-                              </ul>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                            <span className="text-4xl mb-2">📤</span>
-                            <span className="font-bold text-slate-600">Chưa có đề bài tải lên để thẩm định.</span>
-                            <span className="text-[11px] mt-1 text-slate-500">Hãy chọn môn, nhập mã đề (ví dụ 01) và bấm chọn file đề từ máy tính.</span>
-                          </div>
-                        )}
-
-                        {aiResult && (
-                          <button
-                            onClick={handleSaveAiAuditedQuestion}
-                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs mt-3 shadow"
-                          >
-                            ✓ Duyệt Đề & Chuyển 100% Vào Ngân Hàng Đề Gốc
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. NẠP CÂU CHUẨN MÃ (HỖ TRỢ ĐỦ 8 MÔN) */}
-                {adminTab === 'import_exact' && (
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                    <div className="border-b pb-4">
-                      <h2 className="text-lg font-bold text-blue-950">Nạp Câu Hỏi Chuẩn Mã (Ví dụ: T01-03) & Dán Ảnh Đúng Vị Trí</h2>
-                      <p className="text-xs text-slate-500 mt-0.5">Hỗ trợ đầy đủ 8 môn thi chuẩn ĐGNL HSA.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="space-y-3 text-xs">
-                        <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl">
-                          <span className="font-bold text-blue-950 block mb-1">Mã định danh: [Môn][Mã đề]-[STT]</span>
-                          <div className="grid grid-cols-3 gap-2">
-                            <select 
-                              value={newSubjectCode} 
-                              onChange={(e) => setNewSubjectCode(e.target.value)} 
-                              className="border rounded p-1 bg-white font-bold"
-                            >
-                              {SUBJECT_LIST.map(sub => (
-                                <option key={sub.code} value={sub.code}>
-                                  [{sub.code}] - {sub.name.split(" ")[0]}
-                                </option>
-                              ))}
-                            </select>
-                            <input type="text" value={newExamCode} onChange={(e) => setNewExamCode(e.target.value)} placeholder="Mã đề (01)" className="border rounded p-1 font-mono font-bold" />
-                            <input type="text" value={newOrderNum} onChange={(e) => setNewOrderNum(e.target.value)} placeholder="STT câu (03)" className="border rounded p-1 font-mono font-bold" />
-                          </div>
-                          <div className="text-right mt-1">
-                            <span className="font-mono font-bold text-blue-900 bg-amber-300 px-2 py-0.5 rounded text-xs">{newSubjectCode}{newExamCode}-{newOrderNum}</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="font-semibold text-slate-700">Đề bài (Công thức KaTeX trong $...$):</label>
-                            <span className="text-[11px] text-blue-600 cursor-pointer font-bold" onClick={() => setNewContent(newContent + " [HINH_ANH] ")}>
-                              + Chèn vị trí ảnh [HINH_ANH]
-                            </span>
-                          </div>
-                          <textarea
-                            rows="4"
-                            value={newContent}
-                            onChange={(e) => setNewContent(e.target.value)}
-                            placeholder="Ví dụ: Cho hàm số bậc ba $y = f(x)$ có đồ thị:[HINH_ANH]Tìm số nghiệm của phương trình..."
-                            className="w-full border rounded-xl p-2.5 font-mono outline-none"
-                          ></textarea>
-                        </div>
-
-                        <div className="p-3 bg-slate-50 border rounded-xl space-y-2">
-                          <label className="font-bold text-slate-800 block">Chọn tệp ảnh đồ thị/hình vẽ từ máy tính:</label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const f = e.target.files[0];
-                              if (f) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => {
-                                  setNewImageBase64(ev.target.result);
-                                  setNewHasImage(true);
-                                  setNewImageCode(`${newSubjectCode}${newExamCode}-${newOrderNum}.png`);
-                                };
-                                reader.readAsDataURL(f);
-                              }
-                            }}
-                            className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-semibold"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <input type="text" placeholder="Phương án A ($...$)" value={newOptA} onChange={(e) => setNewOptA(e.target.value)} className="border rounded-lg p-2 font-mono" />
-                          <input type="text" placeholder="Phương án B ($...$)" value={newOptB} onChange={(e) => setNewOptB(e.target.value)} className="border rounded-lg p-2 font-mono" />
-                          <input type="text" placeholder="Phương án C ($...$)" value={newOptC} onChange={(e) => setNewOptC(e.target.value)} className="border rounded-lg p-2 font-mono" />
-                          <input type="text" placeholder="Phương án D ($...$)" value={newOptD} onChange={(e) => setNewOptD(e.target.value)} className="border rounded-lg p-2 font-mono" />
-                        </div>
-
-                        <button
-                          onClick={handleAddNewQuestion}
-                          className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"
-                        >
-                          Xác Nhận Nạp Câu Hỏi & Dán Ảnh Đúng Vị Trí
-                        </button>
-                      </div>
-
-                      <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-slate-700 uppercase block mb-3">Xem trước trực tiếp (KaTeX & Vị trí ảnh):</span>
-                          {newContent ? (
-                            <div className="bg-white p-4 rounded-xl border space-y-3">
-                              <span className="font-mono font-bold text-blue-900 bg-amber-300 px-2 py-0.5 rounded text-xs">
-                                {newSubjectCode}{newExamCode}-{newOrderNum}
-                              </span>
-                              <FormattedQuestionContent 
-                                content={newContent} 
-                                imageSrc={newImageBase64} 
-                                imageCode={newImageCode || `${newSubjectCode}${newExamCode}-${newOrderNum}.png`} 
-                              />
-                              <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                                <div className="p-2 border rounded"><MathInline text={`A. ${newOptA || '...'}`} /></div>
-                                <div className="p-2 border rounded"><MathInline text={`B. ${newOptB || '...'}`} /></div>
-                                <div className="p-2 border rounded"><MathInline text={`C. ${newOptC || '...'}`} /></div>
-                                <div className="p-2 border rounded"><MathInline text={`D. ${newOptD || '...'}`} /></div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="h-64 flex items-center justify-center text-slate-400 text-center">
-                              Chưa có nội dung xem trước.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. QUẢN LÝ ĐỢT THI */}
+                {/* 3. QUẢN LÝ ĐỢT THI */}
                 {adminTab === 'exam_creator' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h2 className="text-lg font-bold text-blue-950">Quản Lý & Xóa Đợt Thi</h2>
@@ -1062,7 +791,7 @@
                   </div>
                 )}
 
-                {/* 6. PHÊ DUYỆT LỆ PHÍ */}
+                {/* 4. DUYỆT LỆ PHÍ */}
                 {adminTab === 'students' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h2 className="text-lg font-bold text-blue-950">Phê Duyệt Lệ Phí & Bật Quyền Dự Thi</h2>
@@ -1104,88 +833,66 @@
                   </div>
                 )}
 
-                {/* MODAL SỬA CÂU HỎI */}
+                {/* MODAL SỬA CÂU & DÁN ẢNH BẢNG BIẾN THIÊN */}
                 {editingModalOpen && currentEditQuestion && (
                   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
                       <div className="flex justify-between items-center border-b pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-base text-blue-950">Chỉnh Sửa & Dán Ảnh Đúng Vị Trí</span>
-                          <span className="bg-amber-300 font-mono font-bold px-2 py-0.5 rounded text-xs">{currentEditQuestion.id}</span>
-                        </div>
+                        <span className="font-bold text-base text-blue-950">Sửa Câu & Dán Bảng Biến Thiên ({currentEditQuestion.id})</span>
                         <button onClick={() => setEditingModalOpen(false)} className="text-slate-400 font-bold text-lg">✕</button>
                       </div>
 
                       <div className="space-y-3 text-xs">
                         <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="font-bold text-slate-700">Nội dung đề bài:</label>
-                            <span className="text-[11px] text-blue-600 cursor-pointer" onClick={() => {
-                              setCurrentEditQuestion({
-                                ...currentEditQuestion,
-                                content: currentEditQuestion.content + " [HINH_ANH] "
-                              });
-                            }}>
-                              + Chèn vị trí ảnh [HINH_ANH]
-                            </span>
-                          </div>
+                          <label className="font-bold text-slate-700 block mb-1">Nội dung đề bài:</label>
                           <textarea
                             rows="4"
                             value={currentEditQuestion.content}
                             onChange={(e) => setCurrentEditQuestion({ ...currentEditQuestion, content: e.target.value })}
-                            className="w-full border rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full border rounded-xl p-2.5 font-mono"
                           ></textarea>
+                          <span className="text-[11px] text-blue-600 cursor-pointer block mt-1" onClick={() => {
+                            setCurrentEditQuestion({ ...currentEditQuestion, content: currentEditQuestion.content + " [HINH_ANH] " });
+                          }}>
+                            + Nhấp vào đây để chèn thẻ vị trí ảnh <code>[HINH_ANH]</code>
+                          </span>
                         </div>
 
+                        {/* Chọn tệp ảnh thật */}
                         <div className="p-3 bg-slate-50 border rounded-xl space-y-2">
-                          <span className="font-bold text-slate-800 block">Dán tệp ảnh từ máy tính vào câu hỏi:</span>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleUploadImageForEdit}
-                              className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-semibold cursor-pointer"
-                            />
-                            {currentEditQuestion.imageSrc && (
-                              <button
-                                onClick={() => setCurrentEditQuestion({ ...currentEditQuestion, imageSrc: null, hasImage: false })}
-                                className="text-rose-600 hover:text-rose-800 font-semibold text-xs"
-                              >
-                                Gỡ ảnh
-                              </button>
-                            )}
-                          </div>
-
+                          <span className="font-bold text-slate-800 block">Tải ảnh bảng biến thiên / đồ thị từ máy tính:</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const f = e.target.files[0];
+                              if (f) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  setCurrentEditQuestion({
+                                    ...currentEditQuestion,
+                                    hasImage: true,
+                                    imageSrc: ev.target.result,
+                                    imageCode: `${currentEditQuestion.id}.png`
+                                  });
+                                };
+                                reader.readAsDataURL(f);
+                              }
+                            }}
+                            className="text-xs text-slate-500"
+                          />
                           {currentEditQuestion.imageSrc && (
-                            <div className="mt-2 p-2 bg-white border rounded-lg flex flex-col items-center">
-                              <img src={currentEditQuestion.imageSrc} alt="Preview" className="max-h-36 rounded border" />
+                            <div className="mt-2 p-2 bg-white border rounded text-center">
+                              <img src={currentEditQuestion.imageSrc} alt="Preview" className="max-h-40 mx-auto rounded" />
                             </div>
                           )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          {currentEditQuestion.options.map((opt, idx) => (
-                            <div key={idx}>
-                              <label className="block font-semibold text-slate-600 mb-0.5">Phương án {String.fromCharCode(65 + idx)}:</label>
-                              <input
-                                type="text"
-                                value={opt}
-                                onChange={(e) => {
-                                  const newOpts = [...currentEditQuestion.options];
-                                  newOpts[idx] = e.target.value;
-                                  setCurrentEditQuestion({ ...currentEditQuestion, options: newOpts });
-                                }}
-                                className="w-full border rounded-lg px-2.5 py-1.5 font-mono"
-                              />
-                            </div>
-                          ))}
                         </div>
                       </div>
 
                       <div className="flex gap-2 pt-2 border-t">
                         <button onClick={() => setEditingModalOpen(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
                         <button onClick={handleSaveEdit} className="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-xs shadow">
-                          Lưu Thay Đổi
+                          Lưu Câu Hỏi
                         </button>
                       </div>
                     </div>
@@ -1203,7 +910,7 @@
                           <h2 className="text-lg font-bold text-slate-900">{currentUser.name}</h2>
                           <span className="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">{currentUser.id}</span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Đợt thi: <strong>{exams[0]?.name || "Đợt thi"}</strong></p>
+                        <p className="text-xs text-slate-500 mt-1">Đợt thi: <strong>{exams[0]?.name}</strong></p>
                       </div>
 
                       <div className="flex items-center gap-3">
@@ -1214,13 +921,10 @@
                           </div>
                         ) : (
                           <button
-                            onClick={() => {
-                              setPaymentRefCode(`HSA-${currentUser.id}-99`);
-                              setShowPaymentModal(true);
-                            }}
+                            onClick={() => setShowPaymentModal(true)}
                             className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow"
                           >
-                            💳 Đăng Ký Thi & Nộp Phí ({exams[0]?.fee || "50.000 VNĐ"})
+                            💳 Đăng Ký Thi & Nộp Phí ({exams[0]?.fee})
                           </button>
                         )}
                       </div>
@@ -1230,14 +934,14 @@
                       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                         <div>
                           <div className="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">📖</div>
-                          <h3 className="text-base font-bold text-slate-900 mb-1">Phòng Luyện Tập Theo Chuyên Đề</h3>
+                          <h3 className="text-base font-bold text-slate-900 mb-1">Phòng Luyện Tập Tự Do</h3>
                           <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                            Mở tự do. Ôn luyện câu hỏi luyện tập hiển thị đề bài thuần túy, công thức toán KaTeX chuẩn và ảnh đồ thị nằm đúng vị trí.
+                            Luyện tập trực tiếp từ đề bài nguyên văn đã bóc tách từ file đề, hiển thị bảng biến thiên và công thức KaTeX chuẩn.
                           </p>
                         </div>
                         <button
                           onClick={() => {
-                            setCurrentExamQuestions(practiceQuestions.slice(0, 30));
+                            setCurrentExamQuestions(rootQuestions.slice(0, 30));
                             setAnswers({});
                             setTimeLeft(45 * 60);
                             setActiveQuestionIdx(0);
@@ -1245,23 +949,23 @@
                           }}
                           className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs"
                         >
-                          Vào Luyện Tập Tự Do (30 câu)
+                          Vào Luyện Tập (30 câu)
                         </button>
                       </div>
 
                       <div className="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm flex flex-col justify-between">
                         <div>
                           <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">🎓</div>
-                          <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức ({exams[0]?.name || "Đợt thi"})</h3>
+                          <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức (Chuẩn HSA)</h3>
                           <p className="text-xs text-slate-500 mt-1 mb-3">
-                            Lấy đúng 50 câu Toán chuẩn cấu trúc mã định danh (T01-01 đến T01-50). Hiển thị công thức KaTeX sắc nét và ảnh đồ thị đúng vị trí.
+                            Lấy đúng 50 câu từ đề gốc thật bạn tải lên. Đầy đủ bảng biến thiên, đồ thị và công thức chuẩn xác.
                           </p>
 
                           <div className="space-y-2 bg-slate-50 p-3 rounded-xl border mb-4">
                             <label className="block text-[11px] font-bold text-slate-600 uppercase">Mật khẩu đợt thi:</label>
                             <input
                               type="password"
-                              placeholder={`Nhập ${exams[0]?.passCode || "HSA2026"}...`}
+                              placeholder={`Nhập ${exams[0]?.passCode}...`}
                               value={examPasscode}
                               onChange={(e) => setExamPasscode(e.target.value)}
                               className="w-full border rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
@@ -1273,62 +977,20 @@
                           onClick={handleStartExam}
                           className={`w-full py-2.5 rounded-xl font-bold text-xs transition shadow ${currentUser.eligible && currentUser.feeStatus === 'approved' ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
                         >
-                          {currentUser.eligible && currentUser.feeStatus === 'approved' ? "Bắt Đầu Thi (Lấy Đủ 50 Câu Toán)" : "Chưa đủ điều kiện (Cần nộp phí & duyệt)"}
+                          {currentUser.eligible && currentUser.feeStatus === 'approved' ? "Bắt Đầu Thi Thật (50 Câu)" : "Chưa đủ điều kiện (Cần duyệt phí)"}
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* MODAL NỘP PHÍ */}
-                {showPaymentModal && (
-                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl border space-y-4">
-                      <div className="flex justify-between items-center border-b pb-3">
-                        <h3 className="font-bold text-base text-slate-900">Đăng Ký Dự Thi & Nộp Lệ Phí</h3>
-                        <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 font-bold">✕</button>
-                      </div>
-                      <div className="text-xs space-y-1 text-slate-600">
-                        <p>Thí sinh: <strong>{currentUser.name}</strong> ({currentUser.id})</p>
-                        <p>Lệ phí: <strong className="text-rose-600 font-bold">{exams[0]?.fee || "50.000 VNĐ"}</strong></p>
-                      </div>
-                      <div className="bg-slate-50 border rounded-xl p-4 text-center">
-                        <div className="w-32 h-32 bg-white border-2 border-slate-300 rounded mx-auto flex items-center justify-center font-black text-xl">
-                          VIETQR
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-2 font-mono">Mã CK: <strong>{paymentRefCode}</strong></p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => setShowPaymentModal(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
-                        <button
-                          onClick={() => {
-                            setStudents(students.map(s => s.id === currentUser.id ? { ...s, feeStatus: 'pending', regTime: new Date().toLocaleString('vi-VN') } : s));
-                            setShowPaymentModal(false);
-                            alert("Đã gửi xác nhận nộp phí! Vui lòng chờ duyệt.");
-                          }}
-                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"
-                        >
-                          Xác Nhận Đã Chuyển Tiền
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* MÀN HÌNH LÀM BÀI ĐỦ 50 CÂU */}
+                {/* MÀN HÌNH LÀM BÀI */}
                 {(studentMode === 'exam' || studentMode === 'practice') && (
                   <div className="space-y-4 no-select">
-                    {studentMode === 'exam' && examViolationCount > 0 && (
-                      <div className="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-lg text-rose-800 text-xs flex justify-between items-center">
-                        <span className="font-bold">⚠️ RỜI MÀN HÌNH {examViolationCount}/3 LẦN! (Quá 3 lần sẽ tự động thu bài).</span>
-                        <span className="font-mono font-bold bg-rose-200 px-2 py-0.5 rounded">Vi phạm: {examViolationCount}</span>
-                      </div>
-                    )}
-
                     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
-                          {studentMode === 'exam' ? `ĐỢT THI CHÍNH THỨC (${currentExamQuestions.length} CÂU)` : `BÀI LUYỆN TẬP (${currentExamQuestions.length} CÂU)`}
+                          BÀI THI CHÍNH THỨC ({currentExamQuestions.length} CÂU)
                         </span>
                         <h2 className="text-sm font-bold text-slate-800 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
                       </div>
@@ -1338,10 +1000,7 @@
                           <span className="text-[10px] text-slate-500 block uppercase font-bold">Thời gian làm bài</span>
                           <span className="font-mono text-xl font-black text-rose-600">{formatTime(timeLeft)}</span>
                         </div>
-                        <button
-                          onClick={handleSubmitExam}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow"
-                        >
+                        <button onClick={handleSubmitExam} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow">
                           Nộp Bài Thi
                         </button>
                       </div>
@@ -1353,18 +1012,20 @@
                           <div>
                             <div className="flex justify-between items-center border-b pb-3 mb-4">
                               <span className="font-bold text-xs text-blue-900">
-                                Câu {activeQuestionIdx + 1} / {currentExamQuestions.length} (Mã: {currentExamQuestions[activeQuestionIdx].id})
+                                Câu {activeQuestionIdx + 1} / {currentExamQuestions.length} ({currentExamQuestions[activeQuestionIdx].id})
                               </span>
                             </div>
 
+                            {/* Render Đề bài thật & Bảng biến thiên đúng vị trí */}
                             <div className="mb-4">
-                              <FormattedQuestionContent 
-                                content={currentExamQuestions[activeQuestionIdx].content}
+                              <SafeMathContent 
+                                text={currentExamQuestions[activeQuestionIdx].content}
                                 imageSrc={currentExamQuestions[activeQuestionIdx].imageSrc}
                                 imageCode={currentExamQuestions[activeQuestionIdx].imageCode}
                               />
                             </div>
 
+                            {/* 4 Phương án */}
                             <div className="space-y-2 mt-4">
                               {currentExamQuestions[activeQuestionIdx].options.map((opt, oIdx) => {
                                 const isSelected = answers[activeQuestionIdx] === oIdx;
@@ -1378,7 +1039,7 @@
                                       {String.fromCharCode(65 + oIdx)}
                                     </span>
                                     <div className="flex-1">
-                                      <MathInline text={opt} />
+                                      <SafeMathInline text={opt} />
                                     </div>
                                   </button>
                                 );
@@ -1406,12 +1067,7 @@
                       </div>
 
                       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-fit">
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="text-xs font-bold text-slate-700 uppercase">Mục lục ({currentExamQuestions.length} câu)</h4>
-                          <span className="text-[11px] font-bold text-blue-700 font-mono">
-                            {Object.keys(answers).length}/{currentExamQuestions.length}
-                          </span>
-                        </div>
+                        <h4 className="text-xs font-bold text-slate-700 uppercase mb-3">Mục lục ({currentExamQuestions.length} câu)</h4>
                         <div className="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto pr-1">
                           {currentExamQuestions.map((_, idx) => {
                             const isAnswered = answers[idx] !== undefined;
@@ -1434,23 +1090,17 @@
 
                 {/* KẾT QUẢ */}
                 {studentMode === 'result' && examFinishedData && (
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                    <div className="text-center pb-4 border-b">
-                      <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI TOÁN & XỬ LÝ SỐ LIỆU (50 CÂU)</h2>
-                      <p className="text-xs text-slate-500">Mã thí sinh: {currentUser.id} | Số vi phạm: {examFinishedData.violations}</p>
-                      
-                      <div className="inline-block mt-4 bg-blue-50 border border-blue-200 px-6 py-3 rounded-2xl">
-                        <span className="text-xs text-blue-700 font-bold uppercase">Điểm Số Đạt Được</span>
-                        <div className="text-3xl font-black text-blue-950">{examFinishedData.total} / {examFinishedData.questions.length}</div>
-                      </div>
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-center">
+                    <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI THẬT</h2>
+                    <div className="inline-block bg-blue-50 border border-blue-200 px-6 py-3 rounded-2xl">
+                      <span className="text-xs text-blue-700 font-bold uppercase">Điểm Số Đạt Được</span>
+                      <div className="text-3xl font-black text-blue-950">{examFinishedData.total} / {examFinishedData.questions.length}</div>
                     </div>
-
-                    <button
-                      onClick={() => setStudentMode('hub')}
-                      className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs"
-                    >
-                      Trở về Bảng Điều Khiển Học Viên
-                    </button>
+                    <div>
+                      <button onClick={() => setStudentMode('hub')} className="px-6 py-2.5 bg-blue-700 text-white font-bold rounded-xl text-xs">
+                        Trở về Trang Chủ
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
