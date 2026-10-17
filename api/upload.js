@@ -20,19 +20,17 @@ export default async function handler(req, res) {
 
     const GEMINI_API_KEY = apiKey || process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-      return res.status(400).json({ 
-        error: 'Chưa cấu hình Gemini API Key.' 
-      });
+      return res.status(400).json({ error: 'Chưa cấu hình Gemini API Key.' });
     }
 
-    const systemPrompt = `Bạn là Hội đồng chuyên gia thẩm định đề thi ĐGNL (HSA Model) và Chương trình GDPT 2018.
-Nhiệm vụ của bạn là đọc và phân tích tài liệu đề thi được tải lên (file Word, PDF hoặc Ảnh).
+    const systemPrompt = `Bạn là Hội đồng chuyên gia thẩm định đề thi ĐGNL HSA Model và Chương trình GDPT 2018.
+Nhiệm vụ: Đọc và phân tích tài liệu đề thi được tải lên (Word, PDF, hoặc Ảnh).
 
 YÊU CẦU BẮT BUỘC:
-1. Đọc tài liệu, nhận diện TẤT CẢ các câu hỏi, công thức toán học (kể cả MathType, Equation).
+1. Đọc tài liệu, nhận diện TẤT CẢ câu hỏi, công thức toán học (kể cả MathType, Equation).
 2. TỰ ĐỘNG CHUYỂN ĐỔI MỌI CÔNG THỨC TOÁN HỌC sang định dạng LaTeX chuẩn kẹp giữa cặp dấu $...$ (nội dòng) hoặc $$...$$ (khối). Ví dụ: $d: 2x - y + 3 = 0$, $\\vec{u} = (1; 2)$, $\\frac{a}{b}$, $\\sqrt{x}$, $\\int_{a}^{b}$.
 3. Giữ nguyên 100% câu chữ tiếng Việt, không tóm tắt, không làm biến dạng câu hỏi gốc.
-4. Nếu câu hỏi có đồ thị, hình vẽ, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của hình vẽ trong câu.
+4. Nếu câu hỏi có đồ thị, hình vẽ, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí hình vẽ trong câu.
 5. Gắn mã định danh cho từng câu: [MãMôn][MãĐề]-[STT] (Ví dụ: Môn ${subject}, Mã đề ${examCode} -> câu 1 là ${subject}${examCode}-01, câu 2 là ${subject}${examCode}-02...).
 6. Phân tích độ khó (B, H, VD, VDC), đưa ra lời giải tối ưu chi tiết cho từng câu.
 7. Với mỗi câu gốc, tự động sinh 3 câu tương đương cùng chuyên đề và độ khó, mã dạng [MãGốc]1, [MãGốc]2, [MãGốc]3.
@@ -78,36 +76,18 @@ HÃY TRẢ VỀ DỮ LIỆU ĐÚNG ĐỊNH DẠNG JSON DUY NHẤT theo cấu tr�
       }
     };
 
-    // Danh sách các URL gọi mô hình của Google để tự động chuyển tiếp nếu gặp lỗi 404
-    const endpoints = [
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`
-    ];
+    // Sử dụng endpoint chuẩn xác tương thích 100% với khóa Google AI Studio mới
+    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-    let apiResponse = null;
-    let lastError = "";
+    const apiResponse = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
 
-    for (const url of endpoints) {
-      try {
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        if (resp.ok) {
-          apiResponse = resp;
-          break;
-        } else {
-          lastError = await resp.text();
-        }
-      } catch (err) {
-        lastError = err.message;
-      }
-    }
-
-    if (!apiResponse) {
-      return res.status(500).json({ error: 'Lỗi từ Gemini AI API: ' + lastError });
+    if (!apiResponse.ok) {
+      const errText = await apiResponse.text();
+      return res.status(500).json({ error: 'Lỗi từ Gemini AI API: ' + errText });
     }
 
     const data = await apiResponse.json();
