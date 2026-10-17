@@ -51,8 +51,8 @@ Trả về kết quả DUY NHẤT dưới dạng JSON:
   ]
 }`;
 
-    // Gọi trực tiếp model gemini-2.0-flash chính thức
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Gọi trực tiếp model gemini-3.8-flash chính thức
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
