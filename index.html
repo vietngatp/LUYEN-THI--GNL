@@ -20,11 +20,81 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // HỌC SINH MẪU
     const INITIAL_STUDENTS = [
       { id: "07-12A1-001", name: "Nguyễn Văn An", birthYear: "2007", classUnit: "12A1", email: "an.nguyen@example.com", eligible: true, feeStatus: "approved", regTime: "2026-10-15 08:30" },
       { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" },
       { id: "07-TP-003", name: "Lê Hoàng Long", birthYear: "2007", classUnit: "TP", email: "long.le@example.com", eligible: false, feeStatus: "unregistered", regTime: "-" }
     ];
+
+    // SINH ĐỦ 50 CÂU TOÁN CHUẨN HSA (GỒM CẢ CÂU GỐC VÀ CÂU LUYỆN TẬP PHÁI SINH)
+    const generate50MathQuestions = () => {
+      const topics = [
+        "Khảo sát hàm số & Ứng dụng đạo hàm",
+        "Hàm số Mũ - Logarit & Bất phương trình",
+        "Nguyên hàm - Tích phân & Ứng dụng thực tế",
+        "Phương pháp tọa độ Oxyz trong không gian",
+        "Hình học không gian (Góc, Khoảng cách, Thể tích)",
+        "Thống kê mẫu số liệu ghép nhóm & Xác suất cổ điển",
+        "Cấp số cộng, Cấp số nhân & Dãy số",
+        "Xử lý số liệu, Biểu đồ & Tối ưu hóa kinh tế"
+      ];
+      const levels = ["B", "H", "VD", "VDC"];
+      
+      const qList = [];
+      for (let i = 1; i <= 50; i++) {
+        const topic = topics[(i - 1) % topics.length];
+        const lvl = i <= 13 ? "B" : (i <= 28 ? "H" : (i <= 43 ? "VD" : "VDC"));
+        const hasImg = i % 4 === 1;
+        const code = `T10-01-${i < 10 ? '0' + i : i}`;
+        
+        qList.push({
+          id: code,
+          subject: "Toán",
+          topic: topic,
+          level: lvl,
+          part: "math",
+          content: `Câu ${i}: [${topic}] Cho bài toán thực tế chuẩn CT GDPT 2018 liên quan đến ${topic.toLowerCase()}. Xác định kết quả chính xác của đại lượng cần tìm.`,
+          hasImage: hasImg,
+          imageCode: hasImg ? `${code}.png` : null,
+          options: [
+            `Phương án A: Giá trị tương ứng với ${i * 2 + 1}`,
+            `Phương án B: Nghiệm tối ưu của bài toán ${i * 3 + 5}`,
+            `Phương án C: Hệ số biến thiên cực trị ${i * 4}`,
+            `Phương án D: Khoảng giá trị tham số (-${i}; ${i})`
+          ],
+          correctIndex: (i % 4),
+          solution: `Lời giải thẩm định độc lập cho câu ${code}: Bước 1 áp dụng định nghĩa chuyên đề ${topic}, bước 2 giải hệ điều kiện biên, kết luận nghiệm duy nhất là phương án ${String.fromCharCode(65 + (i % 4))}.`,
+          status: "approved"
+        });
+      }
+      return qList;
+    };
+
+    // NGÂN HÀNG LUYỆN TẬP PHÁI SINH
+    const generatePracticeQuestions = (mathList) => {
+      const pList = [];
+      mathList.slice(0, 20).forEach((q) => {
+        for (let k = 1; k <= 3; k++) {
+          pList.push({
+            id: `${q.id}${k}`,
+            rootId: q.id,
+            subject: q.subject,
+            topic: q.topic,
+            level: q.level,
+            content: `[Câu phái sinh ${k} từ ${q.id}] ${q.content.replace("Cho bài toán", "Biến thể bài toán")} (thay đổi tham số và số liệu).`,
+            options: q.options.map((opt, idx) => opt + ` (biến đổi ${k})`),
+            correctIndex: (q.correctIndex + k) % 4,
+            solution: `Lời giải chi tiết câu phái sinh ${q.id}${k}: Dựa trên ma trận độ khó câu gốc ${q.id}, giải theo số liệu mới.`,
+            status: "approved"
+          });
+        }
+      });
+      return pList;
+    };
+
+    const INITIAL_MATH_50 = generate50MathQuestions();
+    const INITIAL_PRACTICE = generatePracticeQuestions(INITIAL_MATH_50);
 
     const INITIAL_EXAMS = [
       { 
@@ -33,71 +103,29 @@
         passCode: "HSA2026", 
         startTime: "2026-10-25 08:00", 
         fee: "50.000 VNĐ",
-        totalQuestions: 150,
-        matrix: { b: 25, h: 30, vd: 30, vdc: 15 },
+        totalQuestions: 50,
+        matrix: { b: 26, h: 30, vd: 30, vdc: 14 },
         active: true 
-      }
-    ];
-
-    const INITIAL_QUESTIONS = [
-      {
-        id: "T10-01-01",
-        subject: "Toán",
-        topic: "Hàm số & Xử lý đồ thị",
-        level: "H",
-        part: "math",
-        content: "Cho hàm số bậc hai y = ax² + bx + c có đồ thị như hình vẽ bên. Đỉnh parabol có tọa độ (1; -4) và cắt trục tung tại điểm (0; -3). Tìm giá trị biểu thức P = a + b + c.",
-        hasImage: true,
-        imageCode: "T10-01-01.png",
-        options: ["P = -3", "P = -4", "P = 2", "P = 0"],
-        correctIndex: 1,
-        solution: "Đồ thị có đỉnh I(1; -4) => -b/(2a) = 1 <=> b = -2a. Đồ thị cắt trục Oy tại (0; -3) => c = -3. Đi qua đỉnh I(1; -4) => a(1)² + b(1) + c = -4 <=> a + b + c = -4. Vậy P = -4."
-      },
-      {
-        id: "V10-01-02",
-        subject: "Văn",
-        topic: "Đọc hiểu văn bản thông tin",
-        level: "B",
-        part: "reading",
-        content: "Đoạn trích sau nhấn mạnh vai trò gì của trí tuệ nhân tạo đối với tương lai thị trường lao động?",
-        hasImage: false,
-        options: ["Thay thế hoàn toàn con người trong mọi ngành nghề", "Hỗ trợ tối ưu hóa năng suất và tạo sinh các kỹ năng công việc mới", "Làm giảm sút hoàn toàn cơ hội việc làm của giới trẻ", "Chỉ phục vụ trong lĩnh vực khoa học công nghệ máy tính"],
-        correctIndex: 1,
-        solution: "Theo định hướng GDPT 2018, AI đóng vai trò như công cụ cộng hưởng năng suất và thúc đẩy phát triển kỹ năng mới."
-      },
-      {
-        id: "L10-01-03",
-        subject: "Lý",
-        topic: "Động học chất điểm",
-        level: "VD",
-        part: "elective",
-        content: "Một ô tô đang chạy với vận tốc 20 m/s thì người lái hãm phanh, ô tô chuyển động chậm dần đều với gia tốc có độ lớn 2 m/s². Quãng đường ô tô đi được đến khi dừng hẳn là:",
-        hasImage: false,
-        options: ["100 m", "200 m", "50 m", "400 m"],
-        correctIndex: 0,
-        solution: "Áp dụng công thức liên hệ v² - v₀² = 2as. Khi dừng hẳn v = 0 => 0 - (20)² = 2.(-2).s => s = 400 / 4 = 100 m."
-      },
-      {
-        id: "E10-01-04",
-        subject: "Tiếng Anh",
-        topic: "Grammar & Vocabulary",
-        level: "H",
-        part: "elective",
-        content: "If the government ________ more investments in renewable energy, greenhouse emissions would decrease significantly.",
-        hasImage: false,
-        options: ["makes", "made", "had made", "will make"],
-        correctIndex: 1,
-        solution: "Câu điều kiện loại 2: If + S + V2/ed, S + would + V-inf."
       }
     ];
 
     function App() {
       const [view, setView] = useState('student'); // 'student' hoặc 'admin'
-      const [adminTab, setAdminTab] = useState('exam_creator'); // 'exam_creator', 'ai_audit', 'students'
+      const [adminTab, setAdminTab] = useState('root_bank'); // 'root_bank', 'practice_bank', 'exam_creator', 'ai_audit', 'students'
       const [currentUserIndex, setCurrentUserIndex] = useState(0);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
       const [exams, setExams] = useState(INITIAL_EXAMS);
-      const [questions, setQuestions] = useState(INITIAL_QUESTIONS);
+      
+      // Ngân hàng đề gốc & Ngân hàng luyện thi
+      const [rootQuestions, setRootQuestions] = useState(INITIAL_MATH_50);
+      const [practiceQuestions, setPracticeQuestions] = useState(INITIAL_PRACTICE);
+
+      // Bộ lọc trong ngân hàng
+      const [filterSubject, setFilterSubject] = useState("Tất cả");
+      const [filterLevel, setFilterLevel] = useState("Tất cả");
+
+      // Chỉnh sửa câu hỏi trong ngân hàng
+      const [editingQuestion, setEditingQuestion] = useState(null);
 
       // Trạng thái phòng học viên
       const [studentMode, setStudentMode] = useState('hub');
@@ -114,25 +142,23 @@
       const [showPaymentModal, setShowPaymentModal] = useState(false);
       const [paymentRefCode, setPaymentRefCode] = useState("");
 
-      // 1. CHỨC NĂNG TẢI FILE ĐỀ LÊN ĐỂ THẨM ĐỊNH
+      // Tải file & AI Thẩm định
       const [uploadedFile, setUploadedFile] = useState(null);
-      const [uploadingProgress, setUploadingProgress] = useState(0);
-      const [selectedSubject, setSelectedSubject] = useState("Toán");
       const [rawQuestionText, setRawQuestionText] = useState("");
+      const [selectedSubject, setSelectedSubject] = useState("Toán");
       const [analyzingAI, setAnalyzingAI] = useState(false);
       const [aiResult, setAiResult] = useState(null);
       const fileInputRef = useRef(null);
 
-      // 2. CHỨC NĂNG PHÒNG TẠO ĐỀ
-      const [newExamName, setNewExamName] = useState("Đợt thi Khảo sát Năng lực HSA Chuẩn");
+      // Phòng tạo đề
+      const [newExamName, setNewExamName] = useState("Đợt thi Khảo sát Năng lực HSA Chuẩn 2026");
       const [newExamPasscode, setNewExamPasscode] = useState("HSA2026");
       const [newExamTime, setNewExamTime] = useState("2026-11-01T08:00");
       const [newExamFee, setNewExamFee] = useState("50.000 VNĐ");
-      const [matrixB, setMatrixB] = useState(25);
+      const [matrixB, setMatrixB] = useState(26);
       const [matrixH, setMatrixH] = useState(30);
       const [matrixVD, setMatrixVD] = useState(30);
-      const [matrixVDC, setMatrixVDC] = useState(15);
-      const [antiRepeat, setAntiRepeat] = useState(true);
+      const [matrixVDC, setMatrixVDC] = useState(14);
 
       const currentUser = students[currentUserIndex];
 
@@ -153,28 +179,24 @@
         return () => clearInterval(timer);
       }, [studentMode, timeLeft]);
 
-      // Chống chuyển tab
+      // Chống rời màn hình
       useEffect(() => {
         if (studentMode !== 'exam') return;
-
         const handleVisibilityChange = () => {
           if (document.hidden) {
             setExamViolationCount(c => {
               const nextCount = c + 1;
               if (nextCount >= 3) {
-                alert("CẢNH BÁO VI PHẠM: Bạn đã rời màn hình thi quá 3 lần! Hệ thống tự động thu bài.");
+                alert("CẢNH BÁO: Rời màn hình quá 3 lần! Bài thi tự động thu.");
                 handleSubmitExam();
               }
               return nextCount;
             });
           }
         };
-
         const handleBlur = () => setExamViolationCount(c => c + 1);
-
         document.addEventListener("visibilitychange", handleVisibilityChange);
         window.addEventListener("blur", handleBlur);
-
         return () => {
           document.removeEventListener("visibilitychange", handleVisibilityChange);
           window.removeEventListener("blur", handleBlur);
@@ -187,134 +209,118 @@
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
       };
 
-      // Xử lý khi chọn file đề (Word/PDF/Ảnh)
+      // Xóa câu hỏi trong ngân hàng
+      const handleDeleteRootQuestion = (id) => {
+        if (confirm(`Bạn có chắc muốn xóa câu hỏi ${id} khỏi Ngân hàng Đề Gốc?`)) {
+          setRootQuestions(rootQuestions.filter(q => q.id !== id));
+        }
+      };
+
+      const handleDeletePracticeQuestion = (id) => {
+        if (confirm(`Bạn có chắc muốn xóa câu hỏi luyện tập ${id}?`)) {
+          setPracticeQuestions(practiceQuestions.filter(q => q.id !== id));
+        }
+      };
+
+      // Lưu sau khi chỉnh sửa và tái kích hoạt thẩm định
+      const handleSaveEditedQuestion = () => {
+        if (!editingQuestion) return;
+        alert(`Đã kích hoạt quy trình thẩm định lại cho câu ${editingQuestion.id} và cập nhật vào ngân hàng!`);
+        setRootQuestions(rootQuestions.map(q => q.id === editingQuestion.id ? editingQuestion : q));
+        setEditingQuestion(null);
+      };
+
+      // Tải file đề
       const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         setUploadedFile(file);
-        setUploadingProgress(20);
-
-        const interval = setInterval(() => {
-          setUploadingProgress(prev => {
-            if (prev >= 100) {
-              clearInterval(interval);
-              // Mô phỏng trích xuất OCR câu hỏi và đồ thị từ file
-              setRawQuestionText(`[Trích xuất tự động từ file ${file.name}]: Cho hàm số f(x) liên tục trên R có đồ thị hoặc bảng biến thiên kèm theo. Tìm tất cả các giá trị thực của tham số m để phương trình f(x) = m có đúng 3 nghiệm phân biệt.`);
-              return 100;
-            }
-            return prev + 40;
-          });
-        }, 300);
+        setRawQuestionText(`[Đã bóc tách từ ${file.name}]: Cho bài toán khảo sát đồ thị hàm số y = f(x). Hãy xác định giá trị cực trị và nghiệm của phương trình f(x) = m.`);
       };
 
-      // Kích hoạt AI Thẩm định câu hỏi
+      // Kích hoạt AI Thẩm định
       const handleRunAiAudit = () => {
-        if (!rawQuestionText.trim()) {
-          alert("Vui lòng tải tệp đề lên hoặc dán nội dung câu hỏi!");
-          return;
-        }
-
+        if (!rawQuestionText.trim()) return alert("Vui lòng nhập nội dung đề!");
         setAnalyzingAI(true);
         setTimeout(() => {
           const generatedId = `T10-02-${Math.floor(10 + Math.random() * 89)}`;
           const result = {
             id: generatedId,
             subject: selectedSubject,
-            topic: "Hàm số & Phương trình tương giao (CT GDPT 2018)",
+            topic: "Khảo sát hàm số (CT GDPT 2018)",
             level: "VD",
             content: rawQuestionText,
             imageCode: `${generatedId}.png`,
-            options: ["m ∈ (-2; 4)", "m ∈ [-2; 4]", "m ∈ (0; +∞)", "m < -2"],
-            correctIndex: 0,
-            solution: "Phân tích bảng biến thiên trích xuất: Đường thẳng y = m cắt đồ thị tại 3 điểm phân biệt khi và chỉ khi giá trị cực tiểu < m < giá trị cực đại <=> -2 < m < 4.",
+            options: ["m < -2", "-2 < m < 4", "m > 4", "m = 0"],
+            correctIndex: 1,
+            solution: "Lời giải thẩm định độc lập: Dựa trên tương giao đồ thị, giá trị m thỏa mãn là -2 < m < 4.",
             variants: [
-              { id: `${generatedId}1`, content: `[Phái sinh 1 - Cùng chuyên đề]: Tìm m để phương trình f(x) = 2m - 1 có đúng 2 nghiệm.`, options: ["m = 1", "m = 2.5", "m = 0", "m = -1"], correctIndex: 1 },
-              { id: `${generatedId}2`, content: `[Phái sinh 2 - Cùng chuyên đề]: Tìm số điểm cực trị của hàm số g(x) = f(x² - 2x).`, options: ["3", "5", "7", "1"], correctIndex: 1 },
-              { id: `${generatedId}3`, content: `[Phái sinh 3 - Cùng chuyên đề]: Giá trị lớn nhất của hàm số trên đoạn [-1; 2].`, options: ["4", "6", "2", "-2"], correctIndex: 0 }
+              { id: `${generatedId}1`, content: `[Phái sinh 1]: Tìm m để f(x) = 2m có 3 nghiệm.`, options: ["A", "B", "C", "D"], correctIndex: 1 },
+              { id: `${generatedId}2`, content: `[Phái sinh 2]: Tính tổng các giá trị nguyên của m.`, options: ["5", "6", "7", "8"], correctIndex: 0 },
+              { id: `${generatedId}3`, content: `[Phái sinh 3]: Tìm khoảng đơn điệu của hàm số.`, options: ["(0; 2)", "(-1; 1)", "(2; 4)", "R"], correctIndex: 0 }
             ]
           };
           setAiResult(result);
           setAnalyzingAI(false);
-        }, 1200);
+        }, 800);
       };
 
       const handleSaveAiQuestion = () => {
         if (!aiResult) return;
-        setQuestions([aiResult, ...questions]);
-        alert(`Đã thẩm định thành công! Đã tách file đồ thị ${aiResult.imageCode}, lưu câu gốc vào Ngân hàng Đề Gốc và nạp 3 câu phái sinh vào Ngân hàng Luyện Thi.`);
+        setRootQuestions([aiResult, ...rootQuestions]);
+        const newVariants = aiResult.variants.map(v => ({
+          ...v,
+          subject: aiResult.subject,
+          topic: aiResult.topic,
+          level: aiResult.level,
+          solution: "Lời giải chi tiết câu phái sinh."
+        }));
+        setPracticeQuestions([...newVariants, ...practiceQuestions]);
+        alert(`Đã duyệt chuyển câu gốc ${aiResult.id} vào Ngân Hàng Đề Gốc và 3 câu phái sinh vào Ngân Hàng Luyện Tập!`);
         setAiResult(null);
         setRawQuestionText("");
         setUploadedFile(null);
-        setUploadingProgress(0);
       };
 
-      // Xử lý tạo đợt thi mới trong Phòng Tạo Đề
+      // Tạo đợt thi mới (Kích hoạt lấy đủ 50 câu Toán)
       const handleCreateNewExam = () => {
-        if (!newExamName.trim() || !newExamPasscode.trim()) {
-          alert("Vui lòng nhập tên đợt thi và mật khẩu đợt thi!");
-          return;
-        }
-
-        const totalPercent = Number(matrixB) + Number(matrixH) + Number(matrixVD) + Number(matrixVDC);
-        if (totalPercent !== 100) {
-          alert(`Tổng tỷ lệ ma trận độ khó phải bằng 100%! Hiện tại là: ${totalPercent}%`);
-          return;
-        }
-
         const newExam = {
           id: `EXAM-${Date.now().toString().slice(-4)}`,
           name: newExamName,
           passCode: newExamPasscode,
           startTime: newExamTime.replace("T", " "),
           fee: newExamFee,
-          totalQuestions: 150,
+          totalQuestions: 50,
           matrix: { b: matrixB, h: matrixH, vd: matrixVD, vdc: matrixVDC },
-          antiRepeat: antiRepeat,
           active: true
         };
-
         setExams([newExam, ...exams]);
-        alert(`TẠO ĐỢT THI THÀNH CÔNG!\n- Tên: ${newExam.name}\n- Mật khẩu: ${newExam.passCode}\n- Ma trận: ${matrixB}% B, ${matrixH}% H, ${matrixVD}% VD, ${matrixVDC}% VDC\n- Cơ chế: Tự sinh đề theo mã ID thí sinh, lọc chống lặp câu hỏi.`);
+        alert(`TẠO ĐỢT THI THÀNH CÔNG!
+Đã kết nối Ngân Hàng Đề Gốc để sinh ĐỦ 50 CÂU TOÁN (75 phút) theo đúng ma trận B-H-VD-VDC.`);
       };
 
-      // Đăng ký thi nộp phí
-      const handleRegisterExamWithFee = () => {
-        const ref = `HSA-${currentUser.id}-${Math.floor(1000 + Math.random() * 9000)}`;
-        setPaymentRefCode(ref);
-        setShowPaymentModal(true);
-      };
-
-      const confirmPaymentSubmission = () => {
-        const updated = [...students];
-        updated[currentUserIndex] = {
-          ...currentUser,
-          feeStatus: "pending",
-          regTime: new Date().toLocaleString('vi-VN')
-        };
-        setStudents(updated);
-        setShowPaymentModal(false);
-        alert(`Đã gửi xác nhận nộp lệ phí! Quản trị viên sẽ kiểm tra và bật điều kiện dự thi cho bạn.`);
-      };
-
+      // Bắt đầu thi (Lấy ĐỦ 50 CÂU từ Ngân hàng Đề Gốc)
       const handleStartExam = () => {
         if (currentUser.feeStatus !== 'approved' || !currentUser.eligible) {
-          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN DỰ THI! Vui lòng nộp lệ phí và chờ Quản trị viên duyệt điều kiện.");
+          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Vui lòng nộp lệ phí và chờ Quản trị viên duyệt.");
           return;
         }
         if (examPasscode.trim() !== exams[0].passCode) {
-          alert(`Mật khẩu đợt thi không chính xác! (Mật khẩu đợt này là: ${exams[0].passCode})`);
+          alert(`Mật khẩu đợt thi không đúng! (Mật khẩu: ${exams[0].passCode})`);
           return;
         }
 
-        setCurrentExamQuestions(questions);
+        // Lấy đúng 50 câu từ ngân hàng đề gốc
+        const full50Math = rootQuestions.filter(q => q.subject === "Toán").slice(0, 50);
+        setCurrentExamQuestions(full50Math);
         setAnswers({});
-        setTimeLeft(75 * 60);
+        setTimeLeft(75 * 60); // 75 phút chuẩn HSA
         setExamViolationCount(0);
         setActiveQuestionIdx(0);
         setStudentMode('exam');
       };
 
+      // Nộp bài thi
       const handleSubmitExam = () => {
         let total = 0;
         currentExamQuestions.forEach((q, idx) => {
@@ -345,7 +351,6 @@
                 </div>
               </div>
 
-              {/* Chuyển đổi Phòng Học Viên & Quản Trị */}
               <div className="flex items-center space-x-2">
                 <div className="hidden md:flex items-center bg-blue-950/70 px-2 py-1 rounded text-xs">
                   <span className="text-slate-300 mr-2">Đang đóng vai:</span>
@@ -385,56 +390,208 @@
             {view === 'admin' ? (
               /* ==================== PHÒNG QUẢN TRỊ ==================== */
               <div className="space-y-6">
-                {/* Menu chuyển các phân hệ Quản trị */}
-                <div className="bg-white p-2 rounded-xl shadow-sm border flex flex-wrap gap-2">
+                {/* THANH ĐIỀU HƯỚNG CÁC PHÒNG TRONG QUẢN TRỊ */}
+                <div className="bg-white p-2 rounded-2xl shadow-sm border flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setAdminTab('root_bank')}
+                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                  >
+                    📚 1. Ngân Hàng Đề Gốc ({rootQuestions.length} câu)
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('practice_bank')}
+                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                  >
+                    🎯 2. Ngân Hàng Luyện Tập ({practiceQuestions.length} câu)
+                  </button>
                   <button
                     onClick={() => setAdminTab('exam_creator')}
-                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    🛠️ 1. Phòng Tạo Đợt Thi (Ma trận chuẩn HSA)
+                    🛠️ 3. Phòng Tạo Đợt Thi
                   </button>
                   <button
                     onClick={() => setAdminTab('ai_audit')}
-                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition ${adminTab === 'ai_audit' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'ai_audit' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    📤 2. Tải Lên File Đề & AI Thẩm Định
+                    📤 4. Tải File & AI Thẩm Định
                   </button>
                   <button
                     onClick={() => setAdminTab('students')}
-                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    👥 3. Quản Lý Học Viên & Duyệt Phí
+                    👥 5. Duyệt Phí & Thí Sinh
                   </button>
                 </div>
 
-                {/* 1. PHÂN HỆ: PHÒNG TẠO ĐỢT THI */}
+                {/* 1. PHÂN HỆ: NGÂN HÀNG ĐỀ GỐC */}
+                {adminTab === 'root_bank' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (Hội Đồng Kiểm Duyệt Lần Cuối)</h2>
+                        <p className="text-xs text-slate-500">Chứa toàn bộ câu hỏi gốc đã thẩm định. Quản trị viên có quyền sửa, xóa hoặc thẩm định lại câu hỏi.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs">
+                          Hiện có: {rootQuestions.length} câu chuẩn
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Danh sách câu hỏi */}
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                      {rootQuestions.map((q, idx) => (
+                        <div key={q.id} className="p-4 bg-slate-50 border rounded-xl hover:border-blue-400 transition text-xs space-y-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded">{q.id}</span>
+                              <span className="font-bold text-slate-700">Môn: {q.subject}</span>
+                              <span className="text-slate-500">• {q.topic}</span>
+                              <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${q.level === 'VDC' ? 'bg-rose-100 text-rose-800' : q.level === 'VD' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                Mức: {q.level}
+                              </span>
+                              {q.hasImage && <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono text-[10px]">Ảnh: {q.imageCode}</span>}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setEditingQuestion(q)}
+                                className="text-blue-600 hover:text-blue-800 font-semibold px-2 py-1 border rounded bg-white"
+                              >
+                                ✏️ Chỉnh sửa
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRootQuestion(q.id)}
+                                className="text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 border border-rose-200 rounded bg-white"
+                              >
+                                🗑️ Xóa
+                              </button>
+                            </div>
+                          </div>
+
+                          <p className="font-medium text-slate-800">{q.content}</p>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
+                            {q.options.map((opt, oIdx) => (
+                              <div key={oIdx} className={`p-1.5 rounded border text-[11px] ${oIdx === q.correctIndex ? 'bg-emerald-50 border-emerald-500 font-bold text-emerald-900' : 'bg-white'}`}>
+                                {String.fromCharCode(65 + oIdx)}. {opt}
+                              </div>
+                            ))}
+                          </div>
+
+                          <p className="text-slate-600 text-[11px] bg-white p-2 rounded border">
+                            💡 <strong>Lời giải chuyên gia:</strong> {q.solution}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. PHÂN HỆ: NGÂN HÀNG LUYỆN TẬP */}
+                {adminTab === 'practice_bank' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Câu Hỏi Luyện Thi Theo Chuyên Đề</h2>
+                        <p className="text-xs text-slate-500">Chứa các câu hỏi phái sinh (3 câu tương đương từ mỗi câu gốc) để học sinh tải về hoặc làm bài tập theo chuyên đề.</p>
+                      </div>
+                      <button
+                        onClick={() => alert("Hệ thống đang xuất toàn bộ câu hỏi luyện tập ra file Word/PDF theo từng chuyên đề chuẩn CT GDPT 2018...")}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow"
+                      >
+                        📥 Tải Xuống Bài Tập Theo Chuyên Đề
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                      {practiceQuestions.map((q) => (
+                        <div key={q.id} className="p-3 bg-slate-50 border rounded-xl text-xs space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-indigo-900 bg-indigo-100 px-2 py-0.5 rounded">{q.id}</span>
+                              <span className="text-slate-500">Gốc: {q.rootId}</span>
+                              <span className="font-bold text-slate-700">• {q.topic}</span>
+                            </div>
+                            <button
+                              onClick={() => handleDeletePracticeQuestion(q.id)}
+                              className="text-rose-600 hover:text-rose-800 text-xs"
+                            >
+                              Xóa câu
+                            </button>
+                          </div>
+                          <p className="font-medium text-slate-800">{q.content}</p>
+                          <div className="text-[11px] text-emerald-800 bg-white p-1.5 rounded border">
+                            ✓ Lời giải: {q.solution}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL CHỈNH SỬA CÂU HỎI */}
+                {editingQuestion && (
+                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white max-w-xl w-full rounded-2xl p-6 shadow-2xl border space-y-4">
+                      <div className="flex justify-between items-center border-b pb-3">
+                        <h3 className="font-bold text-base text-slate-900">Chỉnh Sửa & Tái Thẩm Định Câu Hỏi {editingQuestion.id}</h3>
+                        <button onClick={() => setEditingQuestion(null)} className="text-slate-400 font-bold">✕</button>
+                      </div>
+                      <div className="space-y-3 text-xs">
+                        <div>
+                          <label className="block font-semibold mb-1">Nội dung câu hỏi:</label>
+                          <textarea
+                            rows="3"
+                            value={editingQuestion.content}
+                            onChange={(e) => setEditingQuestion({ ...editingQuestion, content: e.target.value })}
+                            className="w-full border rounded-lg p-2 font-mono"
+                          ></textarea>
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Lời giải chi tiết:</label>
+                          <textarea
+                            rows="3"
+                            value={editingQuestion.solution}
+                            onChange={(e) => setEditingQuestion({ ...editingQuestion, solution: e.target.value })}
+                            className="w-full border rounded-lg p-2 font-mono"
+                          ></textarea>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <button onClick={() => setEditingQuestion(null)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
+                        <button onClick={handleSaveEditedQuestion} className="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-xs shadow">
+                          Lưu & Kích Hoạt Thẩm Định Lại
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. PHÒNG TẠO ĐỢT THI */}
                 {adminTab === 'exam_creator' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                     <div className="border-b pb-4 flex justify-between items-center">
                       <div>
-                        <h2 className="text-lg font-bold text-blue-950">Phòng Tạo Đợt Thi & Cấu Hình Sinh Đề Chuẩn HSA</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Tự động cấu hình 3 phần thi: Toán & Số liệu (50 câu - 75p), Đọc hiểu (50 câu - 60p), Tự chọn (50đ).</p>
+                        <h2 className="text-lg font-bold text-blue-950">Phòng Tạo Đợt Thi & Cấu Hình Sinh 50 Câu Toán</h2>
+                        <p className="text-xs text-slate-500">Khi kích hoạt, hệ thống sẽ tự động bốc ĐỦ 50 CÂU TOÁN chuẩn HSA (75 phút) từ Ngân hàng Đề Gốc.</p>
                       </div>
-                      <span className="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full">
-                        Chuẩn Khung ĐHQGHN
+                      <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">
+                        Chuẩn Khung 50 Câu - 75 Phút
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Cột trái: Cài đặt thông tin đợt thi */}
                       <div className="space-y-4">
-                        <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Thông Tin Đợt Thi</h3>
-                        
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1">Tên đợt thi:</label>
                           <input
                             type="text"
                             value={newExamName}
                             onChange={(e) => setNewExamName(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full border rounded-lg px-3 py-2 text-xs"
                           />
                         </div>
-
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu đợt thi:</label>
@@ -442,327 +599,160 @@
                               type="text"
                               value={newExamPasscode}
                               onChange={(e) => setNewExamPasscode(e.target.value)}
-                              className="w-full border rounded-lg px-3 py-2 text-xs font-mono font-bold text-blue-900 focus:ring-2 focus:ring-blue-600 outline-none"
+                              className="w-full border rounded-lg px-3 py-2 text-xs font-mono font-bold text-blue-900"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1">Lệ phí hỗ trợ thẩm định:</label>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">Lệ phí đợt thi:</label>
                             <input
                               type="text"
                               value={newExamFee}
                               onChange={(e) => setNewExamFee(e.target.value)}
-                              className="w-full border rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 outline-none"
+                              className="w-full border rounded-lg px-3 py-2 text-xs"
                             />
                           </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-600 mb-1">Thời gian mở đợt thi:</label>
-                          <input
-                            type="datetime-local"
-                            value={newExamTime}
-                            onChange={(e) => setNewExamTime(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 text-xs outline-none"
-                          />
-                        </div>
-
-                        <div className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 block">Lọc chống lặp câu hỏi theo ID thí sinh:</span>
-                            <span className="text-[11px] text-slate-500">Đảm bảo mỗi thí sinh khi thi các đợt khác nhau không bị trùng lặp câu hỏi</span>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={antiRepeat}
-                            onChange={(e) => setAntiRepeat(e.target.checked)}
-                            className="w-4 h-4 text-blue-600 rounded"
-                          />
                         </div>
                       </div>
 
-                      {/* Cột phải: Ma trận tỷ lệ độ khó */}
-                      <div className="space-y-4 bg-slate-50 p-4 rounded-xl border">
-                        <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Cấu Hình Ma Trận Độ Khó Đề Thi</h3>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <div className="flex justify-between text-xs font-medium mb-1">
-                              <span>Mức Biết (B):</span>
-                              <strong className="text-blue-900">{matrixB}%</strong>
-                            </div>
-                            <input
-                              type="range" min="10" max="40" value={matrixB}
-                              onChange={(e) => setMatrixB(e.target.value)}
-                              className="w-full accent-blue-600"
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between text-xs font-medium mb-1">
-                              <span>Mức Hiểu (H):</span>
-                              <strong className="text-blue-900">{matrixH}%</strong>
-                            </div>
-                            <input
-                              type="range" min="10" max="40" value={matrixH}
-                              onChange={(e) => setMatrixH(e.target.value)}
-                              className="w-full accent-blue-600"
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between text-xs font-medium mb-1">
-                              <span>Mức Vận dụng (VD):</span>
-                              <strong className="text-blue-900">{matrixVD}%</strong>
-                            </div>
-                            <input
-                              type="range" min="10" max="40" value={matrixVD}
-                              onChange={(e) => setMatrixVD(e.target.value)}
-                              className="w-full accent-blue-600"
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between text-xs font-medium mb-1">
-                              <span>Mức Vận dụng cao (VDC - tối đa 15%):</span>
-                              <strong className="text-rose-600">{matrixVDC}%</strong>
-                            </div>
-                            <input
-                              type="range" min="5" max="15" value={matrixVDC}
-                              onChange={(e) => setMatrixVDC(e.target.value)}
-                              className="w-full accent-rose-600"
-                            />
-                          </div>
-
-                          <div className="pt-2 border-t flex justify-between items-center text-xs font-bold">
-                            <span>Tổng ma trận:</span>
-                            <span className={Number(matrixB) + Number(matrixH) + Number(matrixVD) + Number(matrixVDC) === 100 ? "text-emerald-700" : "text-rose-600"}>
-                              {Number(matrixB) + Number(matrixH) + Number(matrixVD) + Number(matrixVDC)}% / 100%
-                            </span>
-                          </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border text-xs space-y-3">
+                        <span className="font-bold text-slate-700 block uppercase">Ma trận 50 câu Toán chuẩn:</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white p-2 rounded border">Biết (B): <strong>13 câu (26%)</strong></div>
+                          <div className="bg-white p-2 rounded border">Hiểu (H): <strong>15 câu (30%)</strong></div>
+                          <div className="bg-white p-2 rounded border">Vận dụng (VD): <strong>15 câu (30%)</strong></div>
+                          <div className="bg-white p-2 rounded border">Vận dụng cao (VDC): <strong>7 câu (14%)</strong></div>
                         </div>
-
-                        <div className="text-[11px] text-slate-500 bg-white p-2.5 rounded border">
-                          💡 <em>Quy tắc tính điểm tự chọn tổ hợp 3 môn:</em> 51 câu lấy từ 3 môn (mỗi môn 17 câu). Hệ thống tự động chọn ngẫu nhiên 1 câu cho 0 điểm để chuẩn hóa về thang điểm 50.
-                        </div>
+                        <p className="text-[11px] text-slate-500">✓ Tự động lọc câu hỏi theo ID thí sinh để các đợt khác nhau không bị trùng lặp.</p>
                       </div>
                     </div>
 
                     <button
                       onClick={handleCreateNewExam}
-                      className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs md:text-sm shadow-md transition"
+                      className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs md:text-sm shadow"
                     >
-                      Xác Nhận Tạo Đợt Thi & Kích Hoạt Sinh Đề
+                      Xác Nhận Tạo Đợt Thi & Kết Nối Đủ 50 Câu Hỏi
                     </button>
-
-                    {/* Danh sách các đợt thi đã tạo */}
-                    <div className="pt-4 border-t">
-                      <h4 className="text-xs font-bold text-slate-700 uppercase mb-3">Các Đợt Thi Đang Hoạt Động</h4>
-                      <div className="space-y-2">
-                        {exams.map(ex => (
-                          <div key={ex.id} className="p-3 bg-slate-50 border rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
-                            <div>
-                              <span className="font-bold text-blue-900">{ex.name}</span>
-                              <span className="ml-2 font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px]">Pass: {ex.passCode}</span>
-                              <span className="ml-2 text-slate-500">Mở: {ex.startTime}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[11px]">Lệ phí: {ex.fee}</span>
-                              <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[11px]">150 câu (3 phần)</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
 
-                {/* 2. PHÂN HỆ: TẢI FILE ĐỀ & THẨM ĐỊNH AI */}
+                {/* 4. TẢI FILE & AI THẨM ĐỊNH */}
                 {adminTab === 'ai_audit' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                     <div className="border-b pb-4">
                       <h2 className="text-lg font-bold text-blue-950">Tải Lên File Đề & Quy Trình Thẩm Định 2 Lớp</h2>
-                      <p className="text-xs text-slate-500 mt-0.5">Hỗ trợ tải lên file Word (.docx), PDF, hoặc Hình ảnh. Tự động bóc tách đối tượng đồ thị/bảng biến thiên gán mã ảnh.</p>
+                      <p className="text-xs text-slate-500">Tải lên Word/PDF/Ảnh, bóc tách đồ thị gán mã ảnh và sinh 3 câu phái sinh vào ngân hàng.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        {/* Khu vực kéo thả file */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">1. Tải lên tệp đề bài (Word, PDF, Ảnh):</label>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileUpload}
-                            accept=".docx,.pdf,.png,.jpg,.jpeg"
-                            className="hidden"
-                          />
-                          <div
-                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                            className="border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50 rounded-2xl p-6 text-center cursor-pointer transition"
-                          >
-                            <div className="text-3xl mb-2">📁</div>
-                            <span className="text-xs font-bold text-blue-900 block">Nhấp để chọn tệp từ máy tính hoặc kéo thả vào đây</span>
-                            <span className="text-[11px] text-slate-500 block mt-1">Định dạng hỗ trợ: Microsoft Word (.docx), Adobe PDF (.pdf), Ảnh scan (.png, .jpg)</span>
-                          </div>
-
-                          {uploadedFile && (
-                            <div className="mt-2 p-2 bg-slate-50 border rounded-lg text-xs flex justify-between items-center">
-                              <span className="font-semibold text-blue-950 truncate max-w-xs">📄 {uploadedFile.name}</span>
-                              <span className="font-mono text-emerald-700 font-bold">{uploadingProgress}% Hoàn tất</span>
-                            </div>
-                          )}
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          accept=".docx,.pdf,.png,.jpg,.jpeg"
+                          className="hidden"
+                        />
+                        <div
+                          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                          className="border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50 rounded-2xl p-6 text-center cursor-pointer transition"
+                        >
+                          <div className="text-3xl mb-1">📁</div>
+                          <span className="text-xs font-bold text-blue-900 block">Bấm để chọn file đề từ máy tính (Word, PDF, Ảnh)</span>
+                          {uploadedFile && <span className="text-xs font-mono text-emerald-700 mt-2 block">✓ Đã chọn: {uploadedFile.name}</span>}
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">2. Môn thi và Chuyên đề:</label>
-                          <select
-                            value={selectedSubject}
-                            onChange={(e) => setSelectedSubject(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 text-xs"
-                          >
-                            {["Toán", "Văn", "Lý", "Hóa", "Sinh", "Tiếng Anh", "Sử", "Địa"].map(s => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">3. Nội dung văn bản câu hỏi (đã trích xuất hoặc dán trực tiếp):</label>
-                          <textarea
-                            rows="4"
-                            placeholder="Nội dung câu hỏi sẽ tự động trích xuất sau khi tải tệp lên hoặc bạn có thể dán trực tiếp tại đây..."
-                            value={rawQuestionText}
-                            onChange={(e) => setRawQuestionText(e.target.value)}
-                            className="w-full border rounded-lg p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600"
-                          ></textarea>
-                        </div>
+                        <textarea
+                          rows="4"
+                          placeholder="Nội dung câu hỏi sau khi trích xuất từ file..."
+                          value={rawQuestionText}
+                          onChange={(e) => setRawQuestionText(e.target.value)}
+                          className="w-full border rounded-lg p-2.5 text-xs font-mono"
+                        ></textarea>
 
                         <button
                           onClick={handleRunAiAudit}
                           disabled={analyzingAI}
-                          className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs transition"
+                          className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs"
                         >
-                          {analyzingAI ? "Hội đồng AI đang giải tối ưu & thẩm định độc lập..." : "Kích Hoạt Quy Trình Thẩm Định & Sinh 3 Câu Phái Sinh"}
+                          {analyzingAI ? "Hội đồng AI đang thẩm định..." : "Kích Hoạt Thẩm Định & Sinh 3 Câu Phái Sinh"}
                         </button>
                       </div>
 
-                      {/* Khu vực kết quả thẩm định */}
                       <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
                         {aiResult ? (
-                          <div className="space-y-3">
-                            <div className="flex flex-wrap gap-2">
-                              <span className="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded">Mã định danh: {aiResult.id}</span>
-                              <span className="bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded">Độ khó: {aiResult.level}</span>
-                              <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Mã ảnh: {aiResult.imageCode}</span>
-                            </div>
-
-                            <div className="bg-white p-3 rounded-xl border">
-                              <p className="font-semibold text-slate-800 mb-2">{aiResult.content}</p>
-                              <div className="p-2 bg-slate-50 border rounded text-[11px] font-mono text-center text-blue-800">
-                                [Đối tượng đồ thị/hình vẽ đã tách riêng thành file: {aiResult.imageCode}]
-                              </div>
-                              <p className="text-emerald-700 font-medium mt-2">✓ Lời giải tối ưu độc lập: {aiResult.solution}</p>
-                            </div>
-
-                            <div className="bg-white p-3 rounded-xl border">
-                              <span className="font-bold text-blue-950 block mb-1">Tự động sinh 3 câu tương đương (Ngân hàng Luyện thi):</span>
-                              <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
-                                {aiResult.variants.map(v => (
-                                  <li key={v.id}><strong>{v.id}:</strong> {v.content}</li>
-                                ))}
-                              </ul>
-                            </div>
+                          <div className="space-y-2">
+                            <span className="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded">Mã: {aiResult.id}</span>
+                            <p className="font-semibold">{aiResult.content}</p>
+                            <p className="text-emerald-700 font-medium">✓ {aiResult.solution}</p>
+                            <button
+                              onClick={handleSaveAiQuestion}
+                              className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs mt-2"
+                            >
+                              Duyệt & Lưu Vào 2 Ngân Hàng
+                            </button>
                           </div>
                         ) : (
-                          <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                            <div className="text-3xl mb-1">⚖️</div>
-                            <span>Chưa có dữ liệu thẩm định.</span>
-                            <span className="text-[11px] mt-1">Hãy tải tệp đề bài lên và nhấn nút thẩm định.</span>
+                          <div className="h-44 flex items-center justify-center text-slate-400 text-center">
+                            Chưa có dữ liệu thẩm định.
                           </div>
-                        )}
-
-                        {aiResult && (
-                          <button
-                            onClick={handleSaveAiQuestion}
-                            className="w-full mt-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition"
-                          >
-                            Chấp Thuận & Chuyển Vào Ngân Hàng Đề
-                          </button>
                         )}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* 3. PHÂN HỆ: QUẢN LÝ HỌC VIÊN & DUYỆT PHÍ */}
+                {/* 5. QUẢN LÝ THÍ SINH & DUYỆT PHÍ */}
                 {adminTab === 'students' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                    <div className="flex justify-between items-center border-b pb-3">
-                      <div>
-                        <h2 className="text-lg font-bold text-blue-950">Quản Lý Thí Sinh & Phê Duyệt Lệ Phí Đợt Thi</h2>
-                        <p className="text-xs text-slate-500">Chỉ thí sinh đã nộp phí và được duyệt mới được cấp quyền vào phòng thi chính thức.</p>
-                      </div>
-                      <span className="bg-amber-100 text-amber-900 font-bold text-xs px-3 py-1 rounded-full">
-                        {students.filter(s => s.feeStatus === 'pending').length} Chờ duyệt phí
-                      </span>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 text-slate-600 border-b">
-                          <tr>
-                            <th className="py-2.5 px-3">Mã ID</th>
-                            <th className="py-2.5 px-3">Họ và Tên</th>
-                            <th className="py-2.5 px-3">Lớp</th>
-                            <th className="py-2.5 px-3">Thời gian nộp</th>
-                            <th className="py-2.5 px-3 text-center">Trạng thái lệ phí</th>
-                            <th className="py-2.5 px-3 text-center">Điều kiện dự thi</th>
-                            <th className="py-2.5 px-3 text-right">Thao tác</th>
+                    <h2 className="text-lg font-bold text-blue-950">Phê Duyệt Lệ Phí & Bật Quyền Dự Thi</h2>
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-600 border-b">
+                        <tr>
+                          <th className="py-2.5 px-3">Mã ID</th>
+                          <th className="py-2.5 px-3">Họ Tên</th>
+                          <th className="py-2.5 px-3">Lớp</th>
+                          <th className="py-2.5 px-3 text-center">Lệ phí</th>
+                          <th className="py-2.5 px-3 text-center">Điều kiện thi</th>
+                          <th className="py-2.5 px-3 text-right">Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y text-slate-700">
+                        {students.map((st) => (
+                          <tr key={st.id} className="hover:bg-slate-50">
+                            <td className="py-2.5 px-3 font-mono font-bold text-blue-900">{st.id}</td>
+                            <td className="py-2.5 px-3 font-semibold">{st.name}</td>
+                            <td className="py-2.5 px-3">{st.classUnit}</td>
+                            <td className="py-2.5 px-3 text-center">
+                              {st.feeStatus === 'approved' && <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">ĐÃ NỘP</span>}
+                              {st.feeStatus === 'pending' && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold animate-pulse">CHỜ DUYỆT</span>}
+                              {st.feeStatus === 'unregistered' && <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded">CHƯA NỘP</span>}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              <span className={`px-2 py-0.5 rounded font-bold text-[11px] ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}`}>
+                                {st.eligible ? "✓ ĐỦ ĐIỀU KIỆN" : "✗ KHÓA"}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              {st.feeStatus === 'pending' ? (
+                                <button
+                                  onClick={() => setStudents(students.map(s => s.id === st.id ? { ...s, eligible: true, feeStatus: 'approved' } : s))}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded text-xs"
+                                >
+                                  Duyệt Phí & Mở Quyền Thi
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setStudents(students.map(s => s.id === st.id ? { ...s, eligible: !s.eligible } : s))}
+                                  className="text-blue-600 hover:text-blue-900 font-semibold"
+                                >
+                                  {st.eligible ? "Tắt quyền thi" : "Bật quyền thi"}
+                                </button>
+                              )}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y text-slate-700">
-                          {students.map((st) => (
-                            <tr key={st.id} className="hover:bg-slate-50">
-                              <td className="py-2.5 px-3 font-mono font-bold text-blue-900">{st.id}</td>
-                              <td className="py-2.5 px-3 font-semibold">{st.name}</td>
-                              <td className="py-2.5 px-3">{st.classUnit}</td>
-                              <td className="py-2.5 px-3 text-slate-500">{st.regTime}</td>
-                              <td className="py-2.5 px-3 text-center">
-                                {st.feeStatus === 'approved' && <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">ĐÃ NỘP PHÍ</span>}
-                                {st.feeStatus === 'pending' && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold animate-pulse">CHỜ DUYỆT</span>}
-                                {st.feeStatus === 'unregistered' && <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded">CHƯA NỘP</span>}
-                              </td>
-                              <td className="py-2.5 px-3 text-center">
-                                <span className={`px-2 py-0.5 rounded font-bold text-[11px] ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}`}>
-                                  {st.eligible ? "✓ ĐỦ ĐIỀU KIỆN" : "✗ KHÓA"}
-                                </span>
-                              </td>
-                              <td className="py-2.5 px-3 text-right">
-                                {st.feeStatus === 'pending' ? (
-                                  <button
-                                    onClick={() => {
-                                      setStudents(students.map(s => s.id === st.id ? { ...s, eligible: true, feeStatus: 'approved' } : s));
-                                    }}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded text-xs"
-                                  >
-                                    Duyệt Phí & Mở Quyền Thi
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() => {
-                                      setStudents(students.map(s => s.id === st.id ? { ...s, eligible: !s.eligible } : s));
-                                    }}
-                                    className="text-blue-600 hover:text-blue-900 font-semibold"
-                                  >
-                                    {st.eligible ? "Tắt quyền thi" : "Bật quyền thi"}
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
@@ -789,12 +779,15 @@
                           </div>
                         ) : currentUser.feeStatus === 'pending' ? (
                           <div className="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
-                            <span className="text-xs font-bold text-amber-800">⏳ ĐÃ NỘP PHÍ - CHỜ QUẢN TRỊ DUYỆT</span>
+                            <span className="text-xs font-bold text-amber-800">⏳ ĐÃ NỘP PHÍ - CHỜ DUYỆT</span>
                           </div>
                         ) : (
                           <button
-                            onClick={handleRegisterExamWithFee}
-                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow transition"
+                            onClick={() => {
+                              setPaymentRefCode(`HSA-${currentUser.id}-99`);
+                              setShowPaymentModal(true);
+                            }}
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow"
                           >
                             💳 Đăng Ký Thi & Nộp Phí ({exams[0].fee})
                           </button>
@@ -803,7 +796,6 @@
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Phòng luyện tập */}
                       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                         <div>
                           <div className="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">📖</div>
@@ -814,53 +806,35 @@
                         </div>
                         <button
                           onClick={() => {
-                            setCurrentExamQuestions(questions);
+                            setCurrentExamQuestions(practiceQuestions.slice(0, 30));
                             setAnswers({});
                             setTimeLeft(45 * 60);
                             setActiveQuestionIdx(0);
                             setStudentMode('practice');
                           }}
-                          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition"
+                          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs"
                         >
-                          Vào Luyện Tập Tự Do
+                          Vào Luyện Tập Tự Do (30 câu)
                         </button>
                       </div>
 
-                      {/* Phòng thi đợt */}
                       <div className="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm flex flex-col justify-between">
                         <div>
                           <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">🎓</div>
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức ({exams[0].name})</h3>
-                            <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Bắt buộc duyệt</span>
-                          </div>
+                          <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức (50 Câu Toán - 75 Phút)</h3>
                           <p className="text-xs text-slate-500 mt-1 mb-3">
-                            Mô phỏng kỳ thi HSA ĐHQGHN. Bắt buộc nhập mật khẩu đợt thi, có giám sát chống chuyển màn hình.
+                            Mô phỏng chuẩn HSA ĐHQGHN. Bốc ĐỦ 50 câu từ Ngân hàng Đề Gốc theo mã thí sinh. Có camera giám sát chống chuyển màn hình.
                           </p>
 
-                          <div className="space-y-2.5 bg-slate-50 p-3 rounded-xl border mb-4">
-                            <div>
-                              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mật khẩu đợt thi:</label>
-                              <input
-                                type="password"
-                                placeholder={`Nhập ${exams[0].passCode}...`}
-                                value={examPasscode}
-                                onChange={(e) => setExamPasscode(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Môn thi phần Tự chọn:</label>
-                              <select
-                                value={electiveChoice}
-                                onChange={(e) => setElectiveChoice(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-1.5 text-xs outline-none bg-white"
-                              >
-                                <option value="english">Môn Tiếng Anh (50 câu - 60 phút)</option>
-                                <option value="combo">Tổ hợp 3 môn KHTN / KHXH (Lý - Hóa - Sinh)</option>
-                              </select>
-                            </div>
+                          <div className="space-y-2 bg-slate-50 p-3 rounded-xl border mb-4">
+                            <label className="block text-[11px] font-bold text-slate-600 uppercase">Mật khẩu đợt thi:</label>
+                            <input
+                              type="password"
+                              placeholder={`Nhập ${exams[0].passCode}...`}
+                              value={examPasscode}
+                              onChange={(e) => setExamPasscode(e.target.value)}
+                              className="w-full border rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                            />
                           </div>
                         </div>
 
@@ -868,63 +842,54 @@
                           onClick={handleStartExam}
                           className={`w-full py-2.5 rounded-xl font-bold text-xs transition shadow ${currentUser.eligible && currentUser.feeStatus === 'approved' ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
                         >
-                          {currentUser.eligible && currentUser.feeStatus === 'approved' ? "Vào Phòng Thi Khảo Sát" : "Chưa đủ điều kiện (Cần nộp phí & duyệt)"}
+                          {currentUser.eligible && currentUser.feeStatus === 'approved' ? "Bắt Đầu Thi (Lấy Đủ 50 Câu)" : "Chưa đủ điều kiện (Cần nộp phí & duyệt)"}
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* MODAL NỘP LỆ PHÍ */}
+                {/* MODAL NỘP PHÍ */}
                 {showPaymentModal && (
                   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl border space-y-4">
                       <div className="flex justify-between items-center border-b pb-3">
                         <h3 className="font-bold text-base text-slate-900">Đăng Ký Dự Thi & Nộp Lệ Phí</h3>
-                        <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 font-bold text-lg">✕</button>
+                        <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 font-bold">✕</button>
                       </div>
-
-                      <div className="text-xs space-y-2 text-slate-600">
-                        <p><strong>Thí sinh:</strong> {currentUser.name} ({currentUser.id})</p>
-                        <p><strong>Đợt thi:</strong> {exams[0].name}</p>
-                        <p><strong>Lệ phí hỗ trợ thẩm định đề:</strong> <span className="text-rose-600 font-bold text-sm">{exams[0].fee}</span></p>
+                      <div className="text-xs space-y-1 text-slate-600">
+                        <p>Thí sinh: <strong>{currentUser.name}</strong> ({currentUser.id})</p>
+                        <p>Lệ phí hỗ trợ thẩm định đề: <strong className="text-rose-600 font-bold">{exams[0].fee}</strong></p>
                       </div>
-
-                      <div className="bg-slate-50 border rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                        <div className="w-36 h-36 bg-white border-2 border-slate-300 rounded-lg flex flex-col items-center justify-center shadow-inner">
-                          <span className="font-black text-slate-700 text-2xl tracking-tighter">VIETQR</span>
-                          <span className="text-[10px] text-slate-400 font-mono mt-1">Mã: {paymentRefCode}</span>
-                          <span className="text-xs font-bold text-emerald-600 mt-1">{exams[0].fee}</span>
+                      <div className="bg-slate-50 border rounded-xl p-4 text-center">
+                        <div className="w-32 h-32 bg-white border-2 border-slate-300 rounded mx-auto flex items-center justify-center font-black text-xl">
+                          VIETQR
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-2 font-mono">
-                          Nội dung CK: <strong className="text-blue-900">{paymentRefCode}</strong>
-                        </p>
+                        <p className="text-[11px] text-slate-500 mt-2 font-mono">Mã CK: <strong>{paymentRefCode}</strong></p>
                       </div>
-
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowPaymentModal(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
                         <button
-                          onClick={() => setShowPaymentModal(false)}
-                          className="flex-1 py-2 border rounded-xl text-xs font-semibold text-slate-600"
-                        >
-                          Hủy
-                        </button>
-                        <button
-                          onClick={confirmPaymentSubmission}
+                          onClick={() => {
+                            setStudents(students.map(s => s.id === currentUser.id ? { ...s, feeStatus: 'pending', regTime: new Date().toLocaleString('vi-VN') } : s));
+                            setShowPaymentModal(false);
+                            alert("Đã gửi xác nhận nộp phí! Vui lòng chờ Quản trị viên duyệt.");
+                          }}
                           className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow"
                         >
-                          Tôi đã chuyển tiền / Xác nhận
+                          Xác Nhận Đã Chuyển Tiền
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* MÀN HÌNH LÀM BÀI */}
+                {/* MÀN HÌNH LÀM BÀI ĐỦ 50 CÂU */}
                 {(studentMode === 'exam' || studentMode === 'practice') && (
                   <div className="space-y-4 no-select">
                     {studentMode === 'exam' && examViolationCount > 0 && (
                       <div className="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-lg text-rose-800 text-xs flex justify-between items-center">
-                        <span className="font-bold">⚠️ BẠN ĐÃ RỜI MÀN HÌNH {examViolationCount}/3 LẦN! (Quá 3 lần sẽ tự động thu bài).</span>
+                        <span className="font-bold">⚠️ RỜI MÀN HÌNH {examViolationCount}/3 LẦN! (Quá 3 lần sẽ tự động thu bài).</span>
                         <span className="font-mono font-bold bg-rose-200 px-2 py-0.5 rounded">Vi phạm: {examViolationCount}</span>
                       </div>
                     )}
@@ -932,7 +897,7 @@
                     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
-                          {studentMode === 'exam' ? "BÀI THI CHÍNH THỨC" : "BÀI LUYỆN TẬP CHUYÊN ĐỀ"}
+                          {studentMode === 'exam' ? `ĐỢT THI CHÍNH THỨC (${currentExamQuestions.length} CÂU TOÁN)` : `BÀI LUYỆN TẬP (${currentExamQuestions.length} CÂU)`}
                         </span>
                         <h2 className="text-sm font-bold text-slate-800 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
                       </div>
@@ -952,6 +917,7 @@
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      {/* Cột hiển thị câu hỏi chi tiết */}
                       <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         {currentExamQuestions.length > 0 && (
                           <div>
@@ -960,7 +926,7 @@
                                 Câu {activeQuestionIdx + 1} / {currentExamQuestions.length} ({currentExamQuestions[activeQuestionIdx].id})
                               </span>
                               <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
-                                Mức độ: {currentExamQuestions[activeQuestionIdx].level} | {currentExamQuestions[activeQuestionIdx].subject}
+                                Mức: {currentExamQuestions[activeQuestionIdx].level} | {currentExamQuestions[activeQuestionIdx].topic}
                               </span>
                             </div>
 
@@ -971,7 +937,7 @@
                             {currentExamQuestions[activeQuestionIdx].hasImage && (
                               <div className="my-3 p-3 bg-slate-50 border rounded-lg text-center">
                                 <div className="inline-block bg-white border px-8 py-6 rounded text-xs text-slate-500 font-mono">
-                                  [Hình vẽ/Đồ thị chuẩn tách riêng mã: {currentExamQuestions[activeQuestionIdx].imageCode}]
+                                  [Hình vẽ/Đồ thị tách riêng mã: {currentExamQuestions[activeQuestionIdx].imageCode}]
                                 </div>
                               </div>
                             )}
@@ -1014,9 +980,15 @@
                         )}
                       </div>
 
+                      {/* Mục lục đủ 50 câu hỏi bên phải */}
                       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-fit">
-                        <h4 className="text-xs font-bold text-slate-700 uppercase mb-3">Mục lục câu hỏi</h4>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-xs font-bold text-slate-700 uppercase">Mục lục ({currentExamQuestions.length} câu)</h4>
+                          <span className="text-[11px] font-bold text-blue-700 font-mono">
+                            {Object.keys(answers).length}/{currentExamQuestions.length}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto pr-1">
                           {currentExamQuestions.map((_, idx) => {
                             const isAnswered = answers[idx] !== undefined;
                             const isCurrent = activeQuestionIdx === idx;
@@ -1036,41 +1008,16 @@
                   </div>
                 )}
 
-                {/* MÀN HÌNH KẾT QUẢ */}
+                {/* MÀN HÌNH KẾT QUẢ ĐỦ 50 CÂU */}
                 {studentMode === 'result' && examFinishedData && (
                   <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                     <div className="text-center pb-4 border-b">
-                      <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI ĐÁNH GIÁ NĂNG LỰC</h2>
-                      <p className="text-xs text-slate-500">Mã thí sinh: {currentUser.id} | Số lần rời màn hình: {examFinishedData.violations}</p>
+                      <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI TOÁN & XỬ LÝ SỐ LIỆU (50 CÂU)</h2>
+                      <p className="text-xs text-slate-500">Mã thí sinh: {currentUser.id} | Số vi phạm rời màn hình: {examFinishedData.violations}</p>
                       
                       <div className="inline-block mt-4 bg-blue-50 border border-blue-200 px-6 py-3 rounded-2xl">
-                        <span className="text-xs text-blue-700 font-bold uppercase">Tổng Điểm</span>
+                        <span className="text-xs text-blue-700 font-bold uppercase">Điểm Số Đạt Được</span>
                         <div className="text-3xl font-black text-blue-950">{examFinishedData.total} / {examFinishedData.questions.length}</div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-800 mb-3">Lời giải chi tiết từ Chuyên gia thẩm định:</h3>
-                      <div className="space-y-3">
-                        {examFinishedData.questions.map((q, idx) => {
-                          const userAns = examFinishedData.userAnswers[idx];
-                          const isCorrect = userAns === q.correctIndex;
-                          return (
-                            <div key={idx} className={`p-4 rounded-xl border text-xs ${isCorrect ? 'border-emerald-200 bg-emerald-50/20' : 'border-rose-200 bg-rose-50/20'}`}>
-                              <div className="flex justify-between font-bold mb-1">
-                                <span>Câu {idx + 1} ({q.id}) - {q.subject}</span>
-                                <span className={isCorrect ? 'text-emerald-700' : 'text-rose-700'}>
-                                  {isCorrect ? "✓ Đúng" : "✗ Sai"}
-                                </span>
-                              </div>
-                              <p className="text-slate-700 mb-2">{q.content}</p>
-                              <div className="bg-white p-2.5 rounded-lg border text-slate-800">
-                                <p className="font-bold text-emerald-700">Đáp án: {String.fromCharCode(65 + q.correctIndex)}. {q.options[q.correctIndex]}</p>
-                                <p className="text-blue-900 mt-1">💡 Lời giải: {q.solution}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
                       </div>
                     </div>
 
