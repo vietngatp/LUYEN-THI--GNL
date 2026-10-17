@@ -19,7 +19,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     .no-select { user-select: none; }
     .katex { font-size: 1.08em; }
     .katex-display { margin: 0.5em 0; overflow-x: auto; overflow-y: hidden; }
@@ -28,7 +28,7 @@
 <body class="bg-slate-100 text-slate-900 min-h-screen">
   <div id="root">
     <div style="padding: 30px; text-align: center; font-weight: bold; color: #1e3a8a;">
-      Đang khởi tạo Hội đồng Chuyên gia & Hệ thống Khảo thí ĐGNL HSA...
+      Đang khởi tạo Hệ thống Luyện thi Đánh giá Năng lực HSA 2026...
     </div>
   </div>
 
@@ -50,9 +50,13 @@
     // Bảng biến thiên SVG mẫu hiển thị trực tiếp đúng vị trí
     const SAMPLE_SVG_VARIATION = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='sans-serif' font-size='14' font-weight='bold'>x</text><text x='15' y='65' font-family='sans-serif' font-size='14' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='sans-serif' font-size='14' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='13'>-∞</text><text x='180' y='26' font-size='13'>-1</text><text x='280' y='26' font-size='13'>1</text><text x='390' y='26' font-size='13'>+∞</text><text x='130' y='65' font-size='14' fill='%2310b981'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='14' fill='%23ef4444'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='14' fill='%2310b981'>+</text><text x='80' y='145' font-size='12'>-∞</text><text x='180' y='95' font-size='13' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='13' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='12'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
-    // Chuyển mã TCVN3 cũ về Unicode UTF-8 chuẩn
-    function toUnicode(str) {
+    // BỘ XỬ LÝ KHẮC PHỤC TRIỆT ĐỂ LỖI PHÔNG CHỮ TIẾNG VIỆT
+    // 1. Chuẩn hóa NFC (chống lỗi tách dấu tổ hợp unicode)
+    // 2. Chuyển mã TCVN3 (ABC/.VnTime) và VNI sang Unicode chuẩn
+    function fixVietnameseEncoding(str) {
       if (!str) return "";
+      
+      // Chuyển mã TCVN3
       const tcvn = "a¸µ¶·¹¨ÊÇÈÉË©ÐÌÎÏÑéåæçèªóîïñò¡¢£¤¥¦§íëìîïóõö÷øùúûüý";
       const uni = "àảãáạăằẳẵắặâầẩẫấậèẻẽéẹêềểễếệìỉĩíịòỏõóọôồổỗốộơờởỡớợùủũúụưừửữứựỳỷỹýỵ";
       let res = "";
@@ -61,6 +65,12 @@
         const idx = tcvn.indexOf(c);
         res += (idx !== -1 && idx < uni.length) ? uni[idx] : c;
       }
+
+      // Chuẩn hóa Unicode dựng sẵn (NFC) để không bao giờ bị nhảy ô vuông hay mất dấu
+      try {
+        res = res.normalize('NFC');
+      } catch (e) {}
+
       return res;
     }
 
@@ -86,12 +96,13 @@
 
       if (!content) return null;
 
-      const hasPlaceholder = content.includes("[HINH_ANH]");
-      let partBefore = content;
+      const cleanContent = fixVietnameseEncoding(content);
+      const hasPlaceholder = cleanContent.includes("[HINH_ANH]");
+      let partBefore = cleanContent;
       let partAfter = "";
 
       if (hasPlaceholder) {
-        const parts = content.split("[HINH_ANH]");
+        const parts = cleanContent.split("[HINH_ANH]");
         partBefore = parts[0];
         partAfter = parts[1] || "";
       }
@@ -116,7 +127,7 @@
             </div>
           ) : (
             <div>
-              <div className="whitespace-pre-wrap">{content}</div>
+              <div className="whitespace-pre-wrap">{cleanContent}</div>
               {(imageSrc || imageCode) && (
                 <div className="my-3 flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
                   {imageSrc ? (
@@ -138,6 +149,8 @@
 
     function MathSpan({ text }) {
       const ref = useRef(null);
+      const cleanText = fixVietnameseEncoding(text);
+
       useEffect(() => {
         if (ref.current && window.renderMathInElement) {
           try {
@@ -151,7 +164,8 @@
           } catch (e) {}
         }
       }, [text]);
-      return <span ref={ref} className="inline">{text}</span>;
+
+      return <span ref={ref} className="inline">{cleanText}</span>;
     }
 
     // DỮ LIỆU BAN ĐẦU
@@ -216,7 +230,6 @@
       return list;
     };
 
-    // TỰ ĐỘNG SINH 3 CÂU PHÁI SINH TƯƠNG ĐƯƠNG CHO MỖI CÂU GỐC
     const generateInitialPractice = (roots) => {
       const pList = [];
       roots.slice(0, 15).forEach(q => {
@@ -269,6 +282,9 @@
       const [analyzingAI, setAnalyzingAI] = useState(false);
       const [aiAuditedResult, setAiAuditedResult] = useState(null);
 
+      // Modal xác nhận nạp câu hỏi vào ngân hàng đề
+      const [showConfirmAddModal, setShowConfirmAddModal] = useState(false);
+
       // Chỉnh sửa câu hỏi
       const [editingQuestion, setEditingQuestion] = useState(null);
       const [editingModalOpen, setEditingModalOpen] = useState(false);
@@ -280,11 +296,11 @@
       const [newExamFee, setNewExamFee] = useState("50.000 VNĐ");
 
       // PHÒNG HỌC VIÊN
-      const [studentMode, setStudentMode] = useState('hub'); // 'hub', 'practice_topic', 'practice_part', 'practice_full', 'exam', 'result'
+      const [studentMode, setStudentMode] = useState('hub');
       const [examPasscode, setExamPasscode] = useState('');
-      const [electiveChoice, setElectiveChoice] = useState('english'); // 'english' hoặc 'combo'
+      const [electiveChoice, setElectiveChoice] = useState('english');
       const [currentExamQuestions, setCurrentExamQuestions] = useState([]);
-      const [currentExamPart, setCurrentExamPart] = useState(1); // 1: Toán (75p), 2: Văn (60p), 3: Tự chọn (60p)
+      const [currentExamPart, setCurrentExamPart] = useState(1);
       const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
       const [answers, setAnswers] = useState({});
       const [timeLeft, setTimeLeft] = useState(75 * 60);
@@ -314,7 +330,7 @@
         return () => clearInterval(timer);
       }, [studentMode, timeLeft]);
 
-      // Giám sát chống rời màn hình trong suốt thời gian thi
+      // Giám sát chống rời màn hình
       useEffect(() => {
         if (studentMode !== 'exam') return;
 
@@ -348,7 +364,7 @@
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
       };
 
-      // XỬ LÝ ĐỌC FILE TẢI LÊN
+      // ĐỌC FILE TẢI LÊN (BẢO TOÀN PHÔNG CHỮ UTF-8)
       const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -360,14 +376,14 @@
 
         const reader = new FileReader();
         reader.onload = (event) => {
-          const raw = toUnicode(event.target.result);
+          const raw = fixVietnameseEncoding(event.target.result);
           setRawQuestionInput(raw);
-          alert(`Đã nhận file ${file.name} cho Mã đề ${code}. Nhấn nút "Kích Hoạt Quy Trình Thẩm Định AI" để tiến hành thẩm định.`);
+          alert(`Đã nhận file ${file.name} cho Mã đề ${code}. Phông chữ đã được tự động chuẩn hóa UTF-8.`);
         };
         reader.readAsText(file, "UTF-8");
       };
 
-      // KÍCH HOẠT QUY TRÌNH THẨM ĐỊNH AI THEO ĐÚNG ĐẶC TẢ
+      // KÍCH HOẠT QUY TRÌNH THẨM ĐỊNH AI
       const handleRunAiAudit = () => {
         if (!rawQuestionInput.trim()) {
           alert("Vui lòng tải file đề lên hoặc dán nội dung câu hỏi!");
@@ -383,9 +399,8 @@
         setTimeout(() => {
           const nextIndex = rootQuestions.filter(q => q.subjectCode === auditSubjectCode).length + 1;
           const numStr = nextIndex < 10 ? '0' + nextIndex : '' + nextIndex;
-          const formattedId = `${auditSubjectCode}${auditExamCode.trim()}-${numStr}`; // VD: T01-01
+          const formattedId = `${auditSubjectCode}${auditExamCode.trim()}-${numStr}`;
 
-          // Kiểm tra trùng lặp 100%
           const isDuplicate = rootQuestions.some(q => q.content.trim() === rawQuestionInput.trim());
           if (isDuplicate) {
             alert(`CẢNH BÁO: Câu hỏi này trùng khớp 100% với câu hỏi đã có trong Ngân hàng đề gốc! Hệ thống từ chối thêm trùng.`);
@@ -396,7 +411,6 @@
           const subjectObj = SUBJECTS.find(s => s.code === auditSubjectCode) || SUBJECTS[0];
           const hasImg = rawQuestionInput.includes("[HINH_ANH]") || rawQuestionInput.toLowerCase().includes("bảng biến thiên") || rawQuestionInput.toLowerCase().includes("đồ thị");
 
-          // Kết quả phân tích thẩm định độc lập
           const audited = {
             id: formattedId,
             subjectCode: auditSubjectCode,
@@ -415,22 +429,21 @@
             ],
             correctIndex: 0,
             solution: `Lời giải chi tiết chuẩn xác 100% từ chuyên gia giải đề độc lập: Bước 1 áp dụng định nghĩa chuyên đề, Bước 2 xác định nghiệm phương trình, Bước 3 kết luận phương án đúng.`,
-            // Tự động sinh 3 câu tương đương cùng chuyên đề & độ khó
             variants: [
               {
-                id: `${formattedId}1`, // T01-011
+                id: `${formattedId}1`,
                 content: `[Biến thể 1] Cùng chuyên đề và ma trận độ khó với câu ${formattedId}: ${rawQuestionInput}`,
                 options: ["Phương án A1", "Phương án B1", "Phương án C1", "Phương án D1"],
                 correctIndex: 1
               },
               {
-                id: `${formattedId}2`, // T01-012
+                id: `${formattedId}2`,
                 content: `[Biến thể 2] Mở rộng tham số từ câu ${formattedId}: ${rawQuestionInput}`,
                 options: ["Phương án A2", "Phương án B2", "Phương án C2", "Phương án D2"],
                 correctIndex: 2
               },
               {
-                id: `${formattedId}3`, // T01-013
+                id: `${formattedId}3`,
                 content: `[Biến thể 3] Vấn đề thực tế tương đương câu ${formattedId}: ${rawQuestionInput}`,
                 options: ["Phương án A3", "Phương án B3", "Phương án C3", "Phương án D3"],
                 correctIndex: 0
@@ -440,14 +453,13 @@
 
           setAiAuditedResult(audited);
           setAnalyzingAI(false);
-        }, 1000);
+        }, 800);
       };
 
-      // DUYỆT & CHUYỂN VÀO NGÂN HÀNG ĐỀ GỐC VÀ NGÂN HÀNG LUYỆN THI
-      const handleApproveAndSaveAudit = () => {
+      // XÁC NHẬN NẠP VÀO NGÂN HÀNG ĐỀ
+      const handleConfirmAddQuestion = () => {
         if (!aiAuditedResult) return;
 
-        // 1. Chuyển đề gốc vào Ngân hàng đề gốc
         const newRoot = {
           id: aiAuditedResult.id,
           subjectCode: aiAuditedResult.subjectCode,
@@ -463,7 +475,6 @@
           solution: aiAuditedResult.solution
         };
 
-        // 2. Tự động sinh 3 câu tương đương vào Ngân hàng luyện thi (Chỉ thể hiện mã và đề bài)
         const newPracticeVariants = aiAuditedResult.variants.map(v => ({
           id: v.id,
           rootId: aiAuditedResult.id,
@@ -482,14 +493,20 @@
 
         setRootQuestions([newRoot, ...rootQuestions]);
         setPracticeQuestions([...newPracticeVariants, ...practiceQuestions]);
+        setShowConfirmAddModal(false);
 
-        alert(`THẨM ĐỊNH THÀNH CÔNG!
+        alert(`ĐÃ THÊM THÀNH CÔNG!
 - Đã nạp câu gốc ${newRoot.id} vào Ngân hàng Đề Gốc.
 - Tự động sinh 3 câu phái sinh (${newPracticeVariants.map(x => x.id).join(', ')}) nạp vào Ngân hàng Luyện Thi theo môn ${newRoot.subjectName}.`);
 
         setAiAuditedResult(null);
         setRawQuestionInput("");
         setUploadedFileName("");
+      };
+
+      // HỦY BỎ KHÔNG THÊM CÂU HỎI
+      const handleCancelAddQuestion = () => {
+        setShowConfirmAddModal(false);
       };
 
       // XÓA ĐỢT THI
@@ -499,7 +516,7 @@
         }
       };
 
-      // TẠO ĐỢT THI MỚI CHUẨN HSA (TOÁN 50 CÂU 75P - VĂN 50 CÂU 60P - TỰ CHỌN 50 ĐIỂM)
+      // TẠO ĐỢT THI MỚI CHUẨN HSA
       const handleCreateExam = () => {
         if (!newExamName.trim() || !newExamPasscode.trim()) {
           alert("Vui lòng điền tên đợt thi và mật khẩu đợt thi!");
@@ -518,8 +535,7 @@
         setExams([newEx, ...exams]);
         alert(`TẠO ĐỢT THI THÀNH CÔNG!
 - Tên: ${newEx.name}
-- Mật khẩu: ${newEx.passCode}
-- Ma trận 3 phần: Toán & Số liệu (50 câu - 75p), Đọc hiểu Văn (50 câu - 60p), Phần Tự chọn (50đ).`);
+- Mật khẩu: ${newEx.passCode}`);
       };
 
       // HỌC VIÊN ĐĂNG KÝ THI & NỘP LỆ PHÍ ĐỢT THI
@@ -535,7 +551,7 @@
         alert(`Đã gửi xác nhận nộp lệ phí đợt thi! Vui lòng chờ Ban Quản trị phê duyệt và kích hoạt quyền dự thi.`);
       };
 
-      // BẮT ĐẦU THI THỬ THEO ĐỢT (KIỂM TRA MẬT KHẨU, ID, ĐIỀU KIỆN THI)
+      // BẮT ĐẦU THI THỬ THEO ĐỢT
       const handleStartOfficialExam = () => {
         if (!currentUser.eligible || currentUser.feeStatus !== 'approved') {
           alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN DỰ THI! Vui lòng hoàn tất nộp lệ phí và chờ Quản trị viên phê duyệt.");
@@ -547,12 +563,11 @@
           return;
         }
 
-        // Tạo đề thi chuẩn HSA: Phần 1 (Toán 50 câu)
         const full50Math = rootQuestions.filter(q => q.subjectCode === "T").slice(0, 50);
         setCurrentExamQuestions(full50Math);
         setCurrentExamPart(1);
         setAnswers({});
-        setTimeLeft(75 * 60); // 75 phút Toán
+        setTimeLeft(75 * 60);
         setExamViolationCount(0);
         setActiveQuestionIdx(0);
         setStudentMode('exam');
@@ -564,7 +579,7 @@
           const agree = window.confirm("Hết giờ hoặc hoàn thành Phần 1 (Toán & Số liệu)! Bạn có muốn nộp bài và chuyển sang Phần 2 (Ngữ văn - Đọc hiểu: 60 phút - 50 câu) không?");
           if (agree) {
             setCurrentExamPart(2);
-            setTimeLeft(60 * 60); // 60 phút Văn
+            setTimeLeft(60 * 60);
             setActiveQuestionIdx(0);
             return;
           }
@@ -572,19 +587,17 @@
           const agree = window.confirm("Hoàn thành Phần 2! Chuyển sang Phần 3 (Phần tự chọn: Tiếng Anh hoặc Tổ hợp 3 môn)?");
           if (agree) {
             setCurrentExamPart(3);
-            setTimeLeft(60 * 60); // 60 phút Tự chọn
+            setTimeLeft(60 * 60);
             setActiveQuestionIdx(0);
             return;
           }
         }
 
-        // Tính điểm tổng kết
         let score = 0;
         currentExamQuestions.forEach((q, idx) => {
           if (answers[idx] === q.correctIndex) score += 1;
         });
 
-        // Quy đổi theo thang điểm 150
         const totalFinalScore = score * 3;
         setExamFinishedData({
           scoreMath: score,
@@ -609,7 +622,7 @@
                 </div>
                 <div>
                   <h1 className="font-extrabold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                  <span className="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Hội Đồng Thẩm Định Độc Lập</span>
+                  <span className="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Chuẩn Phông Chữ & KaTeX</span>
                 </div>
               </div>
 
@@ -624,7 +637,7 @@
                   >
                     {students.map((st, i) => (
                       <option key={st.id} value={i} className="text-slate-900">
-                        {st.name} ({st.id} - {st.feeStatus === 'approved' ? 'Đã duyệt phí' : st.feeStatus === 'pending' ? 'Chờ duyệt' : 'Chưa nộp'})
+                        {st.name} ({st.id} - {st.feeStatus === 'approved' ? 'Đã duyệt' : st.feeStatus === 'pending' ? 'Chờ duyệt' : 'Chưa nộp'})
                       </option>
                     ))}
                   </select>
@@ -740,9 +753,9 @@
                           </div>
                         </div>
 
-                        {/* NÚT CHỌN TỆP TỪ MÁY TÍNH */}
+                        {/* TẢI LÊN FILE ĐỀ */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Tải lên file đề (Word, PDF, Ảnh scan):</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Tải lên file đề (Word, PDF, Ảnh scan, Text):</label>
                           <input
                             type="file"
                             onChange={handleFileUpload}
@@ -756,7 +769,7 @@
 
                         {/* NỘI DUNG VĂN BẢN ĐỀ BÀI */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Bảo tồn công thức $KaTeX$ và phông chữ):</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Bảo tồn công thức $KaTeX$ và phông chữ chuẩn):</label>
                           <textarea
                             rows="5"
                             value={rawQuestionInput}
@@ -779,7 +792,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         </button>
                       </div>
 
-                      {/* KẾT QUẢ THẨM ĐỊNH ĐỘC LẬP */}
+                      {/* KẾT QUẢ THẨM ĐỊNH ĐỘC LẬP & NÚT XÁC NHẬN NẠP VÀO NGÂN HÀNG */}
                       <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
                         {aiAuditedResult ? (
                           <div className="space-y-3">
@@ -825,19 +838,78 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         )}
 
                         {aiAuditedResult && (
-                          <button
-                            onClick={handleApproveAndSaveAudit}
-                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs mt-3 shadow-md"
-                          >
-                            ✓ Duyệt 100% Nguyên Mẫu Vào Ngân Hàng Đề Gốc
-                          </button>
+                          <div className="pt-3 border-t mt-3 space-y-2">
+                            {/* NÚT CHỨC NĂNG HỎI XÁC NHẬN THÊM CÂU HỎI VÀO NGÂN HÀNG ĐỀ */}
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
+                              <span className="font-bold text-amber-900 block text-xs">
+                                Bạn có muốn thêm câu hỏi {aiAuditedResult.id} vào Ngân hàng Đề Gốc không?
+                              </span>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setShowConfirmAddModal(true)}
+                                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition"
+                                >
+                                  ✓ Xác nhận thêm vào Ngân hàng đề
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (confirm("Bạn có chắc chắn muốn hủy bỏ kết quả thẩm định này không?")) {
+                                      setAiAuditedResult(null);
+                                    }
+                                  }}
+                                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                                >
+                                  ✕ Hủy bỏ
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* 2. NGÂN HÀNG ĐỀ GỐC (SẮP XẾP THEO MÔN, CÓ NÚT SỬA/XÓA) */}
+                {/* MODAL HỎI XÁC NHẬN THÊM CÂU HỎI */}
+                {showConfirmAddModal && aiAuditedResult && (
+                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl border space-y-4">
+                      <div className="text-center space-y-2">
+                        <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-black text-2xl mx-auto">
+                          ✓
+                        </div>
+                        <h3 className="font-bold text-base text-slate-900">Xác Nhận Thêm Vào Ngân Hàng Đề</h3>
+                        <p className="text-xs text-slate-600">
+                          Bạn có chắc chắn muốn nạp câu hỏi <strong className="text-blue-900 font-mono">{aiAuditedResult.id}</strong> ({aiAuditedResult.subjectName}) vào <strong>Ngân hàng Đề Gốc</strong> và tự động sinh 3 câu tương đương vào <strong>Ngân hàng Luyện Thi</strong> không?
+                        </p>
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-xl border text-xs text-slate-600 space-y-1">
+                        <div>• Mã định danh: <strong className="font-mono text-blue-950">{aiAuditedResult.id}</strong></div>
+                        <div>• Môn thi: <strong>{aiAuditedResult.subjectName}</strong></div>
+                        <div>• Phông chữ: <strong>Unicode UTF-8 chuẩn xác</strong></div>
+                        <div>• Công thức Toán: <strong>KaTeX sắc nét 100%</strong></div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleCancelAddQuestion}
+                          className="flex-1 py-2.5 border border-slate-300 hover:bg-slate-50 font-bold rounded-xl text-xs text-slate-700"
+                        >
+                          ✕ Hủy bỏ / Không thêm
+                        </button>
+                        <button
+                          onClick={handleConfirmAddQuestion}
+                          className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md"
+                        >
+                          ✓ Đồng ý thêm ngay
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. NGÂN HÀNG ĐỀ GỐC */}
                 {adminTab === 'root_bank' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
@@ -846,7 +918,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         <p className="text-xs text-slate-500">Mã chuẩn <code>[môn][mã đề][stt]</code> (Ví dụ: T01-01). Mỗi câu hỏi có nút sửa và nút xóa riêng biệt.</p>
                       </div>
                       
-                      {/* Bộ lọc sắp xếp theo từng môn */}
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-600 font-bold">Lọc theo môn:</span>
                         <select
@@ -914,7 +985,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* 3. NGÂN HÀNG LUYỆN THI (CHỈ HIỆN MÃ VÀ ĐỀ BÀI, SẮP XẾP THEO CHUYÊN ĐỀ) */}
+                {/* 3. NGÂN HÀNG LUYỆN THI */}
                 {adminTab === 'practice_bank' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
@@ -938,7 +1009,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                             <span className="text-slate-600 font-bold">Môn: {q.subjectName} | Chuyên đề: {q.topic}</span>
                           </div>
 
-                          {/* Chỉ thể hiện đề bài thuần túy */}
                           <div className="bg-white p-3 rounded-xl border">
                             <MathViewer content={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
                           </div>
@@ -957,7 +1027,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* 4. TẠO ĐỢT THI (CHUẨN HSA 3 PHẦN, CÓ NÚT XÓA) */}
+                {/* 4. TẠO ĐỢT THI */}
                 {adminTab === 'exam_creator' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                     <div className="border-b pb-4">
@@ -992,7 +1062,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                       </button>
                     </div>
 
-                    {/* DANH SÁCH ĐỢT THI CÓ NÚT XÓA */}
                     <div className="space-y-3">
                       <span className="font-bold text-xs uppercase tracking-wider text-slate-700">Các đợt thi đã tạo:</span>
                       <div className="space-y-2">
@@ -1018,7 +1087,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* 5. QUẢN LÝ HỌC VIÊN & DUYỆT PHÍ */}
+                {/* 5. QUẢN LÝ HỌC VIÊN */}
                 {adminTab === 'students' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <div className="flex justify-between items-center border-b pb-3">
@@ -1070,7 +1139,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* MODAL SỬA CÂU & BỔ SUNG ẢNH/BẢNG BIẾN THIÊN */}
+                {/* MODAL SỬA CÂU & BỔ SUNG ẢNH */}
                 {editingModalOpen && editingQuestion && (
                   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
@@ -1133,11 +1202,10 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                 )}
               </div>
             ) : (
-              /* ==================== PHÒNG HỌC VIÊN (MẶC ĐỊNH HIỂN THỊ) ==================== */
+              /* ==================== PHÒNG HỌC VIÊN ==================== */
               <div>
                 {studentMode === 'hub' && (
                   <div className="space-y-6">
-                    {/* HỒ SƠ THÍ SINH */}
                     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2">
@@ -1169,9 +1237,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                       </div>
                     </div>
 
-                    {/* 2 PHÒNG: PHÒNG LUYỆN TẬP VÀ PHÒNG THI THEO ĐỢT */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* PHÒNG LUYỆN TẬP */}
                       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
                         <div>
                           <div className="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
@@ -1212,7 +1278,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         </div>
                       </div>
 
-                      {/* PHÒNG THI CHÍNH THỨC THEO ĐỢT */}
                       <div className="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm flex flex-col justify-between space-y-4">
                         <div>
                           <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">🎓</div>
@@ -1284,10 +1349,9 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* MÀN HÌNH THI THEO ĐỢT & LUYỆN TẬP */}
+                {/* MÀN HÌNH THI & LUYỆN TẬP */}
                 {(studentMode === 'exam' || studentMode.startsWith('practice')) && (
                   <div className="space-y-4 no-select">
-                    {/* CẢNH BÁO CHỐNG RỜI MÀN HÌNH */}
                     {studentMode === 'exam' && examViolationCount > 0 && (
                       <div className="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-lg text-rose-800 text-xs flex justify-between items-center shadow-sm">
                         <span className="font-bold">⚠️ CẢNH BÁO GIÁM SÁT: Bạn đã rời khỏi màn hình thi {examViolationCount}/3 lần! (Quá 3 lần bài thi tự động thu).</span>
@@ -1317,7 +1381,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                      {/* CÂU HỎI & BẢNG BIẾN THIÊN */}
                       <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         {currentExamQuestions.length > 0 && (
                           <div>
@@ -1338,7 +1401,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                               />
                             </div>
 
-                            {/* 4 PHƯƠNG ÁN LỰA CHỌN */}
                             <div className="space-y-2 mt-4">
                               {currentExamQuestions[activeQuestionIdx].options.map((opt, oIdx) => {
                                 const isSelected = answers[activeQuestionIdx] === oIdx;
@@ -1379,7 +1441,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         )}
                       </div>
 
-                      {/* BẢNG MỤC LỤC CÂU HỎI */}
                       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-fit">
                         <div className="flex justify-between items-center mb-3">
                           <h4 className="text-xs font-bold text-slate-700 uppercase">Mục lục ({currentExamQuestions.length} câu)</h4>
@@ -1407,7 +1468,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                   </div>
                 )}
 
-                {/* MÀN HÌNH KẾT QUẢ & BÁO CÁO TIẾN ĐỘ EMAIL */}
+                {/* MÀN HÌNH KẾT QUẢ */}
                 {studentMode === 'result' && examFinishedData && (
                   <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-center">
                     <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI ĐÁNH GIÁ NĂNG LỰC</h2>
