@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
   <!-- Tailwind CSS -->
@@ -28,7 +29,7 @@
         </div>
         <div>
           <h1 class="font-bold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • gemini-3.8-flash Engine</span>
+          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Đầy Đủ 5 Phân Hệ Quản Trị</span>
         </div>
       </div>
 
@@ -59,14 +60,14 @@
         <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-lg font-bold text-slate-900">Nguyễn Văn An</h2>
-              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">07-12A1-001</span>
-              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Lớp: 12A1</span>
+              <h2 class="text-lg font-bold text-slate-900" id="current-student-name">Nguyễn Văn An</h2>
+              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full" id="current-student-id">07-12A1-001</span>
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded" id="current-student-class">Lớp: 12A1</span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">Đợt thi: <strong>Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</strong></p>
+            <p class="text-xs text-slate-500 mt-1">Đợt thi hiện tại: <strong id="current-exam-name">Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</strong></p>
           </div>
           <div>
-            <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs font-bold">
+            <span id="current-student-status" class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs font-bold">
               ✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI
             </span>
           </div>
@@ -78,7 +79,7 @@
               <div class="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
               <h3 class="text-base font-bold text-slate-900 mb-1">1. Phòng Luyện Tập</h3>
               <p class="text-xs text-slate-500 mb-3 leading-relaxed">
-                Rèn luyện câu hỏi bám sát CT GDPT 2018. Hiển thị công thức KaTeX và bảng biến thiên chuẩn xác.
+                Rèn luyện câu hỏi bám sát CT GDPT 2018. Hiển thị công thức KaTeX và hình vẽ độc lập cho từng câu.
               </p>
             </div>
             <button onclick="startPracticeSession()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
@@ -281,7 +282,7 @@
       <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Luyện Thi (Câu Hỏi Tương Đương)</h2>
-          <button onclick="alert('Đang tải bài tập theo chuyên đề...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
+          <button onclick="alert('Đang xuất bài tập theo chuyên đề CT GDPT 2018 ra file...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
         </div>
         <div id="practice-list" class="space-y-3 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
@@ -934,133 +935,4 @@
         document.getElementById("edit-opt-0").value,
         document.getElementById("edit-opt-1").value,
         document.getElementById("edit-opt-2").value,
-        document.getElementById("edit-opt-3").value
-      ];
-      q.imageSrc = currentEditImgData;
-      q.hasImage = !!currentEditImgData || q.content.includes("[HINH_ANH]");
-
-      closeEditModal();
-      renderBankList();
-      alert("✓ Đã lưu thay đổi cho câu " + q.id + "!");
-    }
-
-    // Thi & Luyện tập
-    function startPracticeSession() {
-      activeExamQuestions = dbQuestions.slice(0, 30);
-      initExamSession("BÀI LUYỆN TẬP CHUYÊN ĐỀ", 45 * 60);
-    }
-
-    function startOfficialExam() {
-      const pass = document.getElementById("input-exam-pass").value;
-      if (pass !== "HSA2026") {
-        alert("Mật khẩu không chính xác! (Nhập: HSA2026)");
-        return;
-      }
-      activeExamQuestions = dbQuestions.slice(0, 50);
-      initExamSession("BÀI THI CHÍNH THỨC HSA", 75 * 60);
-    }
-
-    function initExamSession(title, seconds) {
-      document.getElementById("student-hub").classList.add("hidden");
-      document.getElementById("student-exam").classList.remove("hidden");
-      document.getElementById("student-result").classList.add("hidden");
-      document.getElementById("exam-badge").innerText = title;
-
-      activeQuestionIdx = 0;
-      userAnswers = {};
-      timeLeft = seconds;
-
-      renderCurrentQuestion();
-      renderMatrix();
-
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        const m = Math.floor(timeLeft / 60);
-        const s = timeLeft % 60;
-        document.getElementById("exam-timer").innerText = (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
-        if (timeLeft <= 0) submitExam();
-      }, 1000);
-    }
-
-    function renderCurrentQuestion() {
-      const q = activeExamQuestions[activeQuestionIdx];
-      if (!q) return;
-
-      document.getElementById("q-number").innerText = "Câu " + (activeQuestionIdx + 1);
-      document.getElementById("q-code").innerText = q.id;
-
-      let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
-      if (q.hasImage && q.imageSrc) {
-        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
-      }
-      document.getElementById("q-content").innerHTML = contentHtml;
-
-      document.getElementById("q-options").innerHTML = q.options.map((opt, oIdx) => `
-        <div onclick="selectAnswer(${oIdx})" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${userAnswers[activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50 bg-white'}">
-          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
-          ${parseKaTeX(opt)}
-        </div>
-      `).join('');
-    }
-
-    function renderMatrix() {
-      const container = document.getElementById("q-matrix");
-      container.innerHTML = activeExamQuestions.map((_, idx) => `
-        <button onclick="activeQuestionIdx = ${idx}; renderCurrentQuestion(); renderMatrix();" class="h-8 rounded text-xs font-bold ${activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${userAnswers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
-          ${idx + 1}
-        </button>
-      `).join('');
-    }
-
-    function selectAnswer(oIdx) {
-      userAnswers[activeQuestionIdx] = oIdx;
-      renderCurrentQuestion();
-      renderMatrix();
-    }
-
-    function prevQuestion() {
-      if (activeQuestionIdx > 0) {
-        activeQuestionIdx--;
-        renderCurrentQuestion();
-        renderMatrix();
-      }
-    }
-
-    function nextQuestion() {
-      if (activeQuestionIdx < activeExamQuestions.length - 1) {
-        activeQuestionIdx++;
-        renderCurrentQuestion();
-        renderMatrix();
-      }
-    }
-
-    function submitExam() {
-      if (timerInterval) clearInterval(timerInterval);
-      let score = 0;
-      activeExamQuestions.forEach((q, idx) => {
-        if (userAnswers[idx] === q.correctIndex) score++;
-      });
-
-      document.getElementById("student-exam").classList.add("hidden");
-      document.getElementById("student-result").classList.remove("hidden");
-      document.getElementById("result-score").innerText = (score * 3) + " / 150";
-    }
-
-    function backToHub() {
-      document.getElementById("student-hub").classList.remove("hidden");
-      document.getElementById("student-result").classList.add("hidden");
-    }
-
-    // Chống rời màn hình
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
-        alert("⚠️ CẢNH BÁO: Rời màn hình thi! Hãy tập trung làm bài.");
-      }
-    });
-
-    // Mặc định khởi động vào phòng học viên
-    switchView('student');
-  </script>
-</body>
-</html>
+        document.getElementById("edit-opt-3
