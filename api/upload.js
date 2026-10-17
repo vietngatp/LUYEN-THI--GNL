@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { fileData, fileName, mimeType, subject, examCode, apiKey } = req.body;
+    const { fileData, mimeType, subject, examCode, apiKey } = req.body;
 
     if (!fileData) {
       return res.status(400).json({ error: 'Chưa nhận được tệp tải lên' });
@@ -20,115 +20,75 @@ export default async function handler(req, res) {
 
     const GEMINI_API_KEY = apiKey || process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-      return res.status(400).json({ error: 'Chưa cấu hình Gemini API Key.' });
+      return res.status(400).json({ error: 'Chưa có Gemini API Key.' });
     }
 
-    const systemPrompt = `Bạn là Hội đồng chuyên gia thẩm định đề thi ĐGNL HSA Model và Chương trình GDPT 2018.
-Nhiệm vụ: Đọc và phân tích tài liệu đề thi được tải lên (Word, PDF, hoặc Ảnh).
+    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và:
+1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $d: 2x - y + 3 = 0$, $\\vec{u} = (1; 2)$).
+2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
+3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
+4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
+5. Tự động sinh 3 câu tương đương cho mỗi câu gốc.
 
-YÊU CẦU BẮT BUỘC:
-1. Đọc tài liệu, nhận diện TẤT CẢ câu hỏi, công thức toán học (kể cả MathType, Equation).
-2. TỰ ĐỘNG CHUYỂN ĐỔI MỌI CÔNG THỨC TOÁN HỌC sang định dạng LaTeX chuẩn kẹp giữa cặp dấu $...$ (nội dòng) hoặc $$...$$ (khối). Ví dụ: $d: 2x - y + 3 = 0$, $\\vec{u} = (1; 2)$, $\\frac{a}{b}$, $\\sqrt{x}$, $\\int_{a}^{b}$.
-3. Giữ nguyên 100% câu chữ tiếng Việt, không tóm tắt, không làm biến dạng câu hỏi gốc.
-4. Nếu câu hỏi có đồ thị, hình vẽ, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí hình vẽ trong câu.
-5. Gắn mã định danh cho từng câu: [MãMôn][MãĐề]-[STT] (Ví dụ: Môn ${subject}, Mã đề ${examCode} -> câu 1 là ${subject}${examCode}-01, câu 2 là ${subject}${examCode}-02...).
-6. Phân tích độ khó (B, H, VD, VDC), đưa ra lời giải tối ưu chi tiết cho từng câu.
-7. Với mỗi câu gốc, tự động sinh 3 câu tương đương cùng chuyên đề và độ khó, mã dạng [MãGốc]1, [MãGốc]2, [MãGốc]3.
-
-HÃY TRẢ VỀ DỮ LIỆU ĐÚNG ĐỊNH DẠNG JSON DUY NHẤT theo cấu trúc:
+Trả về kết quả DUY NHẤT dưới dạng JSON:
 {
   "questions": [
     {
       "id": "${subject}${examCode}-01",
       "subject": "${subject}",
-      "content": "Nội dung câu hỏi kèm công thức LaTeX $...$ và thẻ [HINH_ANH] nếu có",
+      "content": "Nội dung câu hỏi kèm $...$ và [HINH_ANH] nếu có",
       "hasImage": true,
       "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "correctIndex": 0,
       "level": "VD",
-      "solution": "Lời giải chi tiết chuẩn xác",
+      "solution": "Lời giải chi tiết",
       "variants": [
-        { "id": "${subject}${examCode}-011", "content": "Đề bài câu tương đương 1", "options": ["A", "B", "C", "D"], "correctIndex": 0 },
-        { "id": "${subject}${examCode}-012", "content": "Đề bài câu tương đương 2", "options": ["A", "B", "C", "D"], "correctIndex": 1 },
-        { "id": "${subject}${examCode}-013", "content": "Đề bài câu tương đương 3", "options": ["A", "B", "C", "D"], "correctIndex": 2 }
+        { "id": "${subject}${examCode}-011", "content": "Câu tương đương 1", "options": ["A", "B", "C", "D"], "correctIndex": 0 },
+        { "id": "${subject}${examCode}-012", "content": "Câu tương đương 2", "options": ["A", "B", "C", "D"], "correctIndex": 1 },
+        { "id": "${subject}${examCode}-013", "content": "Câu tương đương 3", "options": ["A", "B", "C", "D"], "correctIndex": 2 }
       ]
     }
   ]
 }`;
 
-    const requestBody = {
-      contents: [
-        {
-          parts: [
-            { text: systemPrompt },
-            {
-              inline_data: {
-                mime_type: mimeType || 'application/pdf',
-                data: fileData
+    // Gọi trực tiếp model gemini-2.0-flash chính thức
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: promptText },
+              {
+                inline_data: {
+                  mime_type: mimeType || 'application/pdf',
+                  data: fileData
+                }
               }
-            }
-          ]
+            ]
+          }
+        ],
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 0.1
         }
-      ],
-      generationConfig: {
-        temperature: 0.1,
-        response_mime_type: "application/json"
-      }
-    };
+      })
+    });
 
-    // Danh sách các mô hình và endpoint thử lần lượt
-    const candidateUrls = [
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${GEMINI_API_KEY}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`
-    ];
+    const data = await response.json();
 
-    let apiResponse = null;
-    let lastErrorText = "";
-
-    for (const url of candidateUrls) {
-      try {
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (resp.ok) {
-          apiResponse = resp;
-          break; // Tìm thấy mô hình hoạt động thành công
-        } else {
-          lastErrorText = await resp.text();
-        }
-      } catch (e) {
-        lastErrorText = e.message;
-      }
+    if (!response.ok) {
+      return res.status(500).json({ error: JSON.stringify(data.error || data) });
     }
 
-    if (!apiResponse) {
-      return res.status(500).json({ error: 'Lỗi từ Gemini AI API: ' + lastErrorText });
-    }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return res.status(200).json(JSON.parse(cleanJson));
 
-    const data = await apiResponse.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!candidateText) {
-      return res.status(500).json({ error: 'AI không trả về nội dung' });
-    }
-
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(candidateText);
-    } catch (parseErr) {
-      const cleanJson = candidateText.replace(/```json/g, '').replace(/```/g, '').trim();
-      parsedResult = JSON.parse(cleanJson);
-    }
-
-    return res.status(200).json(parsedResult);
   } catch (error) {
-    console.error('Server error:', error);
-    return res.status(500).json({ error: 'Lỗi xử lý server: ' + error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
