@@ -27,6 +27,18 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Danh sách 8 môn thi chuẩn ĐGNL HSA
+    const SUBJECT_LIST = [
+      { code: "T", name: "Toán học & Xử lý số liệu" },
+      { code: "V", name: "Ngữ văn - Đọc hiểu" },
+      { code: "L", name: "Vật lý" },
+      { code: "H", name: "Hóa học" },
+      { code: "B", name: "Sinh học" },
+      { code: "S", name: "Lịch sử" },
+      { code: "D", name: "Địa lý" },
+      { code: "E", name: "Tiếng Anh" }
+    ];
+
     // Component hiển thị KaTeX & Hình ảnh dán đúng vị trí
     function FormattedQuestionContent({ content, imageSrc, imageCode }) {
       const containerRef = useRef(null);
@@ -124,7 +136,7 @@
       const qList = [];
       for (let i = 1; i <= 50; i++) {
         const numStr = i < 10 ? '0' + i : '' + i;
-        const code = `T05-${numStr}`;
+        const code = `T01-${numStr}`; // Mặc định mã đề 01
         const hasImg = (i % 3 === 1);
 
         let content = "";
@@ -217,7 +229,7 @@
 
     function App() {
       const [view, setView] = useState('student');
-      const [adminTab, setAdminTab] = useState('root_bank'); // 'root_bank', 'practice_bank', 'upload_audit', 'import_exact', 'exam_creator', 'students'
+      const [adminTab, setAdminTab] = useState('root_bank');
       const [currentUserIndex, setCurrentUserIndex] = useState(0);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
       const [exams, setExams] = useState(INITIAL_EXAMS);
@@ -225,23 +237,23 @@
       const [rootQuestions, setRootQuestions] = useState(INITIAL_MATH_50);
       const [practiceQuestions, setPracticeQuestions] = useState(INITIAL_PRACTICE);
 
-      // Modal chỉnh sửa câu hỏi
       const [editingModalOpen, setEditingModalOpen] = useState(false);
       const [currentEditQuestion, setCurrentEditQuestion] = useState(null);
 
-      // TẢI FILE ĐỀ & AI THẨM ĐỊNH (KHÔI PHỤC NÚT TẢI ĐỀ)
+      // TẢI FILE ĐỀ & THẨM ĐỊNH (CÓ NHẬP MÃ ĐỀ & ĐỦ 8 MÔN)
       const [uploadedFile, setUploadedFile] = useState(null);
       const [uploadedFileProgress, setUploadedFileProgress] = useState(0);
+      const [uploadExamCode, setUploadExamCode] = useState("01"); // MÃ ĐỀ NGƯỜI DÙNG NHẬP (VD: 01)
+      const [auditSubject, setAuditSubject] = useState("T"); // 8 MÔN
       const [rawQuestionText, setRawQuestionText] = useState("");
-      const [auditSubject, setAuditSubject] = useState("T");
       const [analyzingAI, setAnalyzingAI] = useState(false);
       const [aiResult, setAiResult] = useState(null);
       const fileInputRef = useRef(null);
 
-      // Nạp câu hỏi thủ công chuẩn mã
+      // NẠP THỦ CÔNG CHUẨN MÃ
       const [newSubjectCode, setNewSubjectCode] = useState("T");
-      const [newExamCode, setNewExamCode] = useState("05");
-      const [newOrderNum, setNewOrderNum] = useState("03");
+      const [newExamCode, setNewExamCode] = useState("01");
+      const [newOrderNum, setNewOrderNum] = useState("01");
       const [newContent, setNewContent] = useState("");
       const [newOptA, setNewOptA] = useState("");
       const [newOptB, setNewOptB] = useState("");
@@ -253,7 +265,7 @@
       const [newImageBase64, setNewImageBase64] = useState("");
 
       // Quản lý đợt thi
-      const [createdExamName, setCreatedExamName] = useState("Đợt thi Khảo sát HSA Tháng 11");
+      const [createdExamName, setCreatedExamName] = useState("Đợt thi Khảo sát HSA Chuẩn 2026");
       const [createdExamPasscode, setCreatedExamPasscode] = useState("HSA2026");
       const [createdExamFee, setCreatedExamFee] = useState("50.000 VNĐ");
       const [createdExamTime, setCreatedExamTime] = useState("2026-11-15T08:00");
@@ -318,19 +330,25 @@
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
       };
 
-      // XỬ LÝ TẢI FILE ĐỀ LÊN
+      // XỬ LÝ KHI CHỌN FILE ĐỀ
       const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Hỏi người dùng mã đề nếu muốn đổi ngay lúc tải
+        const promptCode = window.prompt("Vui lòng nhập Mã Đề cần nạp (Ví dụ: 01, 02, 05):", uploadExamCode);
+        if (promptCode && promptCode.trim() !== "") {
+          setUploadExamCode(promptCode.trim());
+        }
+
         setUploadedFile(file);
-        setUploadedFileProgress(25);
+        setUploadedFileProgress(30);
 
         const timer = setInterval(() => {
           setUploadedFileProgress(prev => {
             if (prev >= 100) {
               clearInterval(timer);
-              setRawQuestionText(`[Bóc tách từ file ${file.name}]: Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên và đồ thị như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - m = 0$ có đúng 3 nghiệm thực phân biệt.`);
+              setRawQuestionText(`[Đã bóc tách từ file ${file.name} - Mã đề ${promptCode ? promptCode.trim() : uploadExamCode}]: Cho hàm số $y = f(x)$ liên tục trên $\mathbb{R}$ có bảng biến thiên và đồ thị như sau:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) = m$ có đúng 3 nghiệm thực phân biệt.`);
               return 100;
             }
             return prev + 35;
@@ -338,22 +356,31 @@
         }, 300);
       };
 
-      // KÍCH HOẠT AI THẨM ĐỊNH TỪ FILE VỪA TẢI
+      // KÍCH HOẠT AI THẨM ĐỊNH (GHÉP MÃ [MÔN][MÃ ĐỀ]-[STT])
       const handleRunAiAudit = () => {
         if (!rawQuestionText.trim()) {
-          alert("Vui lòng tải tệp đề bài lên hoặc dán nội dung câu hỏi!");
+          alert("Vui lòng tải tệp đề bài lên hoặc nhập nội dung câu hỏi!");
+          return;
+        }
+
+        if (!uploadExamCode.trim()) {
+          alert("Vui lòng nhập Mã Đề (ví dụ: 01, 02) trước khi thẩm định!");
           return;
         }
 
         setAnalyzingAI(true);
         setTimeout(() => {
-          const generatedId = `${auditSubject}05-${rootQuestions.length + 1 < 10 ? '0' + (rootQuestions.length + 1) : rootQuestions.length + 1}`;
+          const nextIndex = rootQuestions.length + 1;
+          const numStr = nextIndex < 10 ? '0' + nextIndex : '' + nextIndex;
+          const formattedId = `${auditSubject}${uploadExamCode.trim()}-${numStr}`; // VD: T01-12
+          const subjectObj = SUBJECT_LIST.find(s => s.code === auditSubject) || SUBJECT_LIST[0];
+
           const result = {
-            id: generatedId,
-            subject: auditSubject === "T" ? "Toán" : (auditSubject === "V" ? "Văn" : "Lý"),
+            id: formattedId,
+            subject: subjectObj.name,
             content: rawQuestionText,
             hasImage: true,
-            imageCode: `${generatedId}.png`,
+            imageCode: `${formattedId}.png`,
             imageSrc: null,
             options: [
               `$m \in (-2; 4)$`,
@@ -365,19 +392,19 @@
             solution: `Lời giải thẩm định độc lập 100%: Dựa vào tương giao đồ thị, phương trình có 3 nghiệm phân biệt khi cực tiểu < m < cực đại <=> -2 < m < 4.`,
             variants: [
               {
-                id: `${generatedId}1`,
+                id: `${formattedId}1`,
                 content: `Cho hàm số $y = f(x)$ có đồ thị như hình vẽ:[HINH_ANH]Có bao nhiêu giá trị nguyên của $m$ để phương trình $f(x) = 2m$ có 3 nghiệm?`,
                 options: [`$m \in (-1; 2)$`, `$m \in [-1; 2]$`, `$m = 1$`, `$m = 3$`],
                 correctIndex: 0
               },
               {
-                id: `${generatedId}2`,
+                id: `${formattedId}2`,
                 content: `Cho hàm số $y = f(x)$ có bảng biến thiên:[HINH_ANH]Phương trình $f(x) + 1 = 0$ có bao nhiêu nghiệm?`,
                 options: [`3 nghiệm`, `2 nghiệm`, `1 nghiệm`, `0 nghiệm`],
                 correctIndex: 0
               },
               {
-                id: `${generatedId}3`,
+                id: `${formattedId}3`,
                 content: `Tìm các giá trị của $m$ để đồ thị cắt đường thẳng $y = m - 1$ tại đúng một điểm.`,
                 options: [`$m < -1$ hoặc $m > 5$`, `$-1 < m < 5$`, `$m = 0$`, `$m \in \mathbb{R}$`],
                 correctIndex: 0
@@ -386,10 +413,10 @@
           };
           setAiResult(result);
           setAnalyzingAI(false);
-        }, 1200);
+        }, 1000);
       };
 
-      // LƯU CÂU HỎI THẨM ĐỊNH TỪ FILE VÀO NGÂN HÀNG
+      // LƯU CÂU HỎI THẨM ĐỊNH VÀO NGÂN HÀNG
       const handleSaveAiAuditedQuestion = () => {
         if (!aiResult) return;
 
@@ -420,9 +447,9 @@
         setRootQuestions([rootQ, ...rootQuestions]);
         setPracticeQuestions([...newVariants, ...practiceQuestions]);
 
-        alert(`ĐÃ DUYỆT THẨM ĐỊNH THÀNH CÔNG TỪ FILE TẢI LÊN!
-- Đã nạp câu gốc ${rootQ.id} vào Ngân Hàng Đề Gốc.
-- Đã nạp 3 câu luyện tập ${aiResult.variants.map(x => x.id).join(', ')} vào Ngân Hàng Luyện Tập.`);
+        alert(`ĐÃ DUYỆT THẨM ĐỊNH THÀNH CÔNG!
+- Mã định danh câu gốc: ${rootQ.id} (Mã đề: ${uploadExamCode})
+- Đã chuyển vào Ngân Hàng Đề Gốc và 3 câu vào Ngân Hàng Luyện Tập.`);
         
         setAiResult(null);
         setRawQuestionText("");
@@ -430,7 +457,7 @@
         setUploadedFileProgress(0);
       };
 
-      // Mở modal sửa câu
+      // SỬA CÂU HỎI
       const handleOpenEditModal = (q) => {
         setCurrentEditQuestion({ ...q, options: [...q.options] });
         setEditingModalOpen(true);
@@ -459,17 +486,19 @@
         alert(`Đã lưu câu hỏi ${currentEditQuestion.id}!`);
       };
 
-      // Nạp câu hỏi thủ công
+      // NẠP THỦ CÔNG
       const handleAddNewQuestion = () => {
         if (!newContent.trim()) {
           alert("Vui lòng nhập đề bài!");
           return;
         }
 
-        const formattedId = `${newSubjectCode}${newExamCode}-${newOrderNum}`;
+        const formattedId = `${newSubjectCode}${newExamCode.trim()}-${newOrderNum.trim()}`;
+        const subjectObj = SUBJECT_LIST.find(s => s.code === newSubjectCode) || SUBJECT_LIST[0];
+
         const newQ = {
           id: formattedId,
-          subject: newSubjectCode === "T" ? "Toán" : "Văn",
+          subject: subjectObj.name,
           content: newContent,
           hasImage: newHasImage,
           imageCode: newHasImage ? (newImageCode || `${formattedId}.png`) : "",
@@ -511,7 +540,7 @@
         setNewImageBase64("");
       };
 
-      // Bắt đầu thi
+      // THI THỬ
       const handleStartExam = () => {
         if (currentUser.feeStatus !== 'approved' || !currentUser.eligible) {
           alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Vui lòng nộp phí và chờ duyệt.");
@@ -522,8 +551,8 @@
           return;
         }
 
-        const full50 = rootQuestions.filter(q => q.subject === "Toán").slice(0, 50);
-        setCurrentExamQuestions(full50);
+        const full50 = rootQuestions.filter(q => q.subject.includes("Toán")).slice(0, 50);
+        setCurrentExamQuestions(full50.length > 0 ? full50 : rootQuestions.slice(0, 50));
         setAnswers({});
         setTimeLeft(75 * 60);
         setExamViolationCount(0);
@@ -557,7 +586,7 @@
                 </div>
                 <div>
                   <h1 className="font-bold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                  <span className="text-xs text-blue-200">Đầy Đủ Chức Năng Tải Đề • KaTeX Chuẩn • Dán Ảnh Đúng Vị Trí</span>
+                  <span className="text-xs text-blue-200">Đầy Đủ 8 Môn Thẩm Định • Nhập Mã Đề Tự Động • KaTeX Chuẩn</span>
                 </div>
               </div>
 
@@ -600,41 +629,41 @@
             {view === 'admin' ? (
               /* ==================== PHÒNG QUẢN TRỊ ==================== */
               <div className="space-y-6">
-                {/* MENU QUẢN TRỊ ĐẦY ĐỦ 6 PHÂN HỆ */}
+                {/* MENU QUẢN TRỊ 6 PHÂN HỆ */}
                 <div className="bg-white p-2 rounded-2xl shadow-sm border flex flex-wrap gap-2">
                   <button
                     onClick={() => setAdminTab('root_bank')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
                     📚 1. Ngân Hàng Đề Gốc ({rootQuestions.length} câu)
                   </button>
                   <button
                     onClick={() => setAdminTab('practice_bank')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
                     🎯 2. Ngân Hàng Luyện Tập ({practiceQuestions.length} câu)
                   </button>
                   <button
                     onClick={() => setAdminTab('upload_audit')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'upload_audit' ? 'bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'text-blue-700 bg-blue-50 font-bold hover:bg-blue-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'upload_audit' ? 'bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'text-blue-700 bg-blue-50 font-bold hover:bg-blue-100'}`}
                   >
-                    📤 3. Tải Lên File Đề & Thẩm Định
+                    📤 3. Tải Lên File Đề & Thẩm Định (8 Môn)
                   </button>
                   <button
                     onClick={() => setAdminTab('import_exact')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'import_exact' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'import_exact' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
-                    📥 4. Nạp Câu Chuẩn Mã (T05-03)
+                    📥 4. Nạp Câu Chuẩn Mã (T01-03)
                   </button>
                   <button
                     onClick={() => setAdminTab('exam_creator')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
                     🛠️ 5. Quản Lý Đợt Thi
                   </button>
                   <button
                     onClick={() => setAdminTab('students')}
-                    className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+                    className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
                   >
                     👥 6. Duyệt Lệ Phí
                   </button>
@@ -745,24 +774,62 @@
                   </div>
                 )}
 
-                {/* 3. TẢI LÊN FILE ĐỀ & THẨM ĐỊNH (KHÔI PHỤC HOÀN CHỈNH) */}
+                {/* 3. TẢI LÊN FILE ĐỀ & THẨM ĐỊNH (CÓ HỎI MÃ ĐỀ & ĐỦ 8 MÔN) */}
                 {adminTab === 'upload_audit' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                     <div className="border-b pb-4 flex justify-between items-center">
                       <div>
-                        <h2 className="text-lg font-bold text-blue-950">Tải Lên File Đề (Word, PDF, Ảnh) & Quy Trình AI Thẩm Định</h2>
-                        <p className="text-xs text-slate-500">Tự động trích xuất đề bài, tách hình vẽ đồ thị và nạp trực tiếp vào Ngân hàng Đề Gốc.</p>
+                        <h2 className="text-lg font-bold text-blue-950">Tải Lên File Đề (Word, PDF, Ảnh) & Thẩm Định Độc Lập</h2>
+                        <p className="text-xs text-slate-500">Hỗ trợ đầy đủ 8 môn thi. Yêu cầu nhập Mã Đề (ví dụ: 01, 02) để tự động định danh.</p>
                       </div>
-                      <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                        Hỗ trợ .docx, .pdf, .png, .jpg
+                      <span className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">
+                        Chuẩn Khung 8 Môn HSA
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        {/* NÚT CHỌN FILE TỪ MÁY TÍNH */}
+                        {/* 1. CHỌN MÔN THI TRONG 8 MÔN & NHẬP MÃ ĐỀ */}
+                        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-3">
+                          <span className="font-bold text-blue-950 text-xs block">1. Cấu hình thông tin Đề tải lên:</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-slate-700 text-xs font-semibold mb-1">Môn thi thẩm định (8 Môn):</label>
+                              <select
+                                value={auditSubject}
+                                onChange={(e) => setAuditSubject(e.target.value)}
+                                className="w-full border rounded-lg p-2 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-blue-600"
+                              >
+                                {SUBJECT_LIST.map(sub => (
+                                  <option key={sub.code} value={sub.code}>
+                                    [{sub.code}] - {sub.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-slate-700 text-xs font-semibold mb-1">Mã đề cần nạp (Ví dụ: 01, 02):</label>
+                              <input
+                                type="text"
+                                value={uploadExamCode}
+                                onChange={(e) => setUploadExamCode(e.target.value)}
+                                placeholder="01"
+                                className="w-full border rounded-lg p-2 text-xs font-mono font-bold text-blue-900 bg-white outline-none focus:ring-2 focus:ring-blue-600"
+                              />
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[11px] text-slate-600">Cấu trúc mã tự sinh: </span>
+                            <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded text-xs">
+                              {auditSubject}{uploadExamCode.trim() || "01"}-XX
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 2. CHỌN FILE TỪ MÁY TÍNH */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">1. Tải lên tệp đề thi từ máy tính:</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">2. Chọn tệp đề thi từ máy tính:</label>
                           <input
                             type="file"
                             ref={fileInputRef}
@@ -772,11 +839,11 @@
                           />
                           <div
                             onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                            className="border-2 border-dashed border-blue-500 bg-blue-50/50 hover:bg-blue-100/50 rounded-2xl p-6 text-center cursor-pointer transition"
+                            className="border-2 border-dashed border-blue-500 bg-blue-50/40 hover:bg-blue-100/50 rounded-2xl p-6 text-center cursor-pointer transition"
                           >
                             <div className="text-4xl mb-2">📁</div>
-                            <span className="text-sm font-bold text-blue-950 block">Nhấp vào đây để chọn file đề (Word, PDF, Ảnh scan)</span>
-                            <span className="text-xs text-slate-500 mt-1 block">Hoặc kéo thả file trực tiếp vào khung này</span>
+                            <span className="text-sm font-bold text-blue-950 block">Bấm vào đây để chọn tệp đề (Word, PDF, Ảnh scan)</span>
+                            <span className="text-xs text-slate-500 mt-1 block">Tự động gắn mã đề: <strong>{uploadExamCode}</strong></span>
                           </div>
 
                           {uploadedFile && (
@@ -787,26 +854,14 @@
                           )}
                         </div>
 
+                        {/* 3. NỘI DUNG CÂU HỎI TRÍCH XUẤT */}
                         <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">2. Môn thi thẩm định:</label>
-                          <select
-                            value={auditSubject}
-                            onChange={(e) => setAuditSubject(e.target.value)}
-                            className="w-full border rounded-xl p-2 text-xs font-bold bg-white"
-                          >
-                            <option value="T">Toán học & Xử lý số liệu</option>
-                            <option value="V">Văn học - Đọc hiểu</option>
-                            <option value="L">Vật lý</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">3. Nội dung văn bản câu hỏi (đã trích xuất hoặc dán trực tiếp):</label>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">3. Nội dung văn bản câu hỏi (đã bóc tách từ file hoặc dán trực tiếp):</label>
                           <textarea
                             rows="4"
                             value={rawQuestionText}
                             onChange={(e) => setRawQuestionText(e.target.value)}
-                            placeholder="Nội dung đề bài sau khi tải file sẽ tự động trích xuất vào đây..."
+                            placeholder="Nội dung đề bài bóc tách từ file sẽ hiển thị tại đây..."
                             className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600"
                           ></textarea>
                         </div>
@@ -816,7 +871,7 @@
                           disabled={analyzingAI}
                           className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-2"
                         >
-                          <span>{analyzingAI ? "Hội đồng AI đang thẩm định đề & giải tối ưu..." : "⚖️ Kích Hoạt Quy Trình Thẩm Định Độc Lập"}</span>
+                          <span>{analyzingAI ? "Hội đồng chuyên gia đang thẩm định ma trận đề..." : "⚖️ Kích Hoạt Thẩm Định Độc Lập Cho Mã Đề Này"}</span>
                         </button>
                       </div>
 
@@ -825,7 +880,7 @@
                         {aiResult ? (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded text-xs">Mã: {aiResult.id}</span>
+                              <span className="bg-amber-300 font-mono font-bold text-blue-950 px-2.5 py-1 rounded text-xs shadow-sm">Mã: {aiResult.id}</span>
                               <span className="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Môn: {aiResult.subject}</span>
                               <span className="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded font-mono">Ảnh: {aiResult.imageCode}</span>
                             </div>
@@ -850,7 +905,7 @@
                           <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
                             <span className="text-4xl mb-2">📤</span>
                             <span className="font-bold text-slate-600">Chưa có đề bài tải lên để thẩm định.</span>
-                            <span className="text-[11px] mt-1 text-slate-500">Hãy bấm nút chọn file ở cột bên trái để tải lên tệp đề Word, PDF hoặc Ảnh.</span>
+                            <span className="text-[11px] mt-1 text-slate-500">Hãy chọn môn, nhập mã đề (ví dụ 01) và bấm chọn file đề từ máy tính.</span>
                           </div>
                         )}
 
@@ -867,12 +922,12 @@
                   </div>
                 )}
 
-                {/* 4. NẠP CÂU CHUẨN MÃ */}
+                {/* 4. NẠP CÂU CHUẨN MÃ (HỖ TRỢ ĐỦ 8 MÔN) */}
                 {adminTab === 'import_exact' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                     <div className="border-b pb-4">
-                      <h2 className="text-lg font-bold text-blue-950">Nạp Câu Hỏi Chuẩn Mã (T05-03) & Dán Ảnh Đúng Vị Trí</h2>
-                      <p className="text-xs text-slate-500 mt-0.5">Chèn thẻ <code>[HINH_ANH]</code> vào giữa nội dung để ảnh nằm đúng vị trí trong đề bài.</p>
+                      <h2 className="text-lg font-bold text-blue-950">Nạp Câu Hỏi Chuẩn Mã (Ví dụ: T01-03) & Dán Ảnh Đúng Vị Trí</h2>
+                      <p className="text-xs text-slate-500 mt-0.5">Hỗ trợ đầy đủ 8 môn thi chuẩn ĐGNL HSA.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -880,13 +935,19 @@
                         <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl">
                           <span className="font-bold text-blue-950 block mb-1">Mã định danh: [Môn][Mã đề]-[STT]</span>
                           <div className="grid grid-cols-3 gap-2">
-                            <select value={newSubjectCode} onChange={(e) => setNewSubjectCode(e.target.value)} className="border rounded p-1 bg-white font-bold">
-                              <option value="T">T - Toán</option>
-                              <option value="V">V - Văn</option>
-                              <option value="L">L - Lý</option>
+                            <select 
+                              value={newSubjectCode} 
+                              onChange={(e) => setNewSubjectCode(e.target.value)} 
+                              className="border rounded p-1 bg-white font-bold"
+                            >
+                              {SUBJECT_LIST.map(sub => (
+                                <option key={sub.code} value={sub.code}>
+                                  [{sub.code}] - {sub.name.split(" ")[0]}
+                                </option>
+                              ))}
                             </select>
-                            <input type="text" value={newExamCode} onChange={(e) => setNewExamCode(e.target.value)} placeholder="Mã đề (05)" className="border rounded p-1 font-mono" />
-                            <input type="text" value={newOrderNum} onChange={(e) => setNewOrderNum(e.target.value)} placeholder="STT câu (03)" className="border rounded p-1 font-mono" />
+                            <input type="text" value={newExamCode} onChange={(e) => setNewExamCode(e.target.value)} placeholder="Mã đề (01)" className="border rounded p-1 font-mono font-bold" />
+                            <input type="text" value={newOrderNum} onChange={(e) => setNewOrderNum(e.target.value)} placeholder="STT câu (03)" className="border rounded p-1 font-mono font-bold" />
                           </div>
                           <div className="text-right mt-1">
                             <span className="font-mono font-bold text-blue-900 bg-amber-300 px-2 py-0.5 rounded text-xs">{newSubjectCode}{newExamCode}-{newOrderNum}</span>
@@ -904,7 +965,7 @@
                             rows="4"
                             value={newContent}
                             onChange={(e) => setNewContent(e.target.value)}
-                            placeholder="Ví dụ: Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên:[HINH_ANH]Tìm số nghiệm của phương trình..."
+                            placeholder="Ví dụ: Cho hàm số bậc ba $y = f(x)$ có đồ thị:[HINH_ANH]Tìm số nghiệm của phương trình..."
                             className="w-full border rounded-xl p-2.5 font-mono outline-none"
                           ></textarea>
                         </div>
@@ -1193,7 +1254,7 @@
                           <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">🎓</div>
                           <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức ({exams[0]?.name || "Đợt thi"})</h3>
                           <p className="text-xs text-slate-500 mt-1 mb-3">
-                            Lấy đúng 50 câu Toán chuẩn cấu trúc mã định danh (T05-01 đến T05-50). Hiển thị công thức KaTeX sắc nét và ảnh đồ thị đúng vị trí.
+                            Lấy đúng 50 câu Toán chuẩn cấu trúc mã định danh (T01-01 đến T01-50). Hiển thị công thức KaTeX sắc nét và ảnh đồ thị đúng vị trí.
                           </p>
 
                           <div className="space-y-2 bg-slate-50 p-3 rounded-xl border mb-4">
