@@ -2,729 +2,565 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
   <style>
     body { font-family: "Times New Roman", Times, serif; }
     .no-select { user-select: none; }
     .katex { font-size: 1.1em; }
-    .math-content { word-break: break-word; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen">
-  <div id="app"></div>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
 
-  <script>
-    // TOÀN BỘ ỨNG DỤNG CHẠY BẰNG NATIVE JAVASCRIPT SIÊU TỐC - KHÔNG DÙNG BABEL NÊN TẢI TỨC THÌ (0.1 GIÂY)
-    
-    // 8 Môn thi theo chuẩn GDPT 2018
-    const SUBJECTS = [
-      { code: "T", name: "Toán", fullName: "Toán và xử lý số liệu" },
-      { code: "V", name: "Văn", fullName: "Ngữ văn - Đọc hiểu" },
-      { code: "L", name: "Lý", fullName: "Vật lý" },
-      { code: "H", name: "Hóa", fullName: "Hóa học" },
-      { code: "B", name: "Sinh", fullName: "Sinh học" },
-      { code: "E", name: "Tiếng Anh", fullName: "Tiếng Anh" },
-      { code: "S", name: "Sử", fullName: "Lịch sử" },
-      { code: "D", name: "Địa", fullName: "Địa lý" }
-    ];
+  <!-- HEADER -->
+  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-xl shadow border-2 border-amber-300">
+          HSA
+        </div>
+        <div>
+          <h1 class="font-bold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
+          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Bản v21 Siêu Ổn Định</span>
+        </div>
+      </div>
 
-    // Bảng biến thiên mẫu SVG trực quan
-    const SAMPLE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14'>-∞</text><text x='180' y='26' font-size='14'>-1</text><text x='280' y='26' font-size='14'>1</text><text x='390' y='26' font-size='14'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='13'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
+      <div class="flex items-center space-x-2">
+        <div class="hidden md:flex items-center bg-blue-950/70 px-3 py-1 rounded-lg text-xs">
+          <span class="text-slate-300 mr-2">Thí sinh:</span>
+          <span class="text-amber-300 font-bold" id="header-user">Nguyễn Văn An (07-12A1-001)</span>
+        </div>
 
-    // Dữ liệu ứng dụng
-    const state = {
-      view: 'student', // 'student' hoặc 'admin'
-      studentMode: 'hub', // 'hub', 'practice_topic', 'practice_part', 'exam', 'result'
-      adminTab: 'audit', // 'audit', 'root_bank', 'practice_bank', 'exam_creator', 'students'
-      currentUserIndex: 0,
-      students: [
-        { id: "07-12A1-001", name: "Nguyễn Văn An", birthYear: "2007", classUnit: "12A1", email: "an.nguyen@example.com", eligible: true, feeStatus: "approved", regTime: "2026-10-15 08:30" },
-        { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" },
-        { id: "07-TP-003", name: "Lê Hoàng Long", birthYear: "2007", classUnit: "TP", email: "long.le@example.com", eligible: false, feeStatus: "unregistered", regTime: "-" }
-      ],
-      exams: [
-        { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 150 }
-      ],
-      rootQuestions: [],
-      practiceQuestions: [],
-      bankSubjectFilter: 'Tất cả',
-      
-      // Form Thẩm định
-      auditSubjectCode: 'T',
-      auditExamCode: '01',
-      rawQuestionInput: '',
-      uploadedFileName: '',
-      analyzingAI: false,
-      aiAuditedResult: null,
-      showConfirmModal: false,
+        <div class="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
+          <button id="btn-view-student" onclick="switchView('student')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow">
+            Phòng Học Viên
+          </button>
+          <button id="btn-view-admin" onclick="switchView('admin')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white">
+            Phòng Quản Trị
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-      // Thi
-      examPasscode: '',
-      electiveChoice: 'english',
-      currentExamQuestions: [],
-      currentExamPart: 1, // 1: Toán (75p), 2: Văn (60p), 3: Tự chọn (60p)
-      activeQuestionIdx: 0,
-      answers: {},
-      timeLeft: 75 * 60,
-      examViolationCount: 0,
-      examFinishedData: null,
-      showPaymentModal: false,
-      paymentRefCode: ''
-    };
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1">
 
-    // Khởi tạo câu hỏi Toán mẫu nhẹ nhàng
-    function initSampleQuestions() {
-      const qList = [];
-      const topics = ["Hàm số & Đạo hàm", "Mũ - Logarit", "Tích phân", "Tọa độ Oxyz", "Xác suất", "Hình không gian"];
-      for (let i = 1; i <= 50; i++) {
-        const numStr = i < 10 ? '0' + i : '' + i;
-        const code = 'T01-' + numStr;
-        const hasImg = (i % 3 === 1);
-        let content = "";
-        let opts = [];
+    <!-- ==================== VIEW 1: PHÒNG HỌC VIÊN ==================== -->
+    <div id="view-student" class="space-y-6">
+      <!-- Hub chính -->
+      <div id="student-hub" class="space-y-6">
+        <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-slate-900">Nguyễn Văn An</h2>
+              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">07-12A1-001</span>
+              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Lớp: 12A1</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Đợt thi: <strong>Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</strong></p>
+          </div>
+          <div>
+            <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs font-bold">
+              ✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI
+            </span>
+          </div>
+        </div>
 
-        if (i % 3 === 1) {
-          content = "Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.";
-          opts = ["$m \in (-1; 1)$", "$m \in [-2; 2]$", "$m < -1$ hoặc $m > 1$", "$m = 0$"];
-        } else if (i % 3 === 2) {
-          content = "Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và $\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:";
-          opts = ["$S = 9$", "$S = 12$", "$S = 15$", "$S = 7$"];
-        } else {
-          content = "Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:";
-          opts = ["$\vec{u} = (1; 2)$", "$\vec{u} = (2; -1)$", "$\vec{u} = (-1; 2)$", "$\vec{u} = (2; 1)$"];
-        }
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Thẻ Luyện Tập -->
+          <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
+              <h3 class="text-base font-bold text-slate-900 mb-1">1. Phòng Luyện Tập</h3>
+              <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+                Rèn luyện câu hỏi bám sát CT GDPT 2018. Có hiển thị đồ thị và công thức KaTeX chuẩn.
+              </p>
+            </div>
+            <button onclick="startPracticeSession()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
+              Vào Luyện Tập Chuyên Đề (30 câu)
+            </button>
+          </div>
 
-        qList.push({
-          id: code,
-          subjectCode: "T",
-          subjectName: "Toán",
-          topic: topics[(i - 1) % topics.length],
-          level: i <= 13 ? "B" : (i <= 28 ? "H" : "VD"),
-          content: content,
-          hasImage: hasImg,
-          imageCode: hasImg ? code + ".png" : "",
-          imageSrc: hasImg ? SAMPLE_SVG : null,
-          options: opts,
-          correctIndex: 0,
-          solution: "Lời giải chi tiết chuẩn xác cho câu " + code + "."
-        });
-      }
-      state.rootQuestions = qList;
-
-      // Sinh câu phái sinh nhẹ
-      const pList = [];
-      qList.slice(0, 15).forEach(q => {
-        for (let k = 1; k <= 3; k++) {
-          pList.push({
-            id: q.id + k,
-            rootId: q.id,
-            subjectCode: q.subjectCode,
-            subjectName: q.subjectName,
-            topic: q.topic,
-            level: q.level,
-            content: "Biến thể câu hỏi " + k + " cùng chuyên đề: " + q.content,
-            hasImage: q.hasImage,
-            imageCode: q.imageCode,
-            imageSrc: q.imageSrc,
-            options: q.options,
-            correctIndex: (q.correctIndex + k) % 4,
-            solution: "Lời giải câu luyện tập " + q.id + k
-          });
-        }
-      });
-      state.practiceQuestions = pList;
-    }
-
-    // CHUẨN HÓA FONT CHỮ & TOÁN HỌC KHÔNG LỖI
-    function fixFont(str) {
-      if (!str) return "";
-      try { return String(str).normalize('NFC'); } catch(e) { return String(str); }
-    }
-
-    function renderMathText(text) {
-      if (!text) return "";
-      const fixed = fixFont(text);
-      // Thay thế công thức KaTeX
-      return fixed.replace(/\$([^$]+)\$/g, function(match, formula) {
-        try {
-          if (window.katex) {
-            return window.katex.renderToString(formula, { throwOnError: false });
-          }
-        } catch(e) {}
-        return '<span class="font-bold text-blue-900">' + formula + '</span>';
-      });
-    }
-
-    // Timer đồng hồ thi
-    let timerInterval = null;
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if ((state.studentMode === 'exam' || state.studentMode.startsWith('practice')) && state.timeLeft > 0) {
-          state.timeLeft -= 1;
-          const el = document.getElementById("timer-display");
-          if (el) el.innerText = formatTime(state.timeLeft);
-          if (state.timeLeft <= 0) {
-            submitExam();
-          }
-        }
-      }, 1000);
-    }
-
-    function formatTime(secs) {
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      return (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
-    }
-
-    // Giám sát chống rời màn hình
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && state.studentMode === 'exam') {
-        state.examViolationCount += 1;
-        alert("⚠️ CẢNH BÁO VI PHẠM: Bạn đã rời màn hình thi (" + state.examViolationCount + "/3 lần)! Quá 3 lần bài thi tự động thu.");
-        if (state.examViolationCount >= 3) {
-          submitExam();
-        } else {
-          renderApp();
-        }
-      }
-    });
-
-    // CÁC THAO TÁC NGHIỆP VỤ
-    function setView(v) {
-      state.view = v;
-      if (v === 'student') state.studentMode = 'hub';
-      renderApp();
-    }
-
-    function setAdminTab(tab) {
-      state.adminTab = tab;
-      renderApp();
-    }
-
-    function setStudentMode(mode) {
-      state.studentMode = mode;
-      renderApp();
-    }
-
-    function triggerAiAudit() {
-      const input = document.getElementById("raw-question-textarea");
-      const text = input ? input.value : state.rawQuestionInput;
-      if (!text.trim()) {
-        alert("Vui lòng nhập hoặc dán nội dung đề bài!");
-        return;
-      }
-
-      state.rawQuestionInput = text;
-      state.analyzingAI = true;
-      renderApp();
-
-      setTimeout(() => {
-        const nextIdx = state.rootQuestions.filter(q => q.subjectCode === state.auditSubjectCode).length + 1;
-        const numStr = nextIdx < 10 ? '0' + nextIdx : '' + nextIdx;
-        const code = state.auditSubjectCode + state.auditExamCode + '-' + numStr;
-
-        const subObj = SUBJECTS.find(s => s.code === state.auditSubjectCode) || SUBJECTS[0];
-        const hasImg = text.includes("[HINH_ANH]") || text.toLowerCase().includes("bảng biến thiên") || text.toLowerCase().includes("đồ thị");
-
-        state.aiAuditedResult = {
-          id: code,
-          subjectCode: state.auditSubjectCode,
-          subjectName: subObj.name,
-          topic: "Trọng tâm GDPT 2018",
-          level: "VD",
-          content: text + (hasImg && !text.includes("[HINH_ANH]") ? " [HINH_ANH] " : ""),
-          hasImage: hasImg,
-          imageCode: code + ".png",
-          imageSrc: hasImg ? SAMPLE_SVG : null,
-          options: ["Phương án A (Tối ưu)", "Phương án B", "Phương án C", "Phương án D"],
-          correctIndex: 0,
-          solution: "Lời giải chi tiết chuẩn xác 100% từ chuyên gia thẩm định đề.",
-          variants: [
-            { id: code + "1", content: "[Biến thể 1] Cùng chuyên đề với câu " + code + ": " + text },
-            { id: code + "2", content: "[Biến thể 2] Mở rộng số liệu câu " + code + ": " + text },
-            { id: code + "3", content: "[Biến thể 3] Vấn đề thực tế từ câu " + code + ": " + text }
-          ]
-        };
-        state.analyzingAI = false;
-        renderApp();
-      }, 300);
-    }
-
-    function confirmAddQuestionToBank() {
-      if (!state.aiAuditedResult) return;
-      const res = state.aiAuditedResult;
-
-      const newRoot = {
-        id: res.id,
-        subjectCode: res.subjectCode,
-        subjectName: res.subjectName,
-        topic: res.topic,
-        level: res.level,
-        content: res.content,
-        hasImage: res.hasImage,
-        imageCode: res.imageCode,
-        imageSrc: res.imageSrc,
-        options: res.options,
-        correctIndex: res.correctIndex,
-        solution: res.solution
-      };
-
-      const pVars = res.variants.map((v, i) => ({
-        id: v.id,
-        rootId: res.id,
-        subjectCode: res.subjectCode,
-        subjectName: res.subjectName,
-        topic: res.topic,
-        level: res.level,
-        content: v.content,
-        hasImage: res.hasImage,
-        imageCode: res.imageCode,
-        imageSrc: res.imageSrc,
-        options: res.options,
-        correctIndex: (i + 1) % 4,
-        solution: "Lời giải cho câu luyện tập " + v.id
-      }));
-
-      state.rootQuestions.unshift(newRoot);
-      state.practiceQuestions.unshift(...pVars);
-      state.aiAuditedResult = null;
-      state.rawQuestionInput = '';
-      state.showConfirmModal = false;
-
-      alert("✓ ĐÃ THÊM THÀNH CÔNG!
-- Đã nạp câu " + newRoot.id + " vào Ngân hàng Đề Gốc.
-- Tự động sinh 3 câu tương đương vào Ngân hàng Luyện Thi.");
-      renderApp();
-    }
-
-    function startExamSession() {
-      const currentUser = state.students[state.currentUserIndex];
-      if (!currentUser.eligible || currentUser.feeStatus !== 'approved') {
-        alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN DỰ THI! Vui lòng nộp lệ phí và chờ Quản trị viên duyệt.");
-        return;
-      }
-
-      if (state.examPasscode.trim() !== state.exams[0].passCode) {
-        alert("Mật khẩu đợt thi không chính xác! (Mật khẩu: " + state.exams[0].passCode + ")");
-        return;
-      }
-
-      const q50 = state.rootQuestions.filter(q => q.subjectCode === 'T').slice(0, 50);
-      state.currentExamQuestions = q50;
-      state.currentExamPart = 1;
-      state.answers = {};
-      state.timeLeft = 75 * 60;
-      state.examViolationCount = 0;
-      state.activeQuestionIdx = 0;
-      state.studentMode = 'exam';
-      startTimer();
-      renderApp();
-    }
-
-    function submitExam() {
-      if (state.currentExamPart === 1 && state.studentMode === 'exam') {
-        if (confirm("Hoàn thành Phần 1 (Toán & Số liệu)! Chuyển sang Phần 2 (Ngữ văn: 50 câu - 60 phút)?")) {
-          state.currentExamPart = 2;
-          state.timeLeft = 60 * 60;
-          state.activeQuestionIdx = 0;
-          renderApp();
-          return;
-        }
-      }
-
-      let score = 0;
-      state.currentExamQuestions.forEach((q, idx) => {
-        if (state.answers[idx] === q.correctIndex) score += 1;
-      });
-
-      state.examFinishedData = {
-        total: score * 3,
-        violations: state.examViolationCount
-      };
-      state.studentMode = 'result';
-      renderApp();
-    }
-
-    // HÀM VẼ GIAO DIỆN CHÍNH (RENDER SIÊU NHANH BẰNG NATIVE DOM)
-    function renderApp() {
-      const app = document.getElementById("app");
-      const currentUser = state.students[state.currentUserIndex];
-
-      let html = '';
-
-      // 1. HEADER
-      html += `
-        <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
-          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-xl shadow-md border-2 border-amber-300">
-                HSA
+          <!-- Thẻ Thi Đợt -->
+          <div class="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">🎓</div>
+              <h3 class="text-base font-bold text-slate-900 mb-1">2. Phòng Thi Chính Thức HSA</h3>
+              <div class="space-y-1.5 bg-slate-50 p-3 rounded-xl border mt-2">
+                <label class="block text-[11px] font-bold text-slate-600 uppercase">Mật khẩu đợt thi:</label>
+                <input type="password" id="input-exam-pass" value="HSA2026" placeholder="Nhập HSA2026..." class="w-full border rounded-lg p-2 text-xs outline-none bg-white font-mono" />
               </div>
-              <div>
-                <h1 class="font-extrabold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Phiên Bản Siêu Tốc v20</span>
+            </div>
+            <button onclick="startOfficialExam()" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
+              Vào Phòng Thi Khảo Sát (Chuẩn HSA)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Màn hình làm bài thi -->
+      <div id="student-exam" class="hidden space-y-4 no-select">
+        <div class="bg-white p-4 rounded-xl border shadow-sm flex items-center justify-between">
+          <div>
+            <span id="exam-badge" class="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
+              BÀI THI CHÍNH THỨC
+            </span>
+            <h2 id="exam-title" class="text-sm font-bold text-slate-800 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="text-right">
+              <span class="text-[10px] text-slate-500 block uppercase font-bold">Thời gian</span>
+              <span id="exam-timer" class="font-mono text-xl font-black text-rose-600">75:00</span>
+            </div>
+            <button onclick="submitExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow">
+              Nộp Bài
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div class="lg:col-span-3 bg-white p-6 rounded-xl border shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+              <span id="q-number" class="font-bold text-xs text-blue-900">Câu 1</span>
+              <span id="q-code" class="font-mono text-xs text-slate-500">T01-01</span>
+            </div>
+
+            <!-- Nội dung câu hỏi render KaTeX -->
+            <div id="q-content" class="text-sm leading-relaxed text-slate-900 space-y-3"></div>
+
+            <!-- 4 Phương án -->
+            <div id="q-options" class="space-y-2 pt-2"></div>
+
+            <div class="flex justify-between pt-4 border-t">
+              <button onclick="prevQuestion()" class="px-3 py-1.5 border rounded text-xs font-semibold hover:bg-slate-50">← Câu trước</button>
+              <button onclick="nextQuestion()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Câu sau →</button>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border shadow-sm h-fit">
+            <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Mục lục câu hỏi</h4>
+            <div id="q-matrix" class="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Màn hình kết quả -->
+      <div id="student-result" class="hidden bg-white p-8 rounded-2xl border shadow-sm space-y-6 text-center">
+        <h2 class="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI HSA</h2>
+        <div class="inline-block bg-blue-50 border border-blue-200 px-8 py-4 rounded-2xl">
+          <span class="text-xs text-blue-700 font-bold uppercase">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
+          <div id="result-score" class="text-4xl font-black text-blue-950 mt-1">126 / 150</div>
+        </div>
+        <div>
+          <button onclick="backToHub()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
+            Trở về Trang Chủ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ ==================== -->
+    <div id="view-admin" class="hidden space-y-6">
+      <!-- Tabs Quản trị -->
+      <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
+        <button id="tab-btn-audit" onclick="switchAdminTab('audit')" class="px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
+          📤 1. AI Thẩm Định Đề (8 Môn)
+        </button>
+        <button id="tab-btn-bank" onclick="switchAdminTab('bank')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
+          📚 2. Ngân Hàng Đề Gốc (<span id="bank-count">50</span> câu)
+        </button>
+        <button id="tab-btn-exams" onclick="switchAdminTab('exams')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
+          🛠️ 3. Quản Lý Đợt Thi
+        </button>
+      </div>
+
+      <!-- Tab 1: AI Thẩm định đề -->
+      <div id="admin-tab-audit" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+        <div class="border-b pb-3">
+          <h2 class="text-lg font-bold text-blue-950">Quy Trình AI Thẩm Định Đề Độc Lập Chuẩn CT GDPT 2018</h2>
+          <p class="text-xs text-slate-500">Bảo tồn phông chữ Times New Roman, công thức toán KaTeX và dán ảnh đúng vị trí.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-3">
+              <span class="font-bold text-blue-950 text-xs block uppercase">Cấu hình Đề Nạp:</span>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-700 text-xs font-bold mb-1">Môn thi:</label>
+                  <select id="audit-subject" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
+                    <option value="T">[T] - Toán và xử lý số liệu</option>
+                    <option value="V">[V] - Ngữ văn - Đọc hiểu</option>
+                    <option value="L">[L] - Vật lý</option>
+                    <option value="H">[H] - Hóa học</option>
+                    <option value="B">[B] - Sinh học</option>
+                    <option value="E">[E] - Tiếng Anh</option>
+                    <option value="S">[S] - Lịch sử</option>
+                    <option value="D">[D] - Địa lý</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-700 text-xs font-bold mb-1">Mã đề (Ví dụ: 01, 02):</label>
+                  <input type="text" id="audit-exam-code" value="01" class="w-full border rounded-xl p-2 text-xs font-mono font-bold text-blue-900 bg-white" />
+                </div>
               </div>
             </div>
 
-            <div class="flex items-center space-x-2">
-              <div class="hidden md:flex items-center bg-blue-950/70 px-3 py-1 rounded-lg text-xs">
-                <span class="text-slate-300 mr-2">Thí sinh:</span>
-                <select onchange="state.currentUserIndex = Number(this.value); renderApp();" class="bg-transparent text-amber-300 font-bold outline-none cursor-pointer">
-                  ${state.students.map((st, i) => `
-                    <option value="${i}" ${i === state.currentUserIndex ? 'selected' : ''} class="text-slate-900">
-                      ${st.name} (${st.id} - ${st.feeStatus === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'})
-                    </option>
-                  `).join('')}
-                </select>
-              </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ Word/PDF):</label>
+              <textarea id="audit-raw-input" rows="6" placeholder="Dán nội dung câu hỏi tại đây...&#10;Ví dụ: Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:&#10;A. $\vec{u} = (1; 2)$B.$\vec{u} = (2; -1)&#10;[HINH_ANH]" class="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"></textarea>
+              <span onclick="insertImageTag()" class="text-[11px] text-blue-600 cursor-pointer font-bold block mt-1">+ Chèn thẻ định vị ảnh [HINH_ANH]</span>
+            </div>
 
-              <div class="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
-                <button onclick="setView('student')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition ${state.view === 'student' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-blue-200 hover:text-white'}">
-                  Phòng Học Viên
-                </button>
-                <button onclick="setView('admin')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition ${state.view === 'admin' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-blue-200 hover:text-white'}">
-                  Phòng Quản Trị
-                </button>
+            <button onclick="runAuditProcess()" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
+              ⚖️ Kích Hoạt Thẩm Định Đề
+            </button>
+          </div>
+
+          <!-- Kết quả thẩm định -->
+          <div class="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
+            <div id="audit-result-box" class="space-y-3">
+              <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+                <span class="text-3xl mb-1">⚖️</span>
+                <span class="font-bold">Chưa có đề bài thẩm định.</span>
+                <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
+              </div>
+            </div>
+
+            <div id="audit-action-box" class="hidden pt-3 border-t mt-3 space-y-2">
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
+                <span class="font-bold text-amber-900 block text-xs">Bạn có muốn thêm câu hỏi này vào Ngân hàng Đề Gốc không?</span>
+                <div class="flex gap-2">
+                  <button onclick="confirmAddToBank()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+                    ✓ Xác nhận thêm vào Ngân hàng đề
+                  </button>
+                  <button onclick="cancelAudit()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
+                    ✕ Hủy bỏ
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </header>
-      `;
+        </div>
+      </div>
 
-      // 2. MAIN BODY
-      html += `<main class="max-w-7xl w-full mx-auto p-4 md:p-6">`;
+      <!-- Tab 2: Ngân hàng đề gốc -->
+      <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Nguyên Mẫu)</h2>
+        </div>
+        <div id="bank-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+      </div>
 
-      if (state.view === 'admin') {
-        // ==================== PHÒNG QUẢN TRỊ ====================
-        html += `
-          <div class="space-y-6">
-            <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
-              <button onclick="setAdminTab('audit')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${state.adminTab === 'audit' ? 'bg-blue-800 text-white shadow-md ring-2 ring-amber-400' : 'text-blue-900 bg-blue-50'}">
-                📤 1. AI Thẩm Định Đề (8 Môn)
-              </button>
-              <button onclick="setAdminTab('root_bank')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${state.adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}">
-                📚 2. Ngân Hàng Đề Gốc (${state.rootQuestions.length} câu)
-              </button>
-              <button onclick="setAdminTab('practice_bank')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${state.adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}">
-                🎯 3. Ngân Hàng Luyện Thi (${state.practiceQuestions.length} câu)
-              </button>
-              <button onclick="setAdminTab('exam_creator')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${state.adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}">
-                🛠️ 4. Quản Lý Đợt Thi (${state.exams.length} đợt)
-              </button>
-              <button onclick="setAdminTab('students')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${state.adminTab === 'students' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}">
-                👥 5. Quản Lý Thí Sinh
-              </button>
-            </div>
-        `;
+      <!-- Tab 3: Quản lý đợt thi -->
+      <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <h2 class="text-lg font-bold text-blue-950">Danh Sách Đợt Thi</h2>
+        <div class="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
+          <div>
+            <span class="font-bold text-sm text-blue-950">Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</span>
+            <span class="ml-2 font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Mật khẩu: HSA2026</span>
+          </div>
+          <span class="text-emerald-700 font-bold">Đang Mở</span>
+        </div>
+      </div>
+    </div>
 
-        if (state.adminTab === 'audit') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-              <div class="border-b pb-3 flex justify-between items-center">
-                <div>
-                  <h2 class="text-lg font-bold text-blue-950">Quy Trình AI Thẩm Định Đề Chuẩn CT GDPT 2018</h2>
-                  <p class="text-xs text-slate-500">Phân loại 8 môn, đánh giá độ khó, bảo tồn công thức KaTeX & Bảng biến thiên.</p>
-                </div>
-              </div>
+  </main>
 
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                  <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-3">
-                    <span class="font-bold text-blue-950 text-xs block uppercase">Cấu hình Đề Nạp:</span>
-                    <div class="grid grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-slate-700 text-xs font-bold mb-1">Môn thi:</label>
-                        <select onchange="state.auditSubjectCode = this.value; renderApp();" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
-                          ${SUBJECTS.map(s => `<option value="${s.code}" ${s.code === state.auditSubjectCode ? 'selected' : ''}>[${s.code}] - ${s.fullName}</option>`).join('')}
-                        </select>
-                      </div>
-                      <div>
-                        <label class="block text-slate-700 text-xs font-bold mb-1">Mã đề (Ví dụ: 01, 02):</label>
-                        <input type="text" value="${state.auditExamCode}" onchange="state.auditExamCode = this.value; renderApp();" class="w-full border rounded-xl p-2 text-xs font-mono font-bold text-blue-900 bg-white" />
-                      </div>
-                    </div>
-                  </div>
+  <script>
+    // KHỞI TẠO DỮ LIỆU BAN ĐẦU
+    const SAMPLE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14'>-∞</text><text x='180' y='26' font-size='14'>-1</text><text x='280' y='26' font-size='14'>1</text><text x='390' y='26' font-size='14'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='13'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
-                  <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ file Word/PDF):</label>
-                    <textarea id="raw-question-textarea" rows="6" placeholder="Ví dụ dán:&#10;Câu 1: Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:&#10;A. $\vec{u} = (1; 2)$   B. $\vec{u} = (2; -1)$&#10;[HINH_ANH]" class="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm">${state.rawQuestionInput}</textarea>
-                    <span onclick="const el=document.getElementById('raw-question-textarea'); el.value += ' [HINH_ANH] '; state.rawQuestionInput = el.value;" class="text-[11px] text-blue-600 cursor-pointer font-bold block mt-1">+ Chèn thẻ định vị ảnh [HINH_ANH]</span>
-                  </div>
+    let dbQuestions = [];
+    for (let i = 1; i <= 50; i++) {
+      const numStr = i < 10 ? '0' + i : '' + i;
+      const code = 'T01-' + numStr;
+      const hasImg = (i % 3 === 1);
+      let content = "";
+      let opts = [];
 
-                  <button onclick="triggerAiAudit()" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md transition">
-                    ${state.analyzingAI ? 'AI Đang thẩm định...' : '⚖️ Kích Hoạt Thẩm Định Đề'}
-                  </button>
-                </div>
-
-                <div class="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
-                  ${state.aiAuditedResult ? `
-                    <div class="space-y-3">
-                      <div class="flex gap-2">
-                        <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded">${state.aiAuditedResult.id}</span>
-                        <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">${state.aiAuditedResult.subjectName}</span>
-                      </div>
-                      <div class="bg-white p-3 rounded-xl border leading-relaxed">
-                        ${renderMathText(state.aiAuditedResult.content)}
-                        ${state.aiAuditedResult.hasImage ? `<div class="my-2 text-center p-2 bg-slate-50 border rounded"><img src="${state.aiAuditedResult.imageSrc}" class="max-h-48 mx-auto" /></div>` : ''}
-                      </div>
-                      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
-                        <span class="font-bold text-amber-900 block">Bạn có muốn thêm câu hỏi ${state.aiAuditedResult.id} vào Ngân hàng Đề Gốc không?</span>
-                        <div class="flex gap-2">
-                          <button onclick="confirmAddQuestionToBank()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">
-                            ✓ Xác nhận thêm vào Ngân hàng đề
-                          </button>
-                          <button onclick="state.aiAuditedResult = null; renderApp();" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
-                            ✕ Hủy bỏ
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ` : `
-                    <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                      <span class="text-3xl mb-1">⚖️</span>
-                      <span class="font-bold">Chưa có đề bài thẩm định.</span>
-                      <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
-                    </div>
-                  `}
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (state.adminTab === 'root_bank') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-              <div class="flex justify-between items-center border-b pb-3">
-                <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Nguyên Mẫu)</h2>
-                <span class="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs">${state.rootQuestions.length} câu</span>
-              </div>
-              <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                ${state.rootQuestions.map(q => `
-                  <div class="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
-                    <div class="flex justify-between items-center">
-                      <span class="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded">${q.id}</span>
-                      <button onclick="if(confirm('Xóa câu ${q.id}?')) { state.rootQuestions = state.rootQuestions.filter(x => x.id !== '${q.id}'); renderApp(); }" class="text-rose-600 font-bold">🗑️ Xóa</button>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border leading-relaxed">
-                      ${renderMathText(q.content)}
-                      ${q.hasImage ? `<div class="my-2 text-center p-2 bg-slate-50 border rounded"><img src="${q.imageSrc}" class="max-h-48 mx-auto" /></div>` : ''}
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                      ${q.options.map((opt, oIdx) => `
-                        <div class="p-2 border rounded bg-white ${oIdx === q.correctIndex ? 'border-emerald-500 font-bold text-emerald-800 bg-emerald-50' : ''}">
-                          ${renderMathText(opt)}
-                        </div>
-                      `).join('')}
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        } else if (state.adminTab === 'practice_bank') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-              <div class="flex justify-between items-center border-b pb-3">
-                <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Luyện Thi (${state.practiceQuestions.length} câu)</h2>
-                <button onclick="alert('Đang tải bài tập theo chuyên đề...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
-              </div>
-              <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                ${state.practiceQuestions.map(q => `
-                  <div class="p-3 bg-slate-50 border rounded-xl text-xs space-y-1.5">
-                    <span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-2 py-0.5 rounded">${q.id}</span>
-                    <div class="bg-white p-2.5 rounded-lg border">${renderMathText(q.content)}</div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        } else if (state.adminTab === 'exam_creator') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-              <h2 class="text-lg font-bold text-blue-950">Quản Lý Đợt Thi</h2>
-              <div class="space-y-2">
-                ${state.exams.map(ex => `
-                  <div class="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
-                    <div>
-                      <span class="font-bold text-sm text-blue-950">${ex.name}</span>
-                      <span class="ml-2 font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Pass: ${ex.passCode}</span>
-                    </div>
-                    <button onclick="if(confirm('Xóa đợt thi ${ex.name}?')) { state.exams = state.exams.filter(x => x.id !== '${ex.id}'); renderApp(); }" class="bg-rose-50 text-rose-700 border border-rose-200 font-bold px-3 py-1 rounded-lg">
-                      🗑️ Xóa Đợt Thi
-                    </button>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        } else if (state.adminTab === 'students') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-              <h2 class="text-lg font-bold text-blue-950">Quản Lý Học Viên</h2>
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 border-b">
-                  <tr>
-                    <th class="p-2">ID</th><th class="p-2">Họ Tên</th><th class="p-2">Lớp</th><th class="p-2">Lệ phí</th><th class="p-2 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y">
-                  ${state.students.map((st, i) => `
-                    <tr>
-                      <td class="p-2 font-mono font-bold text-blue-900">${st.id}</td>
-                      <td class="p-2">${st.name}</td>
-                      <td class="p-2">${st.classUnit}</td>
-                      <td class="p-2">${st.feeStatus === 'approved' ? '<span class="text-emerald-700 font-bold">ĐÃ NỘP</span>' : '<span class="text-amber-700 font-bold">CHỜ DUYỆT</span>'}</td>
-                      <td class="p-2 text-right">
-                        <button onclick="state.students[${i}].eligible = !state.students[${i}].eligible; state.students[${i}].feeStatus = 'approved'; renderApp();" class="text-blue-600 font-bold">
-                          ${st.eligible ? 'Tắt quyền thi' : 'Duyệt phí & Bật quyền thi'}
-                        </button>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
-        }
-
-        html += `</div>`;
+      if (i % 3 === 1) {
+        content = "Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.";
+        opts = ["$m \\in (-1; 1)$", "$m \\in [-2; 2]$", "$m < -1$ hoặc $m > 1$", "$m = 0$"];
+      } else if (i % 3 === 2) {
+        content = "Biết tích phân $I = \\int_{1}^{e} \\frac{\\ln x}{x\\sqrt{1 + \\ln x}} dx = \\frac{a - b\\sqrt{2}}{c}$, với $a, b, c \\in \\mathbb{Z}$ và tối giản. Giá trị $S = a + b + c$ bằng:";
+        opts = ["$S = 9$", "$S = 12$", "$S = 15$", "$S = 7$"];
       } else {
-        // ==================== PHÒNG HỌC VIÊN ====================
-        if (state.studentMode === 'hub') {
-          html += `
-            <div class="space-y-6">
-              <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h2 class="text-lg font-bold text-slate-900">${currentUser.name}</h2>
-                    <span class="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">${currentUser.id}</span>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-1">Đợt thi: <strong>${state.exams[0]?.name}</strong></p>
-                </div>
-                <div>
-                  ${currentUser.eligible && currentUser.feeStatus === 'approved' ? `
-                    <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold">✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI</span>
-                  ` : `
-                    <button onclick="state.students[state.currentUserIndex].feeStatus = 'pending'; alert('Đã gửi yêu cầu nộp lệ phí!'); renderApp();" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow">
-                      💳 Nộp Lệ Phí Thi (${state.exams[0]?.fee})
-                    </button>
-                  `}
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-3">
-                  <h3 class="text-base font-bold text-slate-900">1. Phòng Luyện Tập</h3>
-                  <p class="text-xs text-slate-500">Luyện tập theo chuyên đề hoặc theo phần, có hiển thị công thức toán và đồ thị chuẩn.</p>
-                  <button onclick="state.currentExamQuestions = state.practiceQuestions.slice(0, 30); state.timeLeft = 45*60; state.activeQuestionIdx = 0; state.answers = {}; state.studentMode = 'practice'; startTimer(); renderApp();" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow">
-                    Vào Luyện Tập Chuyên Đề (30 câu)
-                  </button>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm space-y-3">
-                  <h3 class="text-base font-bold text-slate-900">2. Phòng Thi Chính Thức HSA</h3>
-                  <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase">Mật khẩu đợt thi:</label>
-                    <input type="password" id="exam-pass-input" value="${state.examPasscode}" onchange="state.examPasscode = this.value;" placeholder="Nhập ${state.exams[0]?.passCode}..." class="w-full border rounded-lg p-2 text-xs outline-none bg-white font-mono" />
-                  </div>
-                  <button onclick="state.examPasscode = document.getElementById('exam-pass-input').value; startExamSession();" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow">
-                    Vào Phòng Thi Khảo Sát
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-        } else if (state.studentMode === 'exam' || state.studentMode === 'practice') {
-          const q = state.currentExamQuestions[state.activeQuestionIdx];
-          html += `
-            <div class="space-y-4 no-select">
-              <div class="bg-white p-4 rounded-xl border shadow-sm flex items-center justify-between">
-                <div>
-                  <span class="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
-                    ${state.studentMode === 'exam' ? 'BÀI THI CHÍNH THỨC' : 'BÀI LUYỆN TẬP'}
-                  </span>
-                  <h2 class="text-sm font-bold text-slate-800 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="text-right">
-                    <span class="text-[10px] text-slate-500 block uppercase font-bold">Thời gian</span>
-                    <span id="timer-display" class="font-mono text-xl font-black text-rose-600">${formatTime(state.timeLeft)}</span>
-                  </div>
-                  <button onclick="submitExam()" class="bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg text-xs shadow">
-                    Nộp Bài
-                  </button>
-                </div>
-              </div>
-
-              ${q ? `
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                  <div class="lg:col-span-3 bg-white p-6 rounded-xl border shadow-sm space-y-4">
-                    <div class="flex justify-between items-center border-b pb-2">
-                      <span class="font-bold text-xs text-blue-900">Câu ${state.activeQuestionIdx + 1} / ${state.currentExamQuestions.length} (${q.id})</span>
-                    </div>
-
-                    <div class="text-sm leading-relaxed">${renderMathText(q.content)}</div>
-                    ${q.hasImage ? `<div class="my-3 text-center p-2 bg-slate-50 border rounded"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>` : ''}
-
-                    <div class="space-y-2 pt-2">
-                      ${q.options.map((opt, oIdx) => `
-                        <div onclick="state.answers[${state.activeQuestionIdx}] = ${oIdx}; renderApp();" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${state.answers[state.activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50'}">
-                          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
-                          ${renderMathText(opt)}
-                        </div>
-                      `).join('')}
-                    </div>
-
-                    <div class="flex justify-between pt-4 border-t">
-                      <button onclick="if(state.activeQuestionIdx > 0) { state.activeQuestionIdx--; renderApp(); }" ${state.activeQuestionIdx === 0 ? 'disabled' : ''} class="px-3 py-1.5 border rounded text-xs disabled:opacity-30">← Câu trước</button>
-                      <button onclick="if(state.activeQuestionIdx < state.currentExamQuestions.length - 1) { state.activeQuestionIdx++; renderApp(); }" ${state.activeQuestionIdx === state.currentExamQuestions.length - 1 ? 'disabled' : ''} class="px-4 py-1.5 bg-blue-600 text-white rounded text-xs disabled:opacity-30">Câu sau →</button>
-                    </div>
-                  </div>
-
-                  <div class="bg-white p-4 rounded-xl border shadow-sm h-fit">
-                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Mục lục câu hỏi</h4>
-                    <div class="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto">
-                      ${state.currentExamQuestions.map((_, idx) => `
-                        <button onclick="state.activeQuestionIdx = ${idx}; renderApp();" class="h-8 rounded text-xs font-bold ${state.activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${state.answers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
-                          ${idx + 1}
-                        </button>
-                      `).join('')}
-                    </div>
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          `;
-        } else if (state.studentMode === 'result') {
-          html += `
-            <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-6 text-center">
-              <h2 class="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI</h2>
-              <div class="inline-block bg-blue-50 border border-blue-200 px-8 py-4 rounded-2xl">
-                <span class="text-xs text-blue-700 font-bold uppercase">Tổng Điểm HSA</span>
-                <div class="text-4xl font-black text-blue-950 mt-1">${state.examFinishedData?.total || 0} / 150</div>
-              </div>
-              <div>
-                <button onclick="state.studentMode = 'hub'; renderApp();" class="px-6 py-2.5 bg-blue-700 text-white font-bold rounded-xl text-xs">Trở về Trang Chủ</button>
-              </div>
-            </div>
-          `;
-        }
+        content = "Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:";
+        opts = ["$\\vec{u} = (1; 2)$", "$\\vec{u} = (2; -1)$", "$\\vec{u} = (-1; 2)$", "$\\vec{u} = (2; 1)$"];
       }
 
-      html += `</main>`;
-      app.innerHTML = html;
+      dbQuestions.push({
+        id: code,
+        subject: "Toán",
+        content: content,
+        hasImage: hasImg,
+        imageSrc: hasImg ? SAMPLE_SVG : null,
+        options: opts,
+        correctIndex: 0
+      });
     }
 
-    // Khởi chạy ứng dụng ngay lập tức không delay
-    initSampleQuestions();
-    renderApp();
+    let activeExamQuestions = [];
+    let activeQuestionIdx = 0;
+    let userAnswers = {};
+    let timerInterval = null;
+    let timeLeft = 75 * 60;
+    let violationCount = 0;
+    let tempAuditQuestion = null;
+
+    // Render KaTeX an toàn
+    function parseKaTeX(text) {
+      if (!text) return "";
+      try {
+        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, function(m, f) {
+          try {
+            if (window.katex) return window.katex.renderToString(f, { throwOnError: false });
+          } catch(e) {}
+          return '<span class="font-bold text-blue-900">' + f + '</span>';
+        });
+      } catch(e) {
+        return text;
+      }
+    }
+
+    // Chuyển đổi View
+    function switchView(view) {
+      document.getElementById("view-student").classList.toggle("hidden", view !== 'student');
+      document.getElementById("view-admin").classList.toggle("hidden", view !== 'admin');
+      document.getElementById("btn-view-student").className = view === 'student' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
+      document.getElementById("btn-view-admin").className = view === 'admin' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
+      if (view === 'admin') renderBankList();
+    }
+
+    function switchAdminTab(tab) {
+      document.getElementById("admin-tab-audit").classList.toggle("hidden", tab !== 'audit');
+      document.getElementById("admin-tab-bank").classList.toggle("hidden", tab !== 'bank');
+      document.getElementById("admin-tab-exams").classList.toggle("hidden", tab !== 'exams');
+      document.getElementById("tab-btn-audit").className = tab === 'audit' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
+      document.getElementById("tab-btn-bank").className = tab === 'bank' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
+      document.getElementById("tab-btn-exams").className = tab === 'exams' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
+    }
+
+    function insertImageTag() {
+      const el = document.getElementById("audit-raw-input");
+      el.value += " [HINH_ANH] ";
+    }
+
+    // AI Thẩm định
+    function runAuditProcess() {
+      const text = document.getElementById("audit-raw-input").value.trim();
+      const sub = document.getElementById("audit-subject").value;
+      const code = document.getElementById("audit-exam-code").value.trim() || "01";
+
+      if (!text) {
+        alert("Vui lòng dán nội dung đề bài!");
+        return;
+      }
+
+      const qId = sub + code + '-01';
+      const hasImg = text.includes("[HINH_ANH]") || text.toLowerCase().includes("bảng biến thiên");
+
+      tempAuditQuestion = {
+        id: qId,
+        subject: "Toán",
+        content: text,
+        hasImage: hasImg,
+        imageSrc: hasImg ? SAMPLE_SVG : null,
+        options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
+        correctIndex: 0
+      };
+
+      let html = `
+        <div class="space-y-3">
+          <div class="flex gap-2">
+            <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded text-xs">${qId}</span>
+            <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-xs">Môn: Toán</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border leading-relaxed">
+            ${parseKaTeX(text.replace("[HINH_ANH]", ""))}
+            ${hasImg ? `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${SAMPLE_SVG}" class="max-h-44 mx-auto" /></div>` : ''}
+          </div>
+        </div>
+      `;
+
+      document.getElementById("audit-result-box").innerHTML = html;
+      document.getElementById("audit-action-box").classList.remove("hidden");
+    }
+
+    function confirmAddToBank() {
+      if (!tempAuditQuestion) return;
+      dbQuestions.unshift(tempAuditQuestion);
+      document.getElementById("bank-count").innerText = dbQuestions.length;
+      alert("✓ ĐÃ THÊM THÀNH CÔNG VÀO NGÂN HÀNG ĐỀ GỐC!");
+      cancelAudit();
+      renderBankList();
+    }
+
+    function cancelAudit() {
+      tempAuditQuestion = null;
+      document.getElementById("audit-raw-input").value = "";
+      document.getElementById("audit-result-box").innerHTML = `
+        <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+          <span class="text-3xl mb-1">⚖️</span>
+          <span class="font-bold">Chưa có đề bài thẩm định.</span>
+          <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
+        </div>
+      `;
+      document.getElementById("audit-action-box").classList.add("hidden");
+    }
+
+    function renderBankList() {
+      const container = document.getElementById("bank-list");
+      document.getElementById("bank-count").innerText = dbQuestions.length;
+      container.innerHTML = dbQuestions.map((q, idx) => `
+        <div class="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded">${q.id}</span>
+            <button onclick="deleteBankQuestion(${idx})" class="text-rose-600 font-bold hover:underline">🗑️ Xóa</button>
+          </div>
+          <div class="bg-white p-3 rounded-xl border leading-relaxed">
+            ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
+            ${q.hasImage ? `<div class="my-2 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-40 mx-auto" /></div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteBankQuestion(idx) {
+      if (confirm("Xóa câu hỏi này?")) {
+        dbQuestions.splice(idx, 1);
+        renderBankList();
+      }
+    }
+
+    // Thi & Luyện tập
+    function startPracticeSession() {
+      activeExamQuestions = dbQuestions.slice(0, 30);
+      initExamSession("BÀI LUYỆN TẬP", 45 * 60);
+    }
+
+    function startOfficialExam() {
+      const pass = document.getElementById("input-exam-pass").value;
+      if (pass !== "HSA2026") {
+        alert("Mật khẩu không chính xác! (Nhập: HSA2026)");
+        return;
+      }
+      activeExamQuestions = dbQuestions.slice(0, 50);
+      initExamSession("BÀI THI CHÍNH THỨC HSA", 75 * 60);
+    }
+
+    function initExamSession(title, seconds) {
+      document.getElementById("student-hub").classList.add("hidden");
+      document.getElementById("student-exam").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+      document.getElementById("exam-badge").innerText = title;
+
+      activeQuestionIdx = 0;
+      userAnswers = {};
+      timeLeft = seconds;
+      violationCount = 0;
+
+      renderCurrentQuestion();
+      renderMatrix();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById("exam-timer").innerText = (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
+        if (timeLeft <= 0) submitExam();
+      }, 1000);
+    }
+
+    function renderCurrentQuestion() {
+      const q = activeExamQuestions[activeQuestionIdx];
+      if (!q) return;
+
+      document.getElementById("q-number").innerText = "Câu " + (activeQuestionIdx + 1);
+      document.getElementById("q-code").innerText = q.id;
+
+      let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
+      if (q.hasImage && q.imageSrc) {
+        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
+      }
+      document.getElementById("q-content").innerHTML = contentHtml;
+
+      document.getElementById("q-options").innerHTML = q.options.map((opt, oIdx) => `
+        <div onclick="selectAnswer(${oIdx})" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${userAnswers[activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50 bg-white'}">
+          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
+          ${parseKaTeX(opt)}
+        </div>
+      `).join('');
+    }
+
+    function renderMatrix() {
+      const container = document.getElementById("q-matrix");
+      container.innerHTML = activeExamQuestions.map((_, idx) => `
+        <button onclick="activeQuestionIdx = ${idx}; renderCurrentQuestion(); renderMatrix();" class="h-8 rounded text-xs font-bold ${activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${userAnswers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
+          ${idx + 1}
+        </button>
+      `).join('');
+    }
+
+    function selectAnswer(oIdx) {
+      userAnswers[activeQuestionIdx] = oIdx;
+      renderCurrentQuestion();
+      renderMatrix();
+    }
+
+    function prevQuestion() {
+      if (activeQuestionIdx > 0) {
+        activeQuestionIdx--;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function nextQuestion() {
+      if (activeQuestionIdx < activeExamQuestions.length - 1) {
+        activeQuestionIdx++;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function submitExam() {
+      if (timerInterval) clearInterval(timerInterval);
+      let score = 0;
+      activeExamQuestions.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correctIndex) score++;
+      });
+
+      document.getElementById("student-exam").classList.add("hidden");
+      document.getElementById("student-result").classList.remove("hidden");
+      document.getElementById("result-score").innerText = (score * 3) + " / 150";
+    }
+
+    function backToHub() {
+      document.getElementById("student-hub").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+    }
+
+    // Chống rời màn hình
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
+        violationCount++;
+        alert("⚠️ CẢNH BÁO: Rời màn hình (" + violationCount + "/3 lần)! Quá 3 lần bài thi tự động thu.");
+        if (violationCount >= 3) submitExam();
+      }
+    });
+
+    // Mở trang
+    switchView('student');
   </script>
 </body>
 </html>
