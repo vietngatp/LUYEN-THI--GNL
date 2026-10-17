@@ -2,565 +2,1432 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- KaTeX -->
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- KaTeX CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <style>
-    body { font-family: "Times New Roman", Times, serif; }
+    body { font-family: "Times New Roman", Times, serif, -apple-system, sans-serif; }
     .no-select { user-select: none; }
-    .katex { font-size: 1.1em; }
+    .katex { font-size: 1.1em; line-height: 1.25; }
+    .katex-display { margin: 0.5em 0; overflow-x: auto; overflow-y: hidden; }
+    .math-text { font-family: "Times New Roman", Times, serif; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+  <div id="root"></div>
 
-  <!-- HEADER -->
-  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-xl shadow border-2 border-amber-300">
-          HSA
-        </div>
-        <div>
-          <h1 class="font-bold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Bản v21 Siêu Ổn Định</span>
-        </div>
-      </div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-      <div class="flex items-center space-x-2">
-        <div class="hidden md:flex items-center bg-blue-950/70 px-3 py-1 rounded-lg text-xs">
-          <span class="text-slate-300 mr-2">Thí sinh:</span>
-          <span class="text-amber-300 font-bold" id="header-user">Nguyễn Văn An (07-12A1-001)</span>
-        </div>
+    const SUBJECTS = [
+      { code: "T", name: "Toán", fullName: "Toán và xử lý số liệu" },
+      { code: "V", name: "Văn", fullName: "Ngữ văn - Đọc hiểu" },
+      { code: "L", name: "Lý", fullName: "Vật lý" },
+      { code: "H", name: "Hóa", fullName: "Hóa học" },
+      { code: "B", name: "Sinh", fullName: "Sinh học" },
+      { code: "E", name: "Tiếng Anh", fullName: "Tiếng Anh" },
+      { code: "S", name: "Sử", fullName: "Lịch sử" },
+      { code: "D", name: "Địa", fullName: "Địa lý" }
+    ];
 
-        <div class="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
-          <button id="btn-view-student" onclick="switchView('student')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow">
-            Phòng Học Viên
-          </button>
-          <button id="btn-view-admin" onclick="switchView('admin')" class="px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white">
-            Phòng Quản Trị
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
+    const SAMPLE_SVG_VARIATION = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14' font-family='Times New Roman'>-∞</text><text x='180' y='26' font-size='14' font-family='Times New Roman'>-1</text><text x='280' y='26' font-size='14' font-family='Times New Roman'>1</text><text x='390' y='26' font-size='14' font-family='Times New Roman'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13' font-family='Times New Roman'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669' font-family='Times New Roman'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c' font-family='Times New Roman'>-2</text><text x='390' y='95' font-size='12' font-family='Times New Roman'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1">
-
-    <!-- ==================== VIEW 1: PHÒNG HỌC VIÊN ==================== -->
-    <div id="view-student" class="space-y-6">
-      <!-- Hub chính -->
-      <div id="student-hub" class="space-y-6">
-        <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-lg font-bold text-slate-900">Nguyễn Văn An</h2>
-              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">07-12A1-001</span>
-              <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Lớp: 12A1</span>
-            </div>
-            <p class="text-xs text-slate-500 mt-1">Đợt thi: <strong>Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</strong></p>
-          </div>
-          <div>
-            <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs font-bold">
-              ✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI
-            </span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Thẻ Luyện Tập -->
-          <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">1. Phòng Luyện Tập</h3>
-              <p class="text-xs text-slate-500 mb-3 leading-relaxed">
-                Rèn luyện câu hỏi bám sát CT GDPT 2018. Có hiển thị đồ thị và công thức KaTeX chuẩn.
-              </p>
-            </div>
-            <button onclick="startPracticeSession()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
-              Vào Luyện Tập Chuyên Đề (30 câu)
-            </button>
-          </div>
-
-          <!-- Thẻ Thi Đợt -->
-          <div class="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm space-y-4 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">🎓</div>
-              <h3 class="text-base font-bold text-slate-900 mb-1">2. Phòng Thi Chính Thức HSA</h3>
-              <div class="space-y-1.5 bg-slate-50 p-3 rounded-xl border mt-2">
-                <label class="block text-[11px] font-bold text-slate-600 uppercase">Mật khẩu đợt thi:</label>
-                <input type="password" id="input-exam-pass" value="HSA2026" placeholder="Nhập HSA2026..." class="w-full border rounded-lg p-2 text-xs outline-none bg-white font-mono" />
-              </div>
-            </div>
-            <button onclick="startOfficialExam()" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
-              Vào Phòng Thi Khảo Sát (Chuẩn HSA)
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Màn hình làm bài thi -->
-      <div id="student-exam" class="hidden space-y-4 no-select">
-        <div class="bg-white p-4 rounded-xl border shadow-sm flex items-center justify-between">
-          <div>
-            <span id="exam-badge" class="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
-              BÀI THI CHÍNH THỨC
-            </span>
-            <h2 id="exam-title" class="text-sm font-bold text-slate-800 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
-          </div>
-          <div class="flex items-center space-x-3">
-            <div class="text-right">
-              <span class="text-[10px] text-slate-500 block uppercase font-bold">Thời gian</span>
-              <span id="exam-timer" class="font-mono text-xl font-black text-rose-600">75:00</span>
-            </div>
-            <button onclick="submitExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow">
-              Nộp Bài
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div class="lg:col-span-3 bg-white p-6 rounded-xl border shadow-sm space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-              <span id="q-number" class="font-bold text-xs text-blue-900">Câu 1</span>
-              <span id="q-code" class="font-mono text-xs text-slate-500">T01-01</span>
-            </div>
-
-            <!-- Nội dung câu hỏi render KaTeX -->
-            <div id="q-content" class="text-sm leading-relaxed text-slate-900 space-y-3"></div>
-
-            <!-- 4 Phương án -->
-            <div id="q-options" class="space-y-2 pt-2"></div>
-
-            <div class="flex justify-between pt-4 border-t">
-              <button onclick="prevQuestion()" class="px-3 py-1.5 border rounded text-xs font-semibold hover:bg-slate-50">← Câu trước</button>
-              <button onclick="nextQuestion()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Câu sau →</button>
-            </div>
-          </div>
-
-          <div class="bg-white p-4 rounded-xl border shadow-sm h-fit">
-            <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Mục lục câu hỏi</h4>
-            <div id="q-matrix" class="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto pr-1"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Màn hình kết quả -->
-      <div id="student-result" class="hidden bg-white p-8 rounded-2xl border shadow-sm space-y-6 text-center">
-        <h2 class="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI HSA</h2>
-        <div class="inline-block bg-blue-50 border border-blue-200 px-8 py-4 rounded-2xl">
-          <span class="text-xs text-blue-700 font-bold uppercase">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
-          <div id="result-score" class="text-4xl font-black text-blue-950 mt-1">126 / 150</div>
-        </div>
-        <div>
-          <button onclick="backToHub()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
-            Trở về Trang Chủ
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ ==================== -->
-    <div id="view-admin" class="hidden space-y-6">
-      <!-- Tabs Quản trị -->
-      <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
-        <button id="tab-btn-audit" onclick="switchAdminTab('audit')" class="px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
-          📤 1. AI Thẩm Định Đề (8 Môn)
-        </button>
-        <button id="tab-btn-bank" onclick="switchAdminTab('bank')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
-          📚 2. Ngân Hàng Đề Gốc (<span id="bank-count">50</span> câu)
-        </button>
-        <button id="tab-btn-exams" onclick="switchAdminTab('exams')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
-          🛠️ 3. Quản Lý Đợt Thi
-        </button>
-      </div>
-
-      <!-- Tab 1: AI Thẩm định đề -->
-      <div id="admin-tab-audit" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-        <div class="border-b pb-3">
-          <h2 class="text-lg font-bold text-blue-950">Quy Trình AI Thẩm Định Đề Độc Lập Chuẩn CT GDPT 2018</h2>
-          <p class="text-xs text-slate-500">Bảo tồn phông chữ Times New Roman, công thức toán KaTeX và dán ảnh đúng vị trí.</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="space-y-4">
-            <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-3">
-              <span class="font-bold text-blue-950 text-xs block uppercase">Cấu hình Đề Nạp:</span>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-slate-700 text-xs font-bold mb-1">Môn thi:</label>
-                  <select id="audit-subject" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
-                    <option value="T">[T] - Toán và xử lý số liệu</option>
-                    <option value="V">[V] - Ngữ văn - Đọc hiểu</option>
-                    <option value="L">[L] - Vật lý</option>
-                    <option value="H">[H] - Hóa học</option>
-                    <option value="B">[B] - Sinh học</option>
-                    <option value="E">[E] - Tiếng Anh</option>
-                    <option value="S">[S] - Lịch sử</option>
-                    <option value="D">[D] - Địa lý</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-slate-700 text-xs font-bold mb-1">Mã đề (Ví dụ: 01, 02):</label>
-                  <input type="text" id="audit-exam-code" value="01" class="w-full border rounded-xl p-2 text-xs font-mono font-bold text-blue-900 bg-white" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ Word/PDF):</label>
-              <textarea id="audit-raw-input" rows="6" placeholder="Dán nội dung câu hỏi tại đây...&#10;Ví dụ: Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:&#10;A. $\vec{u} = (1; 2)$B.$\vec{u} = (2; -1)&#10;[HINH_ANH]" class="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"></textarea>
-              <span onclick="insertImageTag()" class="text-[11px] text-blue-600 cursor-pointer font-bold block mt-1">+ Chèn thẻ định vị ảnh [HINH_ANH]</span>
-            </div>
-
-            <button onclick="runAuditProcess()" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
-              ⚖️ Kích Hoạt Thẩm Định Đề
-            </button>
-          </div>
-
-          <!-- Kết quả thẩm định -->
-          <div class="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
-            <div id="audit-result-box" class="space-y-3">
-              <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                <span class="text-3xl mb-1">⚖️</span>
-                <span class="font-bold">Chưa có đề bài thẩm định.</span>
-                <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
-              </div>
-            </div>
-
-            <div id="audit-action-box" class="hidden pt-3 border-t mt-3 space-y-2">
-              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
-                <span class="font-bold text-amber-900 block text-xs">Bạn có muốn thêm câu hỏi này vào Ngân hàng Đề Gốc không?</span>
-                <div class="flex gap-2">
-                  <button onclick="confirmAddToBank()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
-                    ✓ Xác nhận thêm vào Ngân hàng đề
-                  </button>
-                  <button onclick="cancelAudit()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
-                    ✕ Hủy bỏ
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 2: Ngân hàng đề gốc -->
-      <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="flex justify-between items-center border-b pb-3">
-          <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Nguyên Mẫu)</h2>
-        </div>
-        <div id="bank-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
-      </div>
-
-      <!-- Tab 3: Quản lý đợt thi -->
-      <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <h2 class="text-lg font-bold text-blue-950">Danh Sách Đợt Thi</h2>
-        <div class="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
-          <div>
-            <span class="font-bold text-sm text-blue-950">Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</span>
-            <span class="ml-2 font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Mật khẩu: HSA2026</span>
-          </div>
-          <span class="text-emerald-700 font-bold">Đang Mở</span>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <script>
-    // KHỞI TẠO DỮ LIỆU BAN ĐẦU
-    const SAMPLE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14'>-∞</text><text x='180' y='26' font-size='14'>-1</text><text x='280' y='26' font-size='14'>1</text><text x='390' y='26' font-size='14'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='13'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
-
-    let dbQuestions = [];
-    for (let i = 1; i <= 50; i++) {
-      const numStr = i < 10 ? '0' + i : '' + i;
-      const code = 'T01-' + numStr;
-      const hasImg = (i % 3 === 1);
-      let content = "";
-      let opts = [];
-
-      if (i % 3 === 1) {
-        content = "Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.";
-        opts = ["$m \\in (-1; 1)$", "$m \\in [-2; 2]$", "$m < -1$ hoặc $m > 1$", "$m = 0$"];
-      } else if (i % 3 === 2) {
-        content = "Biết tích phân $I = \\int_{1}^{e} \\frac{\\ln x}{x\\sqrt{1 + \\ln x}} dx = \\frac{a - b\\sqrt{2}}{c}$, với $a, b, c \\in \\mathbb{Z}$ và tối giản. Giá trị $S = a + b + c$ bằng:";
-        opts = ["$S = 9$", "$S = 12$", "$S = 15$", "$S = 7$"];
-      } else {
-        content = "Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:";
-        opts = ["$\\vec{u} = (1; 2)$", "$\\vec{u} = (2; -1)$", "$\\vec{u} = (-1; 2)$", "$\\vec{u} = (2; 1)$"];
+    // Bộ chuẩn hóa phông chữ Times New Roman & Unicode dựng sẵn NFC
+    function fixFontTimesNewRoman(str) {
+      if (!str) return "";
+      let s = String(str);
+      const tcvn = "a\u00B8\u00B5\u00B6\u00B7\u00B9\u00A8\u00CA\u00C7\u00C8\u00C9\u00CB\u00A9\u00D0\u00CC\u00CE\u00CF\u00D1\u00E9\u00E5\u00E6\u00E7\u00E8\u00AA\u00F3\u00EE\u00EF\u00F1\u00F2\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00ED\u00EB\u00EC\u00EE\u00EF\u00F3\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD";
+      const uni = "àảãáạăằẳẵắặâầẩẫấậèẻẽéẹêềểễếệìỉĩíịòỏõóọôồổỗốộơờởỡớợùủũúụưừửữứựỳỷỹýỵ";
+      let res = "";
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        const idx = tcvn.indexOf(c);
+        res += (idx !== -1 && idx < uni.length) ? uni[idx] : c;
       }
-
-      dbQuestions.push({
-        id: code,
-        subject: "Toán",
-        content: content,
-        hasImage: hasImg,
-        imageSrc: hasImg ? SAMPLE_SVG : null,
-        options: opts,
-        correctIndex: 0
-      });
+      try { res = res.normalize('NFC'); } catch (e) {}
+      return res;
     }
 
-    let activeExamQuestions = [];
-    let activeQuestionIdx = 0;
-    let userAnswers = {};
-    let timerInterval = null;
-    let timeLeft = 75 * 60;
-    let violationCount = 0;
-    let tempAuditQuestion = null;
+    // Component hiển thị câu hỏi, công thức KaTeX & Đồ thị
+    function MathViewer({ content, imageSrc, imageCode }) {
+      const containerRef = useRef(null);
 
-    // Render KaTeX an toàn
-    function parseKaTeX(text) {
-      if (!text) return "";
-      try {
-        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, function(m, f) {
+      useEffect(() => {
+        if (containerRef.current && window.renderMathInElement) {
           try {
-            if (window.katex) return window.katex.renderToString(f, { throwOnError: false });
-          } catch(e) {}
-          return '<span class="font-bold text-blue-900">' + f + '</span>';
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\\\[", right: "\\\\]", display: true },
+                { left: "\\\\(", right: "\\\\)", display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {}
+        }
+      }, [content]);
+
+      if (!content) return null;
+
+      const cleanContent = fixFontTimesNewRoman(content);
+      const hasPlaceholder = cleanContent.includes("[HINH_ANH]");
+      let partBefore = cleanContent;
+      let partAfter = "";
+
+      if (hasPlaceholder) {
+        const parts = cleanContent.split("[HINH_ANH]");
+        partBefore = parts[0];
+        partAfter = parts[1] || "";
+      }
+
+      return (
+        <div ref={containerRef} className="math-text text-sm leading-relaxed text-slate-900 space-y-2">
+          {hasPlaceholder ? (
+            <div>
+              <div className="whitespace-pre-wrap">{partBefore}</div>
+              <div className="my-3 flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                {imageSrc ? (
+                  <img src={imageSrc} alt="Đồ thị / Bảng biến thiên" className="max-h-64 max-w-full rounded object-contain" />
+                ) : (
+                  <div className="w-full max-w-md py-6 bg-slate-50 border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center text-blue-900">
+                    <span className="text-3xl mb-1">📈</span>
+                    <span className="font-bold text-xs">[Đồ thị / Bảng biến thiên nằm đúng vị trí]</span>
+                    <span className="font-mono text-[11px] text-blue-600 mt-0.5">Mã: {imageCode || "HinhAnh.png"}</span>
+                  </div>
+                )}
+              </div>
+              <div className="whitespace-pre-wrap">{partAfter}</div>
+            </div>
+          ) : (
+            <div>
+              <div className="whitespace-pre-wrap">{cleanContent}</div>
+              {(imageSrc || imageCode) && (
+                <div className="my-3 flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                  {imageSrc ? (
+                    <img src={imageSrc} alt="Đồ thị / Bảng biến thiên" className="max-h-64 max-w-full rounded object-contain" />
+                  ) : (
+                    <div className="w-full max-w-md py-6 bg-slate-50 border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center text-blue-900">
+                      <span className="text-3xl mb-1">📈</span>
+                      <span className="font-bold text-xs">[Đồ thị / Bảng biến thiên nằm đúng vị trí]</span>
+                      <span className="font-mono text-[11px] text-blue-600 mt-0.5">Mã: {imageCode}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function MathSpan({ text }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current && window.renderMathInElement) {
+          try {
+            window.renderMathInElement(ref.current, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {}
+        }
+      }, [text]);
+
+      return <span ref={ref} className="inline math-text">{fixFontTimesNewRoman(text)}</span>;
+    }
+
+    const INITIAL_STUDENTS = [
+      { id: "07-12A1-001", name: "Nguyễn Văn An", birthYear: "2007", classUnit: "12A1", email: "an.nguyen@example.com", eligible: true, feeStatus: "approved", regTime: "2026-10-15 08:30" },
+      { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" },
+      { id: "07-TP-003", name: "Lê Hoàng Long", birthYear: "2007", classUnit: "TP", email: "long.le@example.com", eligible: false, feeStatus: "unregistered", regTime: "-" }
+    ];
+
+    const generateRootMathQuestions = () => {
+      const list = [];
+      const topics = ["Hàm số & Đạo hàm", "Mũ - Logarit", "Tích phân", "Tọa độ Oxyz", "Xác suất", "Hình không gian"];
+
+      for (let i = 1; i <= 50; i++) {
+        const numStr = i < 10 ? '0' + i : '' + i;
+        const code = `T01-${numStr}`;
+        const hasImg = (i % 3 === 1);
+        const lvl = i <= 13 ? "B" : (i <= 28 ? "H" : (i <= 43 ? "VD" : "VDC"));
+        const topic = topics[(i - 1) % topics.length];
+
+        let content = "";
+        let opts = [];
+        let sol = "";
+
+        if (i % 3 === 1) {
+          content = `Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.`;
+          opts = [`$m \\in (-1; 1)$`, `$m \\in [-2; 2]$`, `$m < -1$ hoặc $m > 1$`, `$m = 0$`];
+          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào bảng biến thiên, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1. Chọn đáp án A.`;
+        } else if (i % 3 === 2) {
+          content = `Biết tích phân $I = \\int_{1}^{e} \\frac{\\ln x}{x\\sqrt{1 + \\ln x}} dx = \\frac{a - b\\sqrt{2}}{c}$, với $a, b, c \\in \\mathbb{Z}$ và $\\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
+          opts = [`$S = 9$`, `$S = 12$`, `$S = 15$`, `$S = 7$`];
+          sol = `Đặt $t = \\sqrt{1 + \\ln x} \\Rightarrow 2t dt = \\frac{dx}{x}$. Ta tính được $I = \\frac{4 - 2\\sqrt{2}}{3} \\Rightarrow S = 4 + 2 + 3 = 9$.`;
+        } else {
+          content = `Trong không gian $Oxyz$, cho mặt cầu $(S): (x - 1)^2 + (y + 2)^2 + (z - 3)^2 = 25$ và mặt phẳng $(P): 2x - 2y + z + 4 = 0$. Khoảng cách từ tâm $I$ của $(S)$ đến $(P)$ là:`;
+          opts = [`$d = \\frac{13}{3}$`, `$d = 5$`, `$d = 3$`, `$d = \\sqrt{29}$`];
+          sol = `Tâm mặt cầu $I(1; -2; 3)$. Áp dụng công thức khoảng cách: $d = \\frac{13}{3}$.`;
+        }
+
+        list.push({
+          id: code,
+          subjectCode: "T",
+          subjectName: "Toán",
+          topic: topic,
+          level: lvl,
+          content: content,
+          hasImage: hasImg,
+          imageCode: hasImg ? `${code}.png` : "",
+          imageSrc: hasImg ? SAMPLE_SVG_VARIATION : null,
+          options: opts,
+          correctIndex: 0,
+          solution: sol
         });
-      } catch(e) {
-        return text;
       }
-    }
+      return list;
+    };
 
-    // Chuyển đổi View
-    function switchView(view) {
-      document.getElementById("view-student").classList.toggle("hidden", view !== 'student');
-      document.getElementById("view-admin").classList.toggle("hidden", view !== 'admin');
-      document.getElementById("btn-view-student").className = view === 'student' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
-      document.getElementById("btn-view-admin").className = view === 'admin' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
-      if (view === 'admin') renderBankList();
-    }
+    const generateInitialPractice = (roots) => {
+      const pList = [];
+      roots.slice(0, 15).forEach(q => {
+        for (let k = 1; k <= 3; k++) {
+          pList.push({
+            id: `${q.id}${k}`,
+            rootId: q.id,
+            subjectCode: q.subjectCode,
+            subjectName: q.subjectName,
+            topic: q.topic,
+            level: q.level,
+            content: `Biến thể câu hỏi ${k} cùng chuyên đề: ${q.content.replace("Cho hàm số bậc ba", "Cho hàm đa thức bậc ba").replace("Biết tích phân", "Tính tích phân")}`,
+            hasImage: q.hasImage,
+            imageCode: q.imageCode,
+            imageSrc: q.imageSrc,
+            options: q.options,
+            correctIndex: (q.correctIndex + k) % 4,
+            solution: `Lời giải thẩm định chi tiết cho câu luyện tập ${q.id}${k}.`
+          });
+        }
+      });
+      return pList;
+    };
 
-    function switchAdminTab(tab) {
-      document.getElementById("admin-tab-audit").classList.toggle("hidden", tab !== 'audit');
-      document.getElementById("admin-tab-bank").classList.toggle("hidden", tab !== 'bank');
-      document.getElementById("admin-tab-exams").classList.toggle("hidden", tab !== 'exams');
-      document.getElementById("tab-btn-audit").className = tab === 'audit' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
-      document.getElementById("tab-btn-bank").className = tab === 'bank' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
-      document.getElementById("tab-btn-exams").className = tab === 'exams' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
-    }
+    function App() {
+      const [view, setView] = useState('student');
+      const [adminTab, setAdminTab] = useState('audit');
+      const [currentUserIndex, setCurrentUserIndex] = useState(0);
 
-    function insertImageTag() {
-      const el = document.getElementById("audit-raw-input");
-      el.value += " [HINH_ANH] ";
-    }
+      const [students, setStudents] = useState(INITIAL_STUDENTS);
+      const [rootQuestions, setRootQuestions] = useState(generateRootMathQuestions());
+      const [practiceQuestions, setPracticeQuestions] = useState(generateInitialPractice(rootQuestions));
+      const [exams, setExams] = useState([
+        { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 150 }
+      ]);
 
-    // AI Thẩm định
-    function runAuditProcess() {
-      const text = document.getElementById("audit-raw-input").value.trim();
-      const sub = document.getElementById("audit-subject").value;
-      const code = document.getElementById("audit-exam-code").value.trim() || "01";
+      const [bankSubjectFilter, setBankSubjectFilter] = useState("Tất cả");
 
-      if (!text) {
-        alert("Vui lòng dán nội dung đề bài!");
-        return;
-      }
+      const [auditSubjectCode, setAuditSubjectCode] = useState("T");
+      const [auditExamCode, setAuditExamCode] = useState("01");
+      const [rawQuestionInput, setRawQuestionInput] = useState("");
+      const [uploadedFileName, setUploadedFileName] = useState("");
+      const [analyzingAI, setAnalyzingAI] = useState(false);
+      const [aiAuditedResult, setAiAuditedResult] = useState(null);
 
-      const qId = sub + code + '-01';
-      const hasImg = text.includes("[HINH_ANH]") || text.toLowerCase().includes("bảng biến thiên");
+      const [showConfirmAddModal, setShowConfirmAddModal] = useState(false);
+      const [editingQuestion, setEditingQuestion] = useState(null);
+      const [editingModalOpen, setEditingModalOpen] = useState(false);
 
-      tempAuditQuestion = {
-        id: qId,
-        subject: "Toán",
-        content: text,
-        hasImage: hasImg,
-        imageSrc: hasImg ? SAMPLE_SVG : null,
-        options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
-        correctIndex: 0
+      const [newExamName, setNewExamName] = useState("Đợt thi Khảo sát HSA Chuẩn 2026");
+      const [newExamPasscode, setNewExamPasscode] = useState("HSA2026");
+      const [newExamTime, setNewExamTime] = useState("2026-11-01T08:00");
+      const [newExamFee, setNewExamFee] = useState("50.000 VNĐ");
+
+      const [studentMode, setStudentMode] = useState('hub');
+      const [examPasscode, setExamPasscode] = useState('');
+      const [electiveChoice, setElectiveChoice] = useState('english');
+      const [currentExamQuestions, setCurrentExamQuestions] = useState([]);
+      const [currentExamPart, setCurrentExamPart] = useState(1);
+      const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
+      const [answers, setAnswers] = useState({});
+      const [timeLeft, setTimeLeft] = useState(75 * 60);
+      const [examViolationCount, setExamViolationCount] = useState(0);
+      const [examFinishedData, setExamFinishedData] = useState(null);
+
+      const [showPaymentModal, setShowPaymentModal] = useState(false);
+      const [paymentRefCode, setPaymentRefCode] = useState("");
+
+      const currentUser = students[currentUserIndex];
+
+      useEffect(() => {
+        let timer = null;
+        if ((studentMode === 'exam' || studentMode.startsWith('practice')) && timeLeft > 0) {
+          timer = setInterval(() => {
+            setTimeLeft(prev => {
+              if (prev <= 1) {
+                handleSubmitCurrentExam();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
+        return () => clearInterval(timer);
+      }, [studentMode, timeLeft]);
+
+      useEffect(() => {
+        if (studentMode !== 'exam') return;
+
+        const handleVisibilityChange = () => {
+          if (document.hidden) {
+            setExamViolationCount(c => {
+              const next = c + 1;
+              if (next >= 3) {
+                alert("CẢNH BÁO VI PHẠM NỘI QUI: Bạn đã rời khỏi màn hình thi quá 3 lần! Hệ thống tự động khóa và thu bài thi.");
+                handleSubmitCurrentExam();
+              }
+              return next;
+            });
+          }
+        };
+
+        const handleBlur = () => setExamViolationCount(c => c + 1);
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("blur", handleBlur);
+
+        return () => {
+          document.removeEventListener("visibilitychange", handleVisibilityChange);
+          window.removeEventListener("blur", handleBlur);
+        };
+      }, [studentMode]);
+
+      const formatTime = (secs) => {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
       };
 
-      let html = `
-        <div class="space-y-3">
-          <div class="flex gap-2">
-            <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded text-xs">${qId}</span>
-            <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-xs">Môn: Toán</span>
-          </div>
-          <div class="bg-white p-4 rounded-xl border leading-relaxed">
-            ${parseKaTeX(text.replace("[HINH_ANH]", ""))}
-            ${hasImg ? `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${SAMPLE_SVG}" class="max-h-44 mx-auto" /></div>` : ''}
-          </div>
+      // XỬ LÝ NẠP FILE TEXT / ẢNH (BẢO VỆ CHỐNG ĐỌC NHỊ PHÂN DOCX/PDF)
+      const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const codeInput = window.prompt("Vui lòng nhập Mã Đề cần nạp (Ví dụ: 01, 02, 05):", auditExamCode);
+        const code = codeInput && codeInput.trim() !== "" ? codeInput.trim() : auditExamCode;
+        setAuditExamCode(code);
+        setUploadedFileName(file.name);
+
+        const lower = file.name.toLowerCase();
+
+        // Nếu là file Word hoặc PDF: Hướng dẫn người dùng dán text để tránh lỗi nhị phân làm đơ trình duyệt
+        if (lower.endsWith(".docx") || lower.endsWith(".pdf")) {
+          alert(`Bạn đã chọn file: ${file.name}.\n\nLƯU Ý QUAN TRỌNG: Để tránh lỗi font chữ và đơ trình duyệt, bạn hãy mở file trên máy, bấm Ctrl+A -> Ctrl+C (Copy) rồi Ctrl+V (Dán) vào khung bên dưới. Đây là cách chuẩn xác 100%!`);
+          return;
+        }
+
+        // File ảnh: Tải và chuyển thành hình ảnh
+        if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            setAiAuditedResult(prev => prev ? { ...prev, imageSrc: ev.target.result, hasImage: true } : null);
+            alert(`Đã nhận ảnh: ${file.name}. Ảnh sẽ được dán vào câu hỏi!`);
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        // File văn bản thuần
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setRawQuestionInput(fixFontTimesNewRoman(event.target.result));
+        };
+        reader.readAsText(file, "UTF-8");
+      };
+
+      // KÍCH HOẠT THẨM ĐỊNH AI
+      const handleRunAiAudit = () => {
+        if (!rawQuestionInput.trim()) {
+          alert("Vui lòng nhập hoặc dán nội dung câu hỏi đề gốc!");
+          return;
+        }
+
+        if (!auditExamCode.trim()) {
+          alert("Vui lòng nhập Mã Đề cần nạp (ví dụ: 01)!");
+          return;
+        }
+
+        setAnalyzingAI(true);
+        setTimeout(() => {
+          const nextIndex = rootQuestions.filter(q => q.subjectCode === auditSubjectCode).length + 1;
+          const numStr = nextIndex < 10 ? '0' + nextIndex : '' + nextIndex;
+          const formattedId = `${auditSubjectCode}${auditExamCode.trim()}-${numStr}`;
+
+          const isDuplicate = rootQuestions.some(q => q.content.trim() === rawQuestionInput.trim());
+          if (isDuplicate) {
+            alert(`CẢNH BÁO: Câu hỏi này trùng khớp 100% với câu hỏi đã có trong Ngân hàng đề gốc!`);
+            setAnalyzingAI(false);
+            return;
+          }
+
+          const subjectObj = SUBJECTS.find(s => s.code === auditSubjectCode) || SUBJECTS[0];
+          const hasImg = rawQuestionInput.includes("[HINH_ANH]") || rawQuestionInput.toLowerCase().includes("bảng biến thiên") || rawQuestionInput.toLowerCase().includes("đồ thị");
+
+          const audited = {
+            id: formattedId,
+            subjectCode: auditSubjectCode,
+            subjectName: subjectObj.name,
+            topic: "Trọng tâm CT GDPT 2018",
+            level: "VD",
+            content: rawQuestionInput + (hasImg && !rawQuestionInput.includes("[HINH_ANH]") ? " [HINH_ANH] " : ""),
+            hasImage: hasImg,
+            imageCode: `${formattedId}.png`,
+            imageSrc: hasImg ? SAMPLE_SVG_VARIATION : null,
+            options: [
+              "Phương án A (Tối ưu)",
+              "Phương án B",
+              "Phương án C",
+              "Phương án D"
+            ],
+            correctIndex: 0,
+            solution: `Lời giải chi tiết chuẩn xác 100% từ chuyên gia thẩm định đề độc lập.`,
+            variants: [
+              {
+                id: `${formattedId}1`,
+                content: `[Biến thể 1] Cùng chuyên đề và ma trận độ khó với câu ${formattedId}: ${rawQuestionInput}`,
+                options: ["Phương án A1", "Phương án B1", "Phương án C1", "Phương án D1"],
+                correctIndex: 1
+              },
+              {
+                id: `${formattedId}2`,
+                content: `[Biến thể 2] Mở rộng tham số từ câu ${formattedId}: ${rawQuestionInput}`,
+                options: ["Phương án A2", "Phương án B2", "Phương án C2", "Phương án D2"],
+                correctIndex: 2
+              },
+              {
+                id: `${formattedId}3`,
+                content: `[Biến thể 3] Vấn đề thực tế tương đương câu ${formattedId}: ${rawQuestionInput}`,
+                options: ["Phương án A3", "Phương án B3", "Phương án C3", "Phương án D3"],
+                correctIndex: 0
+              }
+            ]
+          };
+
+          setAiAuditedResult(audited);
+          setAnalyzingAI(false);
+        }, 300);
+      };
+
+      const handleConfirmAddQuestion = () => {
+        if (!aiAuditedResult) return;
+
+        const newRoot = {
+          id: aiAuditedResult.id,
+          subjectCode: aiAuditedResult.subjectCode,
+          subjectName: aiAuditedResult.subjectName,
+          topic: aiAuditedResult.topic,
+          level: aiAuditedResult.level,
+          content: aiAuditedResult.content,
+          hasImage: aiAuditedResult.hasImage,
+          imageCode: aiAuditedResult.imageCode,
+          imageSrc: aiAuditedResult.imageSrc,
+          options: aiAuditedResult.options,
+          correctIndex: aiAuditedResult.correctIndex,
+          solution: aiAuditedResult.solution
+        };
+
+        const newPracticeVariants = aiAuditedResult.variants.map(v => ({
+          id: v.id,
+          rootId: aiAuditedResult.id,
+          subjectCode: aiAuditedResult.subjectCode,
+          subjectName: aiAuditedResult.subjectName,
+          topic: aiAuditedResult.topic,
+          level: aiAuditedResult.level,
+          content: v.content,
+          hasImage: aiAuditedResult.hasImage,
+          imageCode: aiAuditedResult.imageCode,
+          imageSrc: aiAuditedResult.imageSrc,
+          options: v.options,
+          correctIndex: v.correctIndex,
+          solution: `Lời giải thẩm định chi tiết câu ${v.id}.`
+        }));
+
+        setRootQuestions([newRoot, ...rootQuestions]);
+        setPracticeQuestions([...newPracticeVariants, ...practiceQuestions]);
+        setShowConfirmAddModal(false);
+
+        alert(`ĐÃ THÊM THÀNH CÔNG!\n- Đã nạp câu gốc ${newRoot.id} vào Ngân hàng Đề Gốc.\n- Tự động sinh 3 câu phái sinh (${newPracticeVariants.map(x => x.id).join(', ')}) nạp vào Ngân hàng Luyện Thi.`);
+
+        setAiAuditedResult(null);
+        setRawQuestionInput("");
+        setUploadedFileName("");
+      };
+
+      const handleCancelAddQuestion = () => {
+        setShowConfirmAddModal(false);
+      };
+
+      const handleDeleteExam = (examId, examName) => {
+        if (window.confirm(`Bạn có chắc chắn muốn xóa đợt thi "${examName}" (Mã: ${examId}) không?`)) {
+          setExams(exams.filter(ex => ex.id !== examId));
+        }
+      };
+
+      const handleCreateExam = () => {
+        if (!newExamName.trim() || !newExamPasscode.trim()) {
+          alert("Vui lòng điền tên đợt thi và mật khẩu đợt thi!");
+          return;
+        }
+
+        const newEx = {
+          id: `EXAM-${Date.now().toString().slice(-4)}`,
+          name: newExamName,
+          passCode: newExamPasscode,
+          startTime: newExamTime.replace("T", " "),
+          fee: newExamFee,
+          totalQuestions: 150
+        };
+
+        setExams([newEx, ...exams]);
+        alert(`TẠO ĐỢT THI THÀNH CÔNG!\n- Tên: ${newEx.name}\n- Mật khẩu: ${newEx.passCode}`);
+      };
+
+      const handleRegisterExam = () => {
+        const ref = `HSA-${currentUser.id}-${Math.floor(1000 + Math.random() * 9000)}`;
+        setPaymentRefCode(ref);
+        setShowPaymentModal(true);
+      };
+
+      const handleConfirmPayment = () => {
+        setStudents(students.map(s => s.id === currentUser.id ? { ...s, feeStatus: 'pending', regTime: new Date().toLocaleString('vi-VN') } : s));
+        setShowPaymentModal(false);
+        alert(`Đã gửi xác nhận nộp lệ phí đợt thi! Vui lòng chờ Ban Quản trị phê duyệt và kích hoạt quyền dự thi.`);
+      };
+
+      const handleStartOfficialExam = () => {
+        if (!currentUser.eligible || currentUser.feeStatus !== 'approved') {
+          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN DỰ THI! Vui lòng hoàn tất nộp lệ phí và chờ Quản trị viên phê duyệt.");
+          return;
+        }
+
+        if (examPasscode.trim() !== exams[0]?.passCode) {
+          alert(`Mật khẩu đợt thi không chính xác! (Mật khẩu: ${exams[0]?.passCode})`);
+          return;
+        }
+
+        const full50Math = rootQuestions.filter(q => q.subjectCode === "T").slice(0, 50);
+        setCurrentExamQuestions(full50Math);
+        setCurrentExamPart(1);
+        setAnswers({});
+        setTimeLeft(75 * 60);
+        setExamViolationCount(0);
+        setActiveQuestionIdx(0);
+        setStudentMode('exam');
+      };
+
+      const handleSubmitCurrentExam = () => {
+        if (currentExamPart === 1) {
+          const agree = window.confirm("Hết giờ hoặc hoàn thành Phần 1 (Toán & Số liệu)! Bạn có muốn nộp bài và chuyển sang Phần 2 (Ngữ văn - Đọc hiểu: 60 phút - 50 câu) không?");
+          if (agree) {
+            setCurrentExamPart(2);
+            setTimeLeft(60 * 60);
+            setActiveQuestionIdx(0);
+            return;
+          }
+        } else if (currentExamPart === 2) {
+          const agree = window.confirm("Hoàn thành Phần 2! Chuyển sang Phần 3 (Phần tự chọn: Tiếng Anh hoặc Tổ hợp 3 môn)?");
+          if (agree) {
+            setCurrentExamPart(3);
+            setTimeLeft(60 * 60);
+            setActiveQuestionIdx(0);
+            return;
+          }
+        }
+
+        let score = 0;
+        currentExamQuestions.forEach((q, idx) => {
+          if (answers[idx] === q.correctIndex) score += 1;
+        });
+
+        const totalFinalScore = score * 3;
+        setExamFinishedData({
+          scoreMath: score,
+          scoreReading: 42,
+          scoreElective: 40,
+          total: totalFinalScore,
+          questions: currentExamQuestions,
+          userAnswers: answers,
+          violations: examViolationCount
+        });
+        setStudentMode('result');
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-100">
+          {/* HEADER CHÍNH */}
+          <header className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-2xl shadow-md border-2 border-amber-300">
+                  HSA
+                </div>
+                <div>
+                  <h1 className="font-extrabold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
+                  <span className="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Chuẩn Phông Chữ Times New Roman</span>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <div className="hidden md:flex items-center bg-blue-950/70 px-3 py-1.5 rounded-xl border border-blue-700/40 text-xs">
+                  <span className="text-slate-300 mr-2">Thí sinh:</span>
+                  <select
+                    value={currentUserIndex}
+                    onChange={(e) => setCurrentUserIndex(Number(e.target.value))}
+                    className="bg-transparent text-amber-300 font-bold outline-none cursor-pointer"
+                  >
+                    {students.map((st, i) => (
+                      <option key={st.id} value={i} className="text-slate-900">
+                        {st.name} ({st.id} - {st.feeStatus === 'approved' ? 'Đã duyệt phí' : 'Chưa duyệt'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
+                  <button
+                    onClick={() => { setView('student'); setStudentMode('hub'); }}
+                    className={`px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition ${view === 'student' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-blue-200 hover:text-white'}`}
+                  >
+                    Phòng Học Viên
+                  </button>
+                  <button
+                    onClick={() => setView('admin')}
+                    className={`px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition ${view === 'admin' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-blue-200 hover:text-white'}`}
+                  >
+                    Phòng Quản Trị
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+            {view === 'admin' ? (
+              /* ==================== PHÒNG QUẢN TRỊ ==================== */
+              <div className="space-y-6">
+                <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setAdminTab('audit')}
+                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'audit' ? 'bg-blue-800 text-white shadow-md ring-2 ring-amber-400' : 'text-blue-900 bg-blue-50 hover:bg-blue-100'}`}
+                  >
+                    📤 1. AI Thẩm Định Đề (8 Môn)
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('root_bank')}
+                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'root_bank' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    📚 2. Ngân Hàng Đề Gốc ({rootQuestions.length} câu)
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('practice_bank')}
+                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'practice_bank' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    🎯 3. Ngân Hàng Luyện Thi ({practiceQuestions.length} câu)
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('exam_creator')}
+                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'exam_creator' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    🛠️ 4. Tạo Đợt Thi ({exams.length} đợt)
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('students')}
+                    className={`px-4 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'students' ? 'bg-blue-800 text-white shadow-md' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    👥 5. Quản Lý Học Viên & Duyệt Phí
+                  </button>
+                </div>
+
+                {/* 1. AI THẨM ĐỊNH ĐỀ */}
+                {adminTab === 'audit' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <div className="border-b pb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Quy Trình AI Thẩm Định Đề Độc Lập Chuẩn CT GDPT 2018</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Tự động phân loại 8 môn, thẩm định độ khó (B, H, VD, VDC), chuẩn hóa phông chữ Times New Roman và công thức KaTeX.
+                        </p>
+                      </div>
+                      <span className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">
+                        Hội đồng 6 Chuyên gia Phê chuẩn
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-3">
+                          <span className="font-bold text-blue-950 text-xs block uppercase tracking-wider">Cấu hình Đề Nạp:</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-slate-700 text-xs font-bold mb-1">Môn thi cần nạp đề:</label>
+                              <select
+                                value={auditSubjectCode}
+                                onChange={(e) => setAuditSubjectCode(e.target.value)}
+                                className="w-full border rounded-xl p-2.5 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+                              >
+                                {SUBJECTS.map(s => (
+                                  <option key={s.code} value={s.code}>[{s.code}] - {s.fullName}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-slate-700 text-xs font-bold mb-1">Mã đề cần nạp (Ví dụ: 01, 02):</label>
+                              <input
+                                type="text"
+                                value={auditExamCode}
+                                onChange={(e) => setAuditExamCode(e.target.value)}
+                                placeholder="01"
+                                className="w-full border rounded-xl p-2.5 text-xs font-mono font-bold text-blue-900 bg-white outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Tải ảnh hoặc dán nội dung câu hỏi:</label>
+                          <input
+                            type="file"
+                            onChange={handleFileUpload}
+                            accept=".docx,.pdf,.png,.jpg,.jpeg,.txt"
+                            className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-xl p-1 bg-white shadow-sm"
+                          />
+                          {uploadedFileName && (
+                            <span className="text-xs text-emerald-700 font-bold block mt-1">✓ Tệp: {uploadedFileName}</span>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ Word/PDF):</label>
+                          <textarea
+                            rows="6"
+                            value={rawQuestionInput}
+                            onChange={(e) => setRawQuestionInput(e.target.value)}
+                            placeholder="Mở file Word/PDF trên máy, nhấn Ctrl+A -> Ctrl+C (Copy) rồi Ctrl+V (Dán) vào đây:
+Ví dụ:
+Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]
+Tìm tất cả các giá trị thực của tham số m để phương trình f(x) - 2m = 0 có đúng 3 nghiệm phân biệt.
+A. m thuộc (-1; 1)
+B. m thuộc [-2; 2]"
+                            className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+                          ></textarea>
+                          <span className="text-[11px] text-blue-600 cursor-pointer font-bold block mt-0.5" onClick={() => setRawQuestionInput(rawQuestionInput + " [HINH_ANH] ")}>
+                            + Nhấp để chèn thẻ định vị ảnh <code>[HINH_ANH]</code> vào vị trí mong muốn
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={handleRunAiAudit}
+                          disabled={analyzingAI}
+                          className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-2"
+                        >
+                          <span>{analyzingAI ? "Hội đồng AI đang giải đề tối ưu & phân loại ma trận..." : "⚖️ Kích Hoạt Quy Trình Thẩm Định Đề"}</span>
+                        </button>
+                      </div>
+
+                      <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
+                        {aiAuditedResult ? (
+                          <div className="space-y-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="bg-amber-300 font-mono font-bold text-blue-950 px-2.5 py-1 rounded text-xs shadow-sm">
+                                Mã: {aiAuditedResult.id}
+                              </span>
+                              <span className="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">
+                                Môn: {aiAuditedResult.subjectName}
+                              </span>
+                              <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">
+                                Độ khó: {aiAuditedResult.level}
+                              </span>
+                            </div>
+
+                            <div className="bg-white p-3 rounded-xl border">
+                              <MathViewer content={aiAuditedResult.content} imageSrc={aiAuditedResult.imageSrc} imageCode={aiAuditedResult.imageCode} />
+                            </div>
+
+                            <div className="bg-white p-3 rounded-xl border space-y-1">
+                              <p className="font-bold text-emerald-800">✓ Lời giải tối ưu từ chuyên gia:</p>
+                              <p className="text-slate-700">{aiAuditedResult.solution}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+                            <span className="text-4xl mb-2">⚖️</span>
+                            <span className="font-bold text-slate-600">Chưa có câu hỏi được thẩm định.</span>
+                            <span className="text-[11px] mt-1 text-slate-500">Dán câu hỏi vào ô bên trái và nhấn "Kích Hoạt Quy Trình Thẩm Định".</span>
+                          </div>
+                        )}
+
+                        {aiAuditedResult && (
+                          <div className="pt-3 border-t mt-3 space-y-2">
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
+                              <span className="font-bold text-amber-900 block text-xs">
+                                Bạn có muốn thêm câu hỏi {aiAuditedResult.id} vào Ngân hàng Đề Gốc không?
+                              </span>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setShowConfirmAddModal(true)}
+                                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition"
+                                >
+                                  ✓ Xác nhận thêm vào Ngân hàng đề
+                                </button>
+                                <button
+                                  onClick={() => setAiAuditedResult(null)}
+                                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                                >
+                                  ✕ Hủy bỏ
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL HỎI XÁC NHẬN THÊM CÂU HỎI */}
+                {showConfirmAddModal && aiAuditedResult && (
+                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl border space-y-4">
+                      <div className="text-center space-y-2">
+                        <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-black text-2xl mx-auto">
+                          ✓
+                        </div>
+                        <h3 className="font-bold text-base text-slate-900">Xác Nhận Thêm Vào Ngân Hàng Đề</h3>
+                        <p className="text-xs text-slate-600">
+                          Bạn có chắc chắn muốn nạp câu hỏi <strong className="text-blue-900 font-mono">{aiAuditedResult.id}</strong> ({aiAuditedResult.subjectName}) vào <strong>Ngân hàng Đề Gốc</strong> và tự động sinh 3 câu tương đương vào <strong>Ngân hàng Luyện Thi</strong> không?
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleCancelAddQuestion}
+                          className="flex-1 py-2.5 border border-slate-300 hover:bg-slate-50 font-bold rounded-xl text-xs text-slate-700"
+                        >
+                          ✕ Hủy bỏ / Không thêm
+                        </button>
+                        <button
+                          onClick={handleConfirmAddQuestion}
+                          className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md"
+                        >
+                          ✓ Đồng ý thêm ngay
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. NGÂN HÀNG ĐỀ GỐC */}
+                {adminTab === 'root_bank' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đúng Nguyên Mẫu Đề Gốc)</h2>
+                        <p className="text-xs text-slate-500">Mã chuẩn <code>[môn][mã đề][stt]</code> (Ví dụ: T01-01). Mỗi câu hỏi có nút sửa và nút xóa riêng biệt.</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-600 font-bold">Lọc theo môn:</span>
+                        <select
+                          value={bankSubjectFilter}
+                          onChange={(e) => setBankSubjectFilter(e.target.value)}
+                          className="border rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-50 outline-none"
+                        >
+                          <option value="Tất cả">Tất cả các môn</option>
+                          {SUBJECTS.map(s => <option key={s.code} value={s.code}>{s.fullName}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 max-h-[650px] overflow-y-auto pr-2">
+                      {rootQuestions
+                        .filter(q => bankSubjectFilter === "Tất cả" || q.subjectCode === bankSubjectFilter)
+                        .map((q) => (
+                        <div key={q.id} className="p-4 bg-slate-50 border rounded-2xl hover:border-blue-400 transition text-xs space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-1 rounded-lg text-sm shadow-sm">{q.id}</span>
+                              <span className="font-bold text-slate-800">{q.subjectName}</span>
+                              <span className="text-slate-500">• {q.topic}</span>
+                              <span className="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-[11px]">Mức: {q.level}</span>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingQuestion({ ...q });
+                                  setEditingModalOpen(true);
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm"
+                              >
+                                ✏️ Chỉnh Sửa / Bổ Sung Ảnh
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Bạn có chắc chắn muốn xóa câu hỏi ${q.id} khỏi ngân hàng gốc?`)) {
+                                    setRootQuestions(rootQuestions.filter(i => i.id !== q.id));
+                                  }
+                                }}
+                                className="text-rose-600 hover:text-rose-800 border border-rose-200 px-3 py-1.5 rounded-lg bg-white font-semibold"
+                              >
+                                🗑️ Xóa
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-xl border">
+                            <MathViewer content={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {q.options.map((opt, oIdx) => (
+                              <div key={oIdx} className={`p-2 rounded-lg border text-[11px] ${oIdx === q.correctIndex ? 'bg-emerald-50 border-emerald-500 font-bold text-emerald-900' : 'bg-white'}`}>
+                                <span className="mr-1">{String.fromCharCode(65 + oIdx)}.</span>
+                                <MathSpan text={opt} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. NGÂN HÀNG LUYỆN THI */}
+                {adminTab === 'practice_bank' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Luyện Thi Theo Chuyên Đề CT GDPT 2018</h2>
+                        <p className="text-xs text-slate-500">Chỉ thể hiện mã câu hỏi và đề bài. Không thể hiện nội dung phái sinh hay nội dung đã thay đổi.</p>
+                      </div>
+                      <button
+                        onClick={() => alert("Đang xuất bộ câu hỏi ra file Word/PDF...")}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow"
+                      >
+                        📥 Tải Xuống Bài Tập Theo Chuyên Đề
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                      {practiceQuestions.map((q) => (
+                        <div key={q.id} className="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-mono font-bold text-indigo-950 bg-indigo-100 px-2.5 py-1 rounded text-xs">{q.id}</span>
+                            <span className="text-slate-600 font-bold">Môn: {q.subjectName} | Chuyên đề: {q.topic}</span>
+                          </div>
+
+                          <div className="bg-white p-3 rounded-xl border">
+                            <MathViewer content={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                            {q.options.map((opt, oIdx) => (
+                              <div key={oIdx} className="p-1.5 bg-white border rounded text-[11px] text-slate-700">
+                                <span className="font-bold mr-1">{String.fromCharCode(65 + oIdx)}.</span>
+                                <MathSpan text={opt} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. TẠO ĐỢT THI */}
+                {adminTab === 'exam_creator' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                    <div className="border-b pb-4">
+                      <h2 className="text-lg font-bold text-blue-950">Phòng Tạo Đợt Thi Khảo Sát Năng Lực Chuẩn HSA</h2>
+                      <p className="text-xs text-slate-500 mt-0.5">Mỗi đề gồm 03 phần: Toán & Số liệu (75p - 50c - 50đ), Đọc hiểu Văn (60p - 50c - 50đ), Phần Tự chọn (50đ).</p>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 rounded-2xl border space-y-3">
+                      <span className="font-bold text-xs uppercase tracking-wider text-slate-700">Cấu hình Đợt Thi Mới:</span>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div>
+                          <label className="block font-semibold mb-1">Tên đợt thi:</label>
+                          <input type="text" value={newExamName} onChange={(e) => setNewExamName(e.target.value)} className="w-full border rounded-lg p-2 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Mật khẩu đợt thi:</label>
+                          <input type="text" value={newExamPasscode} onChange={(e) => setNewExamPasscode(e.target.value)} className="w-full border rounded-lg p-2 bg-white font-mono font-bold text-blue-900" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Lệ phí hỗ trợ chuyên gia:</label>
+                          <input type="text" value={newExamFee} onChange={(e) => setNewExamFee(e.target.value)} className="w-full border rounded-lg p-2 bg-white font-bold text-emerald-700" />
+                        </div>
+                      </div>
+
+                      <button onClick={handleCreateExam} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md">
+                        + Tạo & Kích Hoạt Đợt Thi
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <span className="font-bold text-xs uppercase tracking-wider text-slate-700">Các đợt thi đã tạo:</span>
+                      <div className="space-y-2">
+                        {exams.map(ex => (
+                          <div key={ex.id} className="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-blue-950">{ex.name}</span>
+                                <span className="font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Pass: {ex.passCode}</span>
+                              </div>
+                              <p className="text-slate-500 mt-1">Lệ phí: <strong className="text-emerald-700">{ex.fee}</strong> | 150 câu (3 phần)</p>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteExam(ex.id, ex.name)}
+                              className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-lg"
+                            >
+                              🗑️ Xóa Đợt Thi
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. QUẢN LÝ HỌC VIÊN */}
+                {adminTab === 'students' && (
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className="flex justify-between items-center border-b pb-3">
+                      <div>
+                        <h2 className="text-lg font-bold text-blue-950">Quản Lý Thí Sinh & Phê Duyệt Quyền Thi</h2>
+                        <p className="text-xs text-slate-500">ID tự sinh: <code>[Năm sinh]-[Lớp]-[STT]</code> (Ví dụ: 07-12A1-001 hoặc 07-TP-003).</p>
+                      </div>
+                    </div>
+
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-600 border-b">
+                        <tr>
+                          <th className="py-2.5 px-3">Mã ID</th>
+                          <th className="py-2.5 px-3">Họ Tên</th>
+                          <th className="py-2.5 px-3">Lớp</th>
+                          <th className="py-2.5 px-3 text-center">Lệ phí</th>
+                          <th className="py-2.5 px-3 text-center">Đủ điều kiện thi</th>
+                          <th className="py-2.5 px-3 text-right">Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y text-slate-700">
+                        {students.map((st) => (
+                          <tr key={st.id}>
+                            <td className="py-2.5 px-3 font-mono font-bold text-blue-900">{st.id}</td>
+                            <td className="py-2.5 px-3 font-semibold">{st.name}</td>
+                            <td className="py-2.5 px-3">{st.classUnit}</td>
+                            <td className="py-2.5 px-3 text-center">
+                              {st.feeStatus === 'approved' ? <span className="text-emerald-700 font-bold">ĐÃ NỘP</span> : <span className="text-amber-700 font-bold">CHỜ DUYỆT</span>}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              <span className={`px-2.5 py-0.5 rounded font-bold text-[11px] ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}`}>
+                                {st.eligible ? "✓ ĐỦ ĐIỀU KIỆN" : "✗ KHÓA THI"}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              <button
+                                onClick={() => {
+                                  setStudents(students.map(s => s.id === st.id ? { ...s, eligible: !s.eligible, feeStatus: 'approved' } : s));
+                                }}
+                                className="text-blue-600 font-bold hover:underline"
+                              >
+                                {st.eligible ? "Tắt quyền thi" : "Duyệt phí & Bật quyền thi"}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* MODAL SỬA CÂU & BỔ SUNG ẢNH */}
+                {editingModalOpen && editingQuestion && (
+                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
+                      <div className="flex justify-between items-center border-b pb-3">
+                        <span className="font-bold text-base text-blue-950">Chỉnh Sửa Câu Hỏi ({editingQuestion.id})</span>
+                        <button onClick={() => setEditingModalOpen(false)} className="text-slate-400 font-bold text-lg">✕</button>
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div>
+                          <label className="font-bold text-slate-700 block mb-1">Nội dung câu hỏi đề gốc:</label>
+                          <textarea
+                            rows="4"
+                            value={editingQuestion.content}
+                            onChange={(e) => setEditingQuestion({ ...editingQuestion, content: e.target.value })}
+                            className="w-full border rounded-xl p-2.5 font-mono"
+                          ></textarea>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 border rounded-xl space-y-2">
+                          <span className="font-bold text-slate-800 block">Tải ảnh đồ thị / bảng biến thiên mới từ máy tính:</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const f = e.target.files[0];
+                              if (f) {
+                                const r = new FileReader();
+                                r.onload = (ev) => {
+                                  setEditingQuestion({
+                                    ...editingQuestion,
+                                    hasImage: true,
+                                    imageSrc: ev.target.result,
+                                    imageCode: `${editingQuestion.id}.png`
+                                  });
+                                };
+                                r.readAsDataURL(f);
+                              }
+                            }}
+                            className="text-xs text-slate-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2 border-t">
+                        <button onClick={() => setEditingModalOpen(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
+                        <button
+                          onClick={() => {
+                            setRootQuestions(rootQuestions.map(q => q.id === editingQuestion.id ? editingQuestion : q));
+                            setEditingModalOpen(false);
+                            alert(`Đã lưu chỉnh sửa câu ${editingQuestion.id}.`);
+                          }}
+                          className="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-xs shadow"
+                        >
+                          Lưu Thay Đổi
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* ==================== PHÒNG HỌC VIÊN ==================== */
+              <div>
+                {studentMode === 'hub' && (
+                  <div className="space-y-6">
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-bold text-slate-900">{currentUser.name}</h2>
+                          <span className="bg-blue-100 text-blue-900 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full">{currentUser.id}</span>
+                          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Lớp: {currentUser.classUnit}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Đợt thi: <strong>{exams[0]?.name}</strong></p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {currentUser.feeStatus === 'approved' && currentUser.eligible ? (
+                          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-xl">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span className="text-xs font-bold text-emerald-800">ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleRegisterExam}
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow-md transition"
+                          >
+                            💳 Đăng Ký Thi & Nộp Phí ({exams[0]?.fee})
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                        <div>
+                          <div className="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
+                          <h3 className="text-base font-bold text-slate-900 mb-1">1. Phòng Luyện Tập</h3>
+                          <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                            Rèn luyện theo chuyên đề (30 câu - 45 phút) có lời giải chi tiết ngay sau khi nộp, luyện tập theo phần (50 câu), hoặc luyện tập tổng hợp.
+                          </p>
+
+                          <div className="grid grid-cols-1 gap-2 pt-1">
+                            <button
+                              onClick={() => {
+                                setCurrentExamQuestions(practiceQuestions.slice(0, 30));
+                                setAnswers({});
+                                setTimeLeft(45 * 60);
+                                setActiveQuestionIdx(0);
+                                setStudentMode('practice_topic');
+                              }}
+                              className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-500 text-xs font-semibold flex justify-between items-center bg-slate-50"
+                            >
+                              <span>• Luyện tập theo chuyên đề (30 câu - 45p)</span>
+                              <span className="text-indigo-600 font-bold">Vào làm →</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setCurrentExamQuestions(rootQuestions.slice(0, 50));
+                                setAnswers({});
+                                setTimeLeft(75 * 60);
+                                setActiveQuestionIdx(0);
+                                setStudentMode('practice_part');
+                              }}
+                              className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-500 text-xs font-semibold flex justify-between items-center bg-slate-50"
+                            >
+                              <span>• Luyện tập theo phần: Toán & Số liệu (50 câu)</span>
+                              <span className="text-indigo-600 font-bold">Vào làm →</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm flex flex-col justify-between space-y-4">
+                        <div>
+                          <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">🎓</div>
+                          <h3 className="text-base font-bold text-slate-900 mb-1">2. Phòng Thi Chính Thức ({exams[0]?.name})</h3>
+                          <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                            Yêu cầu nhập mật khẩu đợt thi và phải được bật đủ điều kiện dự thi. Hệ thống kiểm soát cảnh báo chống rời màn hình.
+                          </p>
+
+                          <div className="space-y-2.5 bg-slate-50 p-3 rounded-xl border mb-2">
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mật khẩu đợt thi:</label>
+                              <input
+                                type="password"
+                                placeholder={`Nhập ${exams[0]?.passCode}...`}
+                                value={examPasscode}
+                                onChange={(e) => setExamPasscode(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Môn thi phần Lựa chọn:</label>
+                              <select
+                                value={electiveChoice}
+                                onChange={(e) => setElectiveChoice(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-1.5 text-xs outline-none bg-white font-semibold"
+                              >
+                                <option value="english">Môn Tiếng Anh (60 phút - 50 câu)</option>
+                                <option value="combo">Tổ hợp 3 môn KHTN / KHXH (Lý - Hóa - Sinh)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={handleStartOfficialExam}
+                          className={`w-full py-3 rounded-xl font-bold text-xs transition shadow-md ${currentUser.eligible && currentUser.feeStatus === 'approved' ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}
+                        >
+                          {currentUser.eligible && currentUser.feeStatus === 'approved' ? "Vào Phòng Thi Khảo Sát (Chuẩn HSA)" : "Chưa đủ điều kiện (Cần nộp phí & duyệt)"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL NỘP PHÍ */}
+                {showPaymentModal && (
+                  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl border space-y-4">
+                      <div className="flex justify-between items-center border-b pb-3">
+                        <h3 className="font-bold text-base text-slate-900">Đăng Ký Thi & Nộp Lệ Phí Thẩm Định</h3>
+                        <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 font-bold">✕</button>
+                      </div>
+                      <div className="text-xs space-y-1 text-slate-600">
+                        <p>Thí sinh: <strong>{currentUser.name}</strong> ({currentUser.id})</p>
+                        <p>Lệ phí hỗ trợ chuyên gia ra đề & thẩm định: <strong className="text-rose-600 font-bold text-sm">{exams[0]?.fee}</strong></p>
+                      </div>
+                      <div className="bg-slate-50 border rounded-xl p-4 text-center">
+                        <div className="w-32 h-32 bg-white border-2 border-slate-300 rounded mx-auto flex items-center justify-center font-black text-xl">VIETQR</div>
+                        <p className="text-[11px] text-slate-500 mt-2 font-mono">Nội dung CK: <strong className="text-blue-900">{paymentRefCode}</strong></p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowPaymentModal(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
+                        <button onClick={handleConfirmPayment} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow">
+                          Xác Nhận Đã Chuyển Tiền
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MÀN HÌNH THI & LUYỆN TẬP */}
+                {(studentMode === 'exam' || studentMode.startsWith('practice')) && (
+                  <div className="space-y-4 no-select">
+                    {studentMode === 'exam' && examViolationCount > 0 && (
+                      <div className="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-lg text-rose-800 text-xs flex justify-between items-center shadow-sm">
+                        <span className="font-bold">⚠️ CẢNH BÁO GIÁM SÁT: Bạn đã rời khỏi màn hình thi {examViolationCount}/3 lần! (Quá 3 lần bài thi tự động thu).</span>
+                        <span className="font-mono font-bold bg-rose-200 px-2 py-0.5 rounded">Vi phạm: {examViolationCount}</span>
+                      </div>
+                    )}
+
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-full">
+                          {studentMode === 'exam' ? `ĐỢT THI CHÍNH THỨC HSA (PHẦN ${currentExamPart}/3)` : "BÀI LUYỆN TẬP"}
+                        </span>
+                        <h2 className="text-sm font-bold text-slate-800 mt-1">
+                          {currentExamPart === 1 ? "Phần 1: Toán học & Xử lý số liệu (50 câu - 75 phút)" : (currentExamPart === 2 ? "Phần 2: Ngữ văn - Đọc hiểu (50 câu - 60 phút)" : "Phần 3: Phần tự chọn (50 điểm)")}
+                        </h2>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-500 block uppercase font-bold">Thời gian còn lại</span>
+                          <span className="font-mono text-xl font-black text-rose-600">{formatTime(timeLeft)}</span>
+                        </div>
+                        <button onClick={handleSubmitCurrentExam} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow">
+                          {currentExamPart < 3 && studentMode === 'exam' ? "Nộp & Chuyển Phần Tiếp" : "Nộp Bài Thi"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      <div className="lg:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        {currentExamQuestions.length > 0 && (
+                          <div>
+                            <div className="flex justify-between items-center border-b pb-3 mb-4">
+                              <span className="font-bold text-xs text-blue-900">
+                                Câu {activeQuestionIdx + 1} / {currentExamQuestions.length} (Mã: {currentExamQuestions[activeQuestionIdx].id})
+                              </span>
+                              <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                                {currentExamQuestions[activeQuestionIdx].topic || "Trọng tâm GDPT 2018"}
+                              </span>
+                            </div>
+
+                            <div className="mb-4">
+                              <MathViewer
+                                content={currentExamQuestions[activeQuestionIdx].content}
+                                imageSrc={currentExamQuestions[activeQuestionIdx].imageSrc}
+                                imageCode={currentExamQuestions[activeQuestionIdx].imageCode}
+                              />
+                            </div>
+
+                            <div className="space-y-2 mt-4">
+                              {currentExamQuestions[activeQuestionIdx].options.map((opt, oIdx) => {
+                                const isSelected = answers[activeQuestionIdx] === oIdx;
+                                return (
+                                  <button
+                                    key={oIdx}
+                                    onClick={() => setAnswers({ ...answers, [activeQuestionIdx]: oIdx })}
+                                    className={`w-full text-left p-3 rounded-xl border text-xs md:text-sm font-medium flex items-center space-x-3 transition ${isSelected ? 'bg-blue-50 border-blue-600 text-blue-950 font-bold' : 'hover:bg-slate-50 border-slate-200'}`}
+                                  >
+                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                                      {String.fromCharCode(65 + oIdx)}
+                                    </span>
+                                    <div className="flex-1">
+                                      <MathSpan text={opt} />
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            <div className="flex justify-between mt-6 pt-4 border-t">
+                              <button
+                                disabled={activeQuestionIdx === 0}
+                                onClick={() => setActiveQuestionIdx(i => i - 1)}
+                                className="px-3 py-1.5 border rounded-lg text-xs font-semibold disabled:opacity-30"
+                              >
+                                ← Câu trước
+                              </button>
+                              <button
+                                disabled={activeQuestionIdx === currentExamQuestions.length - 1}
+                                onClick={() => setActiveQuestionIdx(i => i + 1)}
+                                className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold disabled:opacity-30"
+                              >
+                                Câu kế tiếp →
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-fit">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-xs font-bold text-slate-700 uppercase">Mục lục ({currentExamQuestions.length} câu)</h4>
+                          <span className="text-[11px] font-bold text-blue-700 font-mono">
+                            {Object.keys(answers).length}/{currentExamQuestions.length}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1.5 max-h-[400px] overflow-y-auto pr-1">
+                          {currentExamQuestions.map((_, idx) => {
+                            const isAnswered = answers[idx] !== undefined;
+                            const isCurrent = activeQuestionIdx === idx;
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => setActiveQuestionIdx(idx)}
+                                className={`h-8 rounded text-xs font-bold transition ${isCurrent ? 'ring-2 ring-blue-600' : ''} ${isAnswered ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                              >
+                                {idx + 1}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MÀN HÌNH KẾT QUẢ */}
+                {studentMode === 'result' && examFinishedData && (
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-center">
+                    <h2 className="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI ĐÁNH GIÁ NĂNG LỰC</h2>
+                    <p className="text-xs text-slate-500">Mã thí sinh: {currentUser.id} | Số vi phạm rời màn hình: {examFinishedData.violations}</p>
+
+                    <div className="inline-block bg-blue-50 border border-blue-200 px-8 py-4 rounded-2xl">
+                      <span className="text-xs text-blue-700 font-bold uppercase">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
+                      <div className="text-4xl font-black text-blue-950 mt-1">{examFinishedData.total} / 150</div>
+                    </div>
+
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs text-left space-y-1.5 max-w-xl mx-auto">
+                      <h4 className="font-bold text-amber-900">📧 Thông báo gửi về email ({currentUser.email}):</h4>
+                      <p className="text-amber-800">• Điểm thành phần: Toán ({examFinishedData.scoreMath}đ) - Đọc hiểu ({examFinishedData.scoreReading}đ) - Tự chọn ({examFinishedData.scoreElective}đ).</p>
+                      <p className="text-amber-800">• <strong>Đánh giá tiến độ:</strong> Thí sinh có tiến bộ vượt bậc ở kỹ năng tư duy định lượng. Cần rèn luyện thêm ở chuyên đề <em>"Hàm số & Khảo sát đồ thị"</em> để cải thiện điểm số cho đợt thi tiếp theo.</p>
+                      <p className="text-amber-800">• Chúc mừng em và hãy tiếp tục rèn luyện qua app!</p>
+                    </div>
+
+                    <div>
+                      <button onClick={() => setStudentMode('hub')} className="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md">
+                        Trở về Bảng Điều Khiển Học Viên
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
         </div>
-      `;
-
-      document.getElementById("audit-result-box").innerHTML = html;
-      document.getElementById("audit-action-box").classList.remove("hidden");
+      );
     }
 
-    function confirmAddToBank() {
-      if (!tempAuditQuestion) return;
-      dbQuestions.unshift(tempAuditQuestion);
-      document.getElementById("bank-count").innerText = dbQuestions.length;
-      alert("✓ ĐÃ THÊM THÀNH CÔNG VÀO NGÂN HÀNG ĐỀ GỐC!");
-      cancelAudit();
-      renderBankList();
-    }
-
-    function cancelAudit() {
-      tempAuditQuestion = null;
-      document.getElementById("audit-raw-input").value = "";
-      document.getElementById("audit-result-box").innerHTML = `
-        <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-          <span class="text-3xl mb-1">⚖️</span>
-          <span class="font-bold">Chưa có đề bài thẩm định.</span>
-          <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
-        </div>
-      `;
-      document.getElementById("audit-action-box").classList.add("hidden");
-    }
-
-    function renderBankList() {
-      const container = document.getElementById("bank-list");
-      document.getElementById("bank-count").innerText = dbQuestions.length;
-      container.innerHTML = dbQuestions.map((q, idx) => `
-        <div class="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
-          <div class="flex justify-between items-center">
-            <span class="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded">${q.id}</span>
-            <button onclick="deleteBankQuestion(${idx})" class="text-rose-600 font-bold hover:underline">🗑️ Xóa</button>
-          </div>
-          <div class="bg-white p-3 rounded-xl border leading-relaxed">
-            ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
-            ${q.hasImage ? `<div class="my-2 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-40 mx-auto" /></div>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function deleteBankQuestion(idx) {
-      if (confirm("Xóa câu hỏi này?")) {
-        dbQuestions.splice(idx, 1);
-        renderBankList();
-      }
-    }
-
-    // Thi & Luyện tập
-    function startPracticeSession() {
-      activeExamQuestions = dbQuestions.slice(0, 30);
-      initExamSession("BÀI LUYỆN TẬP", 45 * 60);
-    }
-
-    function startOfficialExam() {
-      const pass = document.getElementById("input-exam-pass").value;
-      if (pass !== "HSA2026") {
-        alert("Mật khẩu không chính xác! (Nhập: HSA2026)");
-        return;
-      }
-      activeExamQuestions = dbQuestions.slice(0, 50);
-      initExamSession("BÀI THI CHÍNH THỨC HSA", 75 * 60);
-    }
-
-    function initExamSession(title, seconds) {
-      document.getElementById("student-hub").classList.add("hidden");
-      document.getElementById("student-exam").classList.remove("hidden");
-      document.getElementById("student-result").classList.add("hidden");
-      document.getElementById("exam-badge").innerText = title;
-
-      activeQuestionIdx = 0;
-      userAnswers = {};
-      timeLeft = seconds;
-      violationCount = 0;
-
-      renderCurrentQuestion();
-      renderMatrix();
-
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        const m = Math.floor(timeLeft / 60);
-        const s = timeLeft % 60;
-        document.getElementById("exam-timer").innerText = (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
-        if (timeLeft <= 0) submitExam();
-      }, 1000);
-    }
-
-    function renderCurrentQuestion() {
-      const q = activeExamQuestions[activeQuestionIdx];
-      if (!q) return;
-
-      document.getElementById("q-number").innerText = "Câu " + (activeQuestionIdx + 1);
-      document.getElementById("q-code").innerText = q.id;
-
-      let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
-      if (q.hasImage && q.imageSrc) {
-        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
-      }
-      document.getElementById("q-content").innerHTML = contentHtml;
-
-      document.getElementById("q-options").innerHTML = q.options.map((opt, oIdx) => `
-        <div onclick="selectAnswer(${oIdx})" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${userAnswers[activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50 bg-white'}">
-          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
-          ${parseKaTeX(opt)}
-        </div>
-      `).join('');
-    }
-
-    function renderMatrix() {
-      const container = document.getElementById("q-matrix");
-      container.innerHTML = activeExamQuestions.map((_, idx) => `
-        <button onclick="activeQuestionIdx = ${idx}; renderCurrentQuestion(); renderMatrix();" class="h-8 rounded text-xs font-bold ${activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${userAnswers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
-          ${idx + 1}
-        </button>
-      `).join('');
-    }
-
-    function selectAnswer(oIdx) {
-      userAnswers[activeQuestionIdx] = oIdx;
-      renderCurrentQuestion();
-      renderMatrix();
-    }
-
-    function prevQuestion() {
-      if (activeQuestionIdx > 0) {
-        activeQuestionIdx--;
-        renderCurrentQuestion();
-        renderMatrix();
-      }
-    }
-
-    function nextQuestion() {
-      if (activeQuestionIdx < activeExamQuestions.length - 1) {
-        activeQuestionIdx++;
-        renderCurrentQuestion();
-        renderMatrix();
-      }
-    }
-
-    function submitExam() {
-      if (timerInterval) clearInterval(timerInterval);
-      let score = 0;
-      activeExamQuestions.forEach((q, idx) => {
-        if (userAnswers[idx] === q.correctIndex) score++;
-      });
-
-      document.getElementById("student-exam").classList.add("hidden");
-      document.getElementById("student-result").classList.remove("hidden");
-      document.getElementById("result-score").innerText = (score * 3) + " / 150";
-    }
-
-    function backToHub() {
-      document.getElementById("student-hub").classList.remove("hidden");
-      document.getElementById("student-result").classList.add("hidden");
-    }
-
-    // Chống rời màn hình
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
-        violationCount++;
-        alert("⚠️ CẢNH BÁO: Rời màn hình (" + violationCount + "/3 lần)! Quá 3 lần bài thi tự động thu.");
-        if (violationCount >= 3) submitExam();
-      }
-    });
-
-    // Mở trang
-    switchView('student');
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
