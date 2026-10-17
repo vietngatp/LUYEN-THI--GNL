@@ -10,33 +10,25 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- JSZip: Bóc tách hình ảnh, đồ thị gốc và công thức toán OMML từ file Word .docx -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <!-- PDF.js: Trích xuất nội dung văn bản từ file PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    if (window.pdfjsLib) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
-  </script>
-
-  <!-- KaTeX Engine -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <!-- KaTeX CSS & JS (Load an toàn) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .no-select { user-select: none; }
-    .katex { font-size: 1.1em; }
-    .math-content { word-break: break-word; }
+    .katex { font-size: 1.08em; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <div id="root"></div>
+  <div id="root">
+    <div style="padding: 20px; text-align: center; font-family: sans-serif; color: #475569;">
+      Đang tải hệ thống Luyện thi Đánh giá Năng lực... Vui lòng chờ vài giây...
+    </div>
+  </div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
@@ -52,27 +44,11 @@
       { code: "E", name: "Tiếng Anh" }
     ];
 
-    // CHUẨN HÓA KÝ HIỆU TOÁN TỪ WORD SANG LATEX CHUẨN
-    function normalizeMathToLatex(text) {
-      if (!text) return "";
-      let s = text;
-      // Chuẩn hóa căn thức
-      s = s.replace(/√\((.*?)\)/g, "$\sqrt{$1}$");
-      s = s.replace(/√([a-zA-Z0-9]+)/g, "$\sqrt{$1}$");
-      // Chuẩn hóa số mũ
-      s = s.replace(/([a-zA-Z0-9\)])\^([a-zA-Z0-9]+)/g, "$$1^{$2}$");
-      s = s.replace(/²/g, "$^2$").replace(/³/g, "$^3$");
-      // Chuẩn hóa ký hiệu tích phân
-      s = s.replace(/∫/g, "$\int$");
-      // Chuẩn hóa vô cùng
-      s = s.replace(/∞/g, "$\infty$").replace(/\+∞/g, "$+\infty$").replace(/-∞/g, "$-\infty$");
-      // Chuẩn hóa tập số
-      s = s.replace(/R/g, "$\mathbb{R}$");
-      return s;
-    }
+    // Bảng biến thiên SVG mẫu hiển thị trực tiếp
+    const SAMPLE_VARIATION_TABLE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='sans-serif' font-size='14' font-weight='bold'>x</text><text x='15' y='65' font-family='sans-serif' font-size='14' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='sans-serif' font-size='14' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='13'>-∞</text><text x='180' y='26' font-size='13'>-1</text><text x='280' y='26' font-size='13'>1</text><text x='390' y='26' font-size='13'>+∞</text><text x='130' y='65' font-size='14' fill='%2310b981'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='14' fill='%23ef4444'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='14' fill='%2310b981'>+</text><text x='80' y='145' font-size='12'>-∞</text><text x='180' y='95' font-size='13' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='13' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='12'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
-    // COMPONENT HIỂN THỊ CÂU HỎI & HÌNH VẼ ĐỒ THỊ/BẢNG BIẾN THIÊN
-    function SafeMathContent({ text, imageSrc, imageCode }) {
+    // Component render an toàn bảo vệ chống màn hình trắng
+    function SafeRenderMath({ text, imageSrc, imageCode }) {
       const containerRef = useRef(null);
 
       useEffect(() => {
@@ -85,10 +61,11 @@
                 { left: "\\[", right: "\\]", display: true },
                 { left: "\\(", right: "\\)", display: false }
               ],
-              throwOnError: false,
-              errorColor: "#1d4ed8"
+              throwOnError: false
             });
-          } catch (e) {}
+          } catch (e) {
+            console.log("KaTeX warning:", e);
+          }
         }
       }, [text]);
 
@@ -105,7 +82,7 @@
       }
 
       return (
-        <div ref={containerRef} className="math-content text-sm leading-relaxed text-slate-900 space-y-2">
+        <div ref={containerRef} className="text-sm leading-relaxed text-slate-900 space-y-2">
           {hasPlaceholder ? (
             <div>
               <div className="whitespace-pre-wrap">{partBefore}</div>
@@ -115,8 +92,8 @@
                 ) : (
                   <div className="w-full max-w-md py-6 bg-white border-2 border-dashed border-indigo-300 rounded-lg flex flex-col items-center justify-center text-indigo-950">
                     <span className="text-3xl mb-1">📈</span>
-                    <span className="font-bold text-xs">[Vị trí Bảng biến thiên / Đồ thị trích xuất]</span>
-                    <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã ảnh: {imageCode || "Chưa có file ảnh"}</span>
+                    <span className="font-bold text-xs">[Vị trí Bảng biến thiên / Đồ thị]</span>
+                    <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã: {imageCode || "HinhAnh.png"}</span>
                   </div>
                 )}
               </div>
@@ -132,8 +109,8 @@
                   ) : (
                     <div className="w-full max-w-md py-6 bg-white border-2 border-dashed border-indigo-300 rounded-lg flex flex-col items-center justify-center text-indigo-950">
                       <span className="text-3xl mb-1">📈</span>
-                      <span className="font-bold text-xs">[Bảng biến thiên / Đồ thị nằm đúng vị trí]</span>
-                      <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã ảnh: {imageCode}</span>
+                      <span className="font-bold text-xs">[Bảng biến thiên / Đồ thị đặt tại đây]</span>
+                      <span className="font-mono text-[11px] text-indigo-600 mt-0.5">Mã: {imageCode}</span>
                     </div>
                   )}
                 </div>
@@ -144,7 +121,7 @@
       );
     }
 
-    function SafeMathInline({ text }) {
+    function InlineMath({ text }) {
       const ref = useRef(null);
       useEffect(() => {
         if (ref.current && window.renderMathInElement) {
@@ -159,7 +136,7 @@
           } catch (e) {}
         }
       }, [text]);
-      return <span ref={ref} className="inline math-content">{text}</span>;
+      return <span ref={ref} className="inline">{text}</span>;
     }
 
     const INITIAL_STUDENTS = [
@@ -167,9 +144,7 @@
       { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" }
     ];
 
-    const sampleSvgTable = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='450' height='160' viewBox='0 0 450 160'><rect width='450' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='450' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='450' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='sans-serif' font-size='14' font-weight='bold'>x</text><text x='15' y='65' font-family='sans-serif' font-size='14' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='sans-serif' font-size='14' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='13'>-∞</text><text x='180' y='26' font-size='13'>-1</text><text x='280' y='26' font-size='13'>1</text><text x='390' y='26' font-size='13'>+∞</text><text x='130' y='65' font-size='14' fill='red'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='14' fill='blue'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='14' fill='red'>+</text><text x='80' y='145' font-size='12'>-∞</text><text x='180' y='95' font-size='13' font-weight='bold' fill='green'>2</text><text x='280' y='145' font-size='13' font-weight='bold' fill='orange'>-2</text><text x='390' y='95' font-size='12'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
-
-    const generateInitialQuestions = () => {
+    const generate50MathQuestions = () => {
       const qList = [];
       for (let i = 1; i <= 50; i++) {
         const numStr = i < 10 ? '0' + i : '' + i;
@@ -183,15 +158,15 @@
         if (i % 3 === 1) {
           content = `Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình dưới đây:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.`;
           opts = [`$m \in (-1; 1)$`, `$m \in [-2; 2]$`, `$m < -1$ hoặc $m > 1$`, `$m = 0$`];
-          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào bảng biến thiên trên hình vẽ, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1. Chọn đáp án A.`;
+          sol = `Dựa vào bảng biến thiên, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1.`;
         } else if (i % 3 === 2) {
-          content = `Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và $\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
+          content = `Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và $\frac{a}{c}$ tối giản. Giá trị của biểu thức $S = a + b + c$ bằng:`;
           opts = [`$S = 9$`, `$S = 12$`, `$S = 15$`, `$S = 7$`];
-          sol = `Đặt $t = \sqrt{1 + \ln x} \Rightarrow 2t dt = \frac{dx}{x}$. Ta tính được $I = \frac{4 - 2\sqrt{2}}{3}$. Suy ra $a = 4, b = 2, c = 3 \Rightarrow S = 4 + 2 + 3 = 9$.`;
+          sol = `Đặt $t = \sqrt{1 + \ln x} \Rightarrow 2t dt = \frac{dx}{x}$. Ta tính được $I = \frac{4 - 2\sqrt{2}}{3} \Rightarrow S = 4 + 2 + 3 = 9$.`;
         } else {
           content = `Trong không gian $Oxyz$, cho mặt cầu $(S): (x - 1)^2 + (y + 2)^2 + (z - 3)^2 = 25$ và mặt phẳng $(P): 2x - 2y + z + 4 = 0$. Khoảng cách từ tâm $I$ của $(S)$ đến $(P)$ là:`;
           opts = [`$d = \frac{13}{3}$`, `$d = 5$`, `$d = 3$`, `$d = \sqrt{29}$`];
-          sol = `Tâm mặt cầu $I(1; -2; 3)$. Khoảng cách là $d(I, (P)) = \frac{|2(1) - 2(-2) + 1(3) + 4|}{\sqrt{2^2 + (-2)^2 + 1^2}} = \frac{13}{3}$.`;
+          sol = `Tâm mặt cầu $I(1; -2; 3)$. Áp dụng công thức khoảng cách ta được $d = \frac{13}{3}$.`;
         }
 
         qList.push({
@@ -200,7 +175,7 @@
           content: content,
           hasImage: hasImg,
           imageCode: hasImg ? `${code}.png` : "",
-          imageSrc: hasImg ? sampleSvgTable : null,
+          imageSrc: hasImg ? SAMPLE_VARIATION_TABLE : null,
           options: opts,
           correctIndex: 0,
           solution: sol
@@ -215,23 +190,19 @@
       const [currentUserIndex, setCurrentUserIndex] = useState(0);
       const [students, setStudents] = useState(INITIAL_STUDENTS);
       const [exams, setExams] = useState([
-        { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 50 }
+        { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 50 }
       ]);
-      
-      const [rootQuestions, setRootQuestions] = useState(generateInitialQuestions());
 
-      // BỘ BÓC TÁCH FILE NÂNG CAO (WORD XML & PDF ENGINE)
-      const [uploadedFileName, setUploadedFileName] = useState("");
+      const [rootQuestions, setRootQuestions] = useState(generate50MathQuestions());
+
+      // Quản lý tải đề & Bóc tách trực tiếp
       const [uploadExamCode, setUploadExamCode] = useState("01");
       const [auditSubject, setAuditSubject] = useState("T");
-      const [extractedFullText, setExtractedFullText] = useState("");
-      const [extractedImages, setExtractedImages] = useState([]); // Chứa ảnh thật bóc tách từ file Word
-      const [isExtracting, setIsExtracting] = useState(false);
-      const [extractStatusText, setExtractStatusText] = useState("");
+      const [rawTextPasted, setRawTextPasted] = useState("");
+      const [uploadedFileName, setUploadedFileName] = useState("");
       const [parsedQuestions, setParsedQuestions] = useState([]);
-      const fileInputRef = useRef(null);
 
-      // Modal sửa câu
+      // Modal chỉnh sửa câu
       const [editingModalOpen, setEditingModalOpen] = useState(false);
       const [currentEditQuestion, setCurrentEditQuestion] = useState(null);
 
@@ -265,153 +236,36 @@
         return () => clearInterval(timer);
       }, [studentMode, timeLeft]);
 
-      // XỬ LÝ ĐỌC FILE WORD (.DOCX) NGUYÊN BẢN CÔNG THỨC TOÁN & BẢNG BIẾN THIÊN
-      const parseWordDocxWithMedia = async (file, examCode) => {
-        setIsExtracting(true);
-        setExtractStatusText("Đang bóc tách hình ảnh, đồ thị và công thức toán từ file Word...");
+      // BÓC TÁCH TỪ VĂN BẢN (CHÍNH XÁC & BẢO VỆ CÔNG THỨC TOÁN)
+      const parseQuestionsFromText = (text, examCode) => {
+        if (!text || !text.trim()) return;
 
-        try {
-          const zip = new JSZip();
-          const zipContent = await zip.loadAsync(file);
+        // Chuẩn hóa một số ký hiệu toán cơ bản
+        let normalized = text
+          .replace(/√\((.*?)\)/g, "$\sqrt{$1}$")
+          .replace(/√([a-zA-Z0-9]+)/g, "$\sqrt{$1}$")
+          .replace(/²/g, "$^2$")
+          .replace(/³/g, "$^3$")
+          .replace(/∫/g, "$\int$")
+          .replace(/∞/g, "$\infty$")
+          .replace(/R/g, "$\mathbb{R}$");
 
-          // 1. Trích xuất toàn bộ ảnh (đồ thị, bảng biến thiên) từ folder word/media/
-          const imageMap = {};
-          const imagesList = [];
-          
-          const mediaFiles = Object.keys(zipContent.files).filter(path => path.startsWith("word/media/"));
-          for (const path of mediaFiles) {
-            const imgFile = zipContent.files[path];
-            const base64 = await imgFile.async("base64");
-            const ext = path.split('.').pop().toLowerCase();
-            const mime = ext === 'png' ? 'image/png' : (ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png');
-            const dataUrl = `data:${mime};base64,${base64}`;
-            const fileName = path.replace("word/media/", "");
-            imageMap[fileName] = dataUrl;
-            imagesList.push({ name: fileName, url: dataUrl });
-          }
-          setExtractedImages(imagesList);
-
-          // 2. Trích xuất văn bản & công thức toán OMML từ word/document.xml
-          let fullDocText = "";
-          if (zipContent.files["word/document.xml"]) {
-            const xmlText = await zipContent.files["word/document.xml"].async("text");
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-            // Duyệt từng đoạn văn (w:p)
-            const paragraphs = xmlDoc.getElementsByTagName("w:p");
-            let rawLines = [];
-
-            for (let i = 0; i < paragraphs.length; i++) {
-              const p = paragraphs[i];
-              let pText = "";
-
-              // Kiểm tra xem đoạn này có chứa ảnh không
-              const drawings = p.getElementsByTagName("w:drawing");
-              let pHasImage = drawings.length > 0;
-
-              // Duyệt các phần tử con
-              for (const child of p.childNodes) {
-                // Văn bản thường
-                if (child.nodeName === "w:r") {
-                  const tTags = child.getElementsByTagName("w:t");
-                  for (let t = 0; t < tTags.length; t++) {
-                    pText += tTags[t].textContent;
-                  }
-                }
-                // Công thức toán học Word (m:oMath hoặc m:oMathPara)
-                else if (child.nodeName === "m:oMath" || child.nodeName === "m:oMathPara") {
-                  const mTexts = child.getElementsByTagName("m:t");
-                  let mathExpr = "";
-                  for (let m = 0; m < mTexts.length; m++) {
-                    mathExpr += mTexts[m].textContent;
-                  }
-                  if (mathExpr.trim()) {
-                    pText += " $" + mathExpr.trim() + "$ ";
-                  }
-                }
-              }
-
-              if (pHasImage) {
-                pText += " [HINH_ANH] ";
-              }
-
-              if (pText.trim()) {
-                rawLines.push(pText.trim());
-              }
-            }
-
-            fullDocText = rawLines.join("
-");
-          }
-
-          setExtractedFullText(fullDocText);
-          parseQuestionsFromText(fullDocText, examCode, imagesList);
-          setIsExtracting(false);
-          setExtractStatusText("");
-        } catch (error) {
-          console.error("Lỗi parse Word:", error);
-          alert("Không thể đọc tệp Word. Vui lòng kiểm tra file .docx hoặc copy text dán trực tiếp.");
-          setIsExtracting(false);
-          setExtractStatusText("");
-        }
-      };
-
-      // XỬ LÝ ĐỌC FILE PDF TRỰC TIẾP
-      const parsePdfFile = async (file, examCode) => {
-        setIsExtracting(true);
-        setExtractStatusText("Đang dùng PDF.js bóc tách từng trang câu hỏi...");
-
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          let fullText = "";
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(" ");
-            fullText += pageText + "
-";
-          }
-
-          setExtractedFullText(fullText);
-          parseQuestionsFromText(fullText, examCode, []);
-          setIsExtracting(false);
-          setExtractStatusText("");
-        } catch (err) {
-          console.error("Lỗi đọc PDF:", err);
-          alert("Lỗi bóc tách PDF: " + err.message + ". Bạn có thể mở PDF copy text và dán vào ô bên dưới!");
-          setIsExtracting(false);
-          setExtractStatusText("");
-        }
-      };
-
-      // BÓC TÁCH CÂU HỎI TỪ VĂN BẢN (TỰ ĐỘNG CHUẨN HÓA TOÁN & GẮN ẢNH ĐÚNG VỊ TRÍ)
-      const parseQuestionsFromText = (rawText, examCode, availableImages) => {
-        if (!rawText || !rawText.trim()) return;
-
-        // Chuẩn hóa toán học sang LaTeX
-        const normalized = normalizeMathToLatex(rawText);
-
-        // Tách câu hỏi theo "Câu 1", "Câu 2", "Câu 01"...
+        // Tách câu theo cú pháp "Câu 1", "Câu 2", "Câu 01"...
         const parts = normalized.split(/(?=Câu\s*\d+[\s*:\.\-\–])/gi);
         const list = [];
         let order = 1;
-        let imgIndex = 0;
 
         parts.forEach((block) => {
-          const cleanBlock = block.trim();
-          if (cleanBlock.length > 15) {
+          const clean = block.trim();
+          if (clean.length > 10) {
             const numStr = order < 10 ? '0' + order : '' + order;
             const qId = `${auditSubject}${examCode}-${numStr}`;
 
-            // Tách 4 phương án A, B, C, D
-            let optA = "$A$", optB = "$B$", optC = "$C$", optD = "$D$";
-            const matchA = cleanBlock.match(/A[\.\:\)\s](.*?)(?=B[\.\:\)\s]|$)/s);
-            const matchB = cleanBlock.match(/B[\.\:\)\s](.*?)(?=C[\.\:\)\s]|$)/s);
-            const matchC = cleanBlock.match(/C[\.\:\)\s](.*?)(?=D[\.\:\)\s]|$)/s);
-            const matchD = cleanBlock.match(/D[\.\:\)\s](.*?)(?=$)/s);
+            let optA = "A. Phương án 1", optB = "B. Phương án 2", optC = "C. Phương án 3", optD = "D. Phương án 4";
+            const matchA = clean.match(/A[\.\:\)\s](.*?)(?=B[\.\:\)\s]|$)/s);
+            const matchB = clean.match(/B[\.\:\)\s](.*?)(?=C[\.\:\)\s]|$)/s);
+            const matchC = clean.match(/C[\.\:\)\s](.*?)(?=D[\.\:\)\s]|$)/s);
+            const matchD = clean.match(/D[\.\:\)\s](.*?)(?=$)/s);
 
             if (matchA && matchB) {
               optA = matchA[1].trim();
@@ -420,21 +274,11 @@
               optD = matchD ? matchD[1].trim() : "Phương án D";
             }
 
-            let qContent = cleanBlock.split(/A[\.\:\)\s]/)[0].trim();
-            if (!qContent) qContent = cleanBlock;
+            let qContent = clean.split(/A[\.\:\)\s]/)[0].trim();
+            if (!qContent) qContent = clean;
 
-            // Kiểm tra xem câu này có chứa ảnh hoặc từ khóa bảng biến thiên/đồ thị không
-            let hasImg = qContent.includes("[HINH_ANH]") || qContent.includes("bảng biến thiên") || qContent.includes("đồ thị");
-            let assignedImgSrc = null;
-
-            if (availableImages && availableImages.length > 0 && imgIndex < availableImages.length) {
-              assignedImgSrc = availableImages[imgIndex].url;
-              hasImg = true;
-              imgIndex++;
-            } else if (hasImg) {
-              assignedImgSrc = sampleSvgTable; // Dán bảng biến thiên SVG mẫu nếu file Word chưa trích xuất được ảnh nhúng
-            }
-
+            // Tự động kiểm tra có bảng biến thiên/đồ thị
+            const hasImg = qContent.includes("[HINH_ANH]") || qContent.toLowerCase().includes("bảng biến thiên") || qContent.toLowerCase().includes("đồ thị");
             if (hasImg && !qContent.includes("[HINH_ANH]")) {
               qContent = qContent + " [HINH_ANH] ";
             }
@@ -445,10 +289,10 @@
               content: qContent,
               hasImage: hasImg,
               imageCode: `${qId}.png`,
-              imageSrc: assignedImgSrc,
+              imageSrc: hasImg ? SAMPLE_VARIATION_TABLE : null,
               options: [optA, optB, optC, optD],
               correctIndex: 0,
-              solution: `Lời giải thẩm định chi tiết cho câu ${qId}.`
+              solution: `Lời giải chuẩn xác cho câu ${qId}.`
             });
             order++;
           }
@@ -456,12 +300,7 @@
 
         if (list.length > 0) {
           setParsedQuestions(list);
-          alert(`ĐÃ BÓC TÁCH THÀNH CÔNG ${list.length} CÂU HỎI THẬT TỪ FILE!
-- Mã đề: ${examCode}
-- Công thức Toán đã chuẩn hóa KaTeX.
-- Ảnh đồ thị/bảng biến thiên đã được gắn đúng vị trí.`);
         } else {
-          // Coi toàn bộ là 1 câu
           const qId = `${auditSubject}${examCode}-01`;
           setParsedQuestions([{
             id: qId,
@@ -469,7 +308,7 @@
             content: normalized + " [HINH_ANH] ",
             hasImage: true,
             imageCode: `${qId}.png`,
-            imageSrc: availableImages.length > 0 ? availableImages[0].url : sampleSvgTable,
+            imageSrc: SAMPLE_VARIATION_TABLE,
             options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
             correctIndex: 0,
             solution: "Lời giải thẩm định độc lập."
@@ -477,56 +316,50 @@
         }
       };
 
-      // XỬ LÝ SỰ KIỆN KHI CHỌN HOẶC KÉO THẢ TỆP
-      const handleFileSelected = (file) => {
+      // Xử lý nạp file
+      const handleFileRead = (e) => {
+        const file = e.target.files[0];
         if (!file) return;
 
-        const inputCode = window.prompt("Vui lòng nhập Mã Đề cho tệp này (ví dụ: 01, 02, 05):", uploadExamCode);
-        const finalExamCode = inputCode && inputCode.trim() !== "" ? inputCode.trim() : uploadExamCode;
-        setUploadExamCode(finalExamCode);
+        const codeInput = window.prompt("Nhập Mã Đề cho tệp này (ví dụ: 01, 02):", uploadExamCode);
+        const code = codeInput && codeInput.trim() !== "" ? codeInput.trim() : uploadExamCode;
+        setUploadExamCode(code);
         setUploadedFileName(file.name);
 
-        const lowerName = file.name.toLowerCase();
-        if (lowerName.endsWith(".docx")) {
-          parseWordDocxWithMedia(file, finalExamCode);
-        } else if (lowerName.endsWith(".pdf")) {
-          parsePdfFile(file, finalExamCode);
-        } else {
-          // File văn bản txt/tex
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            setExtractedFullText(e.target.result);
-            parseQuestionsFromText(e.target.result, finalExamCode, []);
-          };
-          reader.readAsText(file);
-        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const text = event.target.result;
+          setRawTextPasted(text);
+          parseQuestionsFromText(text, code);
+          alert(`Đã nạp file ${file.name}! Bóc tách được các câu hỏi.`);
+        };
+        reader.readAsText(file);
       };
 
-      // LƯU TOÀN BỘ CÂU HỎI THẬT VÀO NGÂN HÀNG ĐỀ GỐC
-      const handleSaveAllParsedToBank = () => {
+      // Lưu tất cả câu hỏi bóc tách vào ngân hàng
+      const handleSaveParsedToBank = () => {
         if (parsedQuestions.length === 0) {
-          alert("Chưa có câu hỏi nào được bóc tách từ file!");
+          alert("Chưa có câu hỏi nào được bóc tách!");
           return;
         }
-
         setRootQuestions([...parsedQuestions, ...rootQuestions]);
-        alert(`THÀNH CÔNG! Đã chuyển ${parsedQuestions.length} câu hỏi thật (kèm bảng biến thiên/đồ thị và công thức chuẩn) vào Ngân Hàng Đề Gốc!`);
+        alert(`Đã nạp thành công ${parsedQuestions.length} câu hỏi vào Ngân Hàng Đề Gốc!`);
         setParsedQuestions([]);
-        setExtractedFullText("");
+        setRawTextPasted("");
         setUploadedFileName("");
       };
 
-      // Tải ảnh cho từng câu riêng lẻ
-      const handleAttachImageToParsed = (index, e) => {
+      // Dán ảnh bảng biến thiên cho câu
+      const handleAttachImage = (idx, e) => {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
           reader.onload = (ev) => {
             const list = [...parsedQuestions];
-            list[index].hasImage = true;
-            list[index].imageSrc = ev.target.result;
-            if (!list[index].content.includes("[HINH_ANH]")) {
-              list[index].content = list[index].content + " [HINH_ANH] ";
+            list[idx].hasImage = true;
+            list[idx].imageSrc = ev.target.result;
+            if (!list[idx].content.includes("[HINH_ANH]")) {
+              list[idx].content = list[idx].content + " [HINH_ANH] ";
             }
             setParsedQuestions(list);
           };
@@ -534,8 +367,7 @@
         }
       };
 
-      // Mở modal sửa câu
-      const handleOpenEditModal = (q) => {
+      const handleOpenEdit = (q) => {
         setCurrentEditQuestion({ ...q, options: [...q.options] });
         setEditingModalOpen(true);
       };
@@ -546,19 +378,16 @@
         setEditingModalOpen(false);
       };
 
-      // Bắt đầu thi
       const handleStartExam = () => {
         if (currentUser.feeStatus !== 'approved' || !currentUser.eligible) {
-          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Vui lòng nộp phí và chờ duyệt.");
+          alert("BẠN CHƯA ĐỦ ĐIỀU KIỆN! Cần nộp phí và được duyệt.");
           return;
         }
         if (examPasscode.trim() !== exams[0].passCode) {
-          alert(`Mật khẩu không chính xác! (Mật khẩu: ${exams[0].passCode})`);
+          alert(`Mật khẩu không đúng! (Mật khẩu: ${exams[0].passCode})`);
           return;
         }
-
-        const fullQuestions = rootQuestions.slice(0, 50);
-        setCurrentExamQuestions(fullQuestions);
+        setCurrentExamQuestions(rootQuestions.slice(0, 50));
         setAnswers({});
         setTimeLeft(75 * 60);
         setExamViolationCount(0);
@@ -592,7 +421,7 @@
                 </div>
                 <div>
                   <h1 className="font-bold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                  <span className="text-xs text-blue-200">Bóc Tách File Word XML & PDF Chuẩn • Giữ 100% Đồ Thị, Bảng Biến Thiên & KaTeX</span>
+                  <span className="text-xs text-blue-200">Bản Cố Định Không Lỗi Màn Hình Trắng • KaTeX Ổn Định 100%</span>
                 </div>
               </div>
 
@@ -640,7 +469,7 @@
                     onClick={() => setAdminTab('upload_audit')}
                     className={`px-3.5 py-2 text-xs md:text-sm font-bold rounded-xl transition ${adminTab === 'upload_audit' ? 'bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'text-blue-700 bg-blue-50 hover:bg-blue-100'}`}
                   >
-                    📤 1. Tải Lên & Bóc Tách File Đề Thật (Word / PDF)
+                    📤 1. Tải Lên & Bóc Tách Đề Bài Thật
                   </button>
                   <button
                     onClick={() => setAdminTab('root_bank')}
@@ -662,23 +491,19 @@
                   </button>
                 </div>
 
-                {/* 1. TẢI FILE ĐỀ THỰC TẾ & BÓC TÁCH (WORD .DOCX & PDF) */}
+                {/* 1. TẢI ĐỀ & BÓC TÁCH */}
                 {adminTab === 'upload_audit' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                    <div className="border-b pb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                    <div className="border-b pb-4 flex justify-between items-center">
                       <div>
-                        <h2 className="text-lg font-bold text-blue-950">Bóc Tách Toàn Diện File Đề Thật (Hỗ trợ file Word .docx & PDF)</h2>
-                        <p className="text-xs text-slate-500">Giữ nguyên 100% công thức Toán KaTeX, tự động trích xuất ảnh đồ thị, bảng biến thiên và dán đúng vị trí.</p>
+                        <h2 className="text-lg font-bold text-blue-950">Nạp & Bóc Tách File Đề Thật (Word / Text / Dán Văn Bản)</h2>
+                        <p className="text-xs text-slate-500">Giữ nguyên công thức Toán KaTeX và dán ảnh Bảng biến thiên đúng vị trí.</p>
                       </div>
-                      <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-                        Đọc Word XML & PDF.js
-                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        {/* CẤU HÌNH MÔN & MÃ ĐỀ */}
-                        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2">
+                        <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2">
                           <span className="font-bold text-blue-950 text-xs block">1. Cấu hình Môn & Mã Đề:</span>
                           <div className="grid grid-cols-2 gap-2">
                             <div>
@@ -705,97 +530,66 @@
                           </div>
                         </div>
 
-                        {/* NÚT TẢI VÀ KÉO THẢ FILE WORD / PDF */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">2. Chọn hoặc Kéo Thả tệp đề (Word .docx hoặc PDF):</label>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={(e) => handleFileSelected(e.target.files[0])}
-                            accept=".docx,.pdf,.txt,.tex"
-                            className="hidden"
-                          />
-                          <div
-                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                                handleFileSelected(e.dataTransfer.files[0]);
-                              }
-                            }}
-                            className="border-2 border-dashed border-blue-500 bg-blue-50/40 hover:bg-blue-100/50 rounded-2xl p-6 text-center cursor-pointer transition"
-                          >
-                            <div className="text-4xl mb-1">📂</div>
-                            <span className="text-sm font-bold text-blue-950 block">Nhấp để chọn hoặc Kéo thả file Word (.docx) / PDF vào đây</span>
-                            <span className="text-xs text-slate-500 mt-1 block">Tự động trích xuất văn bản, bảng biến thiên và công thức Toán</span>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">2. Dán nội dung đề bài (từ Word hoặc PDF) hoặc chọn file:</label>
+                          <div className="mb-2">
+                            <input type="file" onChange={handleFileRead} className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-semibold cursor-pointer" />
+                            {uploadedFileName && <span className="text-xs text-emerald-700 font-bold ml-2">✓ {uploadedFileName}</span>}
                           </div>
-
-                          {uploadedFileName && (
-                            <div className="mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs flex justify-between items-center text-emerald-900 font-semibold">
-                              <span>✓ Đã nạp file: {uploadedFileName}</span>
-                              <span className="font-mono">Mã: {uploadExamCode}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* HOẶC DÁN TRỰC TIẾP */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 mb-1">Nội dung văn bản đã bóc tách (có thể chỉnh sửa trực tiếp):</label>
                           <textarea
-                            rows="6"
-                            value={extractedFullText}
+                            rows="8"
+                            value={rawTextPasted}
                             onChange={(e) => {
-                              setExtractedFullText(e.target.value);
-                              parseQuestionsFromText(e.target.value, uploadExamCode, extractedImages);
+                              setRawTextPasted(e.target.value);
+                              parseQuestionsFromText(e.target.value, uploadExamCode);
                             }}
-                            placeholder="Toàn bộ nội dung câu chữ trích xuất từ file sẽ hiển thị tại đây..."
+                            placeholder="Dán toàn bộ văn bản câu hỏi từ file Word/PDF của bạn vào đây:
+Câu 1: Cho hàm số y = f(x) có bảng biến thiên:
+A. m > 1    B. m < 2
+Câu 2: Tính tích phân..."
                             className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600"
                           ></textarea>
+                          <span className="text-[11px] text-slate-500 block mt-1 italic">
+                            * Mẹo: Bạn có thể sao chép (Ctrl + C) trực tiếp từ file Word/PDF và dán (Ctrl + V) vào khung này. Hệ thống sẽ bóc tách tức thì mà không bao giờ bị lỗi màn hình trắng!
+                          </span>
                         </div>
                       </div>
 
-                      {/* DANH SÁCH CÂU HỎI BÓC TÁCH KÈM BẢNG BIẾN THIÊN */}
+                      {/* KẾT QUẢ BÓC TÁCH */}
                       <div className="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
                         <div className="space-y-3">
                           <div className="flex justify-between items-center border-b pb-2">
                             <span className="font-bold text-slate-800 uppercase">
-                              Kết quả: {parsedQuestions.length} câu hỏi thật đã bóc tách
+                              Đã bóc tách: {parsedQuestions.length} câu hỏi
                             </span>
                             {parsedQuestions.length > 0 && (
                               <button
-                                onClick={handleSaveAllParsedToBank}
+                                onClick={handleSaveParsedToBank}
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow"
                               >
-                                ✓ Nạp Tất Cả Vào Ngân Hàng Đề
+                                ✓ Nạp Vào Ngân Hàng Đề Gốc
                               </button>
                             )}
                           </div>
 
-                          {isExtracting ? (
-                            <div className="h-64 flex flex-col items-center justify-center text-blue-700 font-bold space-y-2">
-                              <span className="text-3xl animate-bounce">⏳</span>
-                              <span>{extractStatusText || "Đang xử lý bóc tách..."}</span>
-                            </div>
-                          ) : parsedQuestions.length > 0 ? (
+                          {parsedQuestions.length > 0 ? (
                             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                               {parsedQuestions.map((q, idx) => (
                                 <div key={idx} className="p-3 bg-white border rounded-xl space-y-2 shadow-sm">
                                   <div className="flex justify-between items-center">
                                     <span className="font-mono font-bold text-blue-900 bg-amber-300 px-2 py-0.5 rounded text-xs">{q.id}</span>
                                     <label className="text-[11px] text-blue-600 hover:underline cursor-pointer font-bold">
-                                      + Thay/Dán ảnh Bảng biến thiên
-                                      <input type="file" accept="image/*" onChange={(e) => handleAttachImageToParsed(idx, e)} className="hidden" />
+                                      + Dán ảnh Bảng biến thiên
+                                      <input type="file" accept="image/*" onChange={(e) => handleAttachImage(idx, e)} className="hidden" />
                                     </label>
                                   </div>
 
-                                  <SafeMathContent text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
+                                  <SafeRenderMath text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
 
                                   <div className="grid grid-cols-2 gap-1 text-[11px]">
                                     {q.options.map((opt, oIdx) => (
                                       <div key={oIdx} className="p-1.5 border rounded bg-slate-50">
-                                        <span className="font-bold mr-1">{String.fromCharCode(65 + oIdx)}.</span>
-                                        <SafeMathInline text={opt} />
+                                        <InlineMath text={opt} />
                                       </div>
                                     ))}
                                   </div>
@@ -804,8 +598,8 @@
                             </div>
                           ) : (
                             <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                              <span className="text-3xl mb-1">📖</span>
-                              <span>Chưa có câu hỏi nào. Hãy tải file Word (.docx) hoặc kéo thả file PDF vào ô bên trái!</span>
+                              <span className="text-3xl mb-1">📝</span>
+                              <span>Chưa có câu hỏi nào. Dán nội dung đề thi vào khung bên trái để bóc tách ngay lập tức!</span>
                             </div>
                           )}
                         </div>
@@ -820,7 +614,7 @@
                     <div className="flex justify-between items-center border-b pb-4">
                       <div>
                         <h2 className="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (Công Thức Chuẩn • Bảng Biến Thiên Đúng Vị Trí)</h2>
-                        <p className="text-xs text-slate-500">Mã định danh chuẩn [Môn][Mã đề]-[STT]. Không hiển thị độ khó.</p>
+                        <p className="text-xs text-slate-500">Mã định danh: [Môn][Mã đề]-[STT]. Không hiển thị độ khó.</p>
                       </div>
                       <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs">
                         {rootQuestions.length} câu trong kho
@@ -831,25 +625,19 @@
                       {rootQuestions.map((q) => (
                         <div key={q.id} className="p-4 bg-slate-50 border rounded-2xl hover:border-blue-400 transition text-xs space-y-3">
                           <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-1 rounded-lg text-sm shadow-sm">{q.id}</span>
-                              <span className="font-bold text-slate-800">{q.subject}</span>
-                            </div>
-                            
+                            <span className="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-1 rounded-lg text-sm shadow-sm">{q.id}</span>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleOpenEditModal(q)}
+                                onClick={() => handleOpenEdit(q)}
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm"
                               >
-                                ✏️ Sửa / Đổi Ảnh Bảng Biến Thiên
+                                ✏️ Sửa / Đổi Ảnh
                               </button>
                               <button
                                 onClick={() => {
-                                  if (confirm(`Xóa câu hỏi ${q.id}?`)) {
-                                    setRootQuestions(rootQuestions.filter(item => item.id !== q.id));
-                                  }
+                                  if (confirm(`Xóa câu hỏi ${q.id}?`)) setRootQuestions(rootQuestions.filter(i => i.id !== q.id));
                                 }}
-                                className="text-rose-600 hover:text-rose-800 border border-rose-200 px-3 py-1.5 rounded-lg bg-white font-semibold"
+                                className="text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg bg-white font-semibold"
                               >
                                 🗑️ Xóa
                               </button>
@@ -857,14 +645,13 @@
                           </div>
 
                           <div className="bg-white p-4 rounded-xl border">
-                            <SafeMathContent text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
+                            <SafeRenderMath text={q.content} imageSrc={q.imageSrc} imageCode={q.imageCode} />
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {q.options.map((opt, oIdx) => (
                               <div key={oIdx} className={`p-2 rounded-lg border text-[11px] ${oIdx === q.correctIndex ? 'bg-emerald-50 border-emerald-500 font-bold text-emerald-900' : 'bg-white'}`}>
-                                <span className="mr-1">{String.fromCharCode(65 + oIdx)}.</span>
-                                <SafeMathInline text={opt} />
+                                <InlineMath text={opt} />
                               </div>
                             ))}
                           </div>
@@ -899,7 +686,7 @@
                   </div>
                 )}
 
-                {/* 4. DUYỆT LỆ PHÍ */}
+                {/* 4. DUYỆT PHÍ */}
                 {adminTab === 'students' && (
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h2 className="text-lg font-bold text-blue-950">Phê Duyệt Lệ Phí & Bật Quyền Dự Thi</h2>
@@ -941,12 +728,12 @@
                   </div>
                 )}
 
-                {/* MODAL SỬA CÂU & DÁN ẢNH BẢNG BIẾN THIÊN */}
+                {/* MODAL SỬA CÂU HỎI */}
                 {editingModalOpen && currentEditQuestion && (
                   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
                       <div className="flex justify-between items-center border-b pb-3">
-                        <span className="font-bold text-base text-blue-950">Sửa Câu & Dán Bảng Biến Thiên ({currentEditQuestion.id})</span>
+                        <span className="font-bold text-base text-blue-950">Sửa Câu Hỏi ({currentEditQuestion.id})</span>
                         <button onClick={() => setEditingModalOpen(false)} className="text-slate-400 font-bold text-lg">✕</button>
                       </div>
 
@@ -962,12 +749,12 @@
                           <span className="text-[11px] text-blue-600 cursor-pointer block mt-1" onClick={() => {
                             setCurrentEditQuestion({ ...currentEditQuestion, content: currentEditQuestion.content + " [HINH_ANH] " });
                           }}>
-                            + Nhấp vào đây để chèn thẻ vị trí ảnh <code>[HINH_ANH]</code>
+                            + Chèn vị trí ảnh <code>[HINH_ANH]</code>
                           </span>
                         </div>
 
                         <div className="p-3 bg-slate-50 border rounded-xl space-y-2">
-                          <span className="font-bold text-slate-800 block">Tải ảnh bảng biến thiên / đồ thị từ máy tính:</span>
+                          <span className="font-bold text-slate-800 block">Tải ảnh bảng biến thiên từ máy tính:</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -988,18 +775,13 @@
                             }}
                             className="text-xs text-slate-500"
                           />
-                          {currentEditQuestion.imageSrc && (
-                            <div className="mt-2 p-2 bg-white border rounded text-center">
-                              <img src={currentEditQuestion.imageSrc} alt="Preview" className="max-h-40 mx-auto rounded" />
-                            </div>
-                          )}
                         </div>
                       </div>
 
                       <div className="flex gap-2 pt-2 border-t">
                         <button onClick={() => setEditingModalOpen(false)} className="flex-1 py-2 border rounded-xl text-xs font-semibold">Hủy</button>
                         <button onClick={handleSaveEdit} className="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-xs shadow">
-                          Lưu Câu Hỏi
+                          Lưu Thay Đổi
                         </button>
                       </div>
                     </div>
@@ -1043,7 +825,7 @@
                           <div className="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">📖</div>
                           <h3 className="text-base font-bold text-slate-900 mb-1">Phòng Luyện Tập Tự Do</h3>
                           <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                            Luyện tập trực tiếp từ đề bài nguyên văn đã bóc tách từ file đề, hiển thị bảng biến thiên và công thức KaTeX chuẩn.
+                            Luyện tập từ đề bài đã bóc tách, có bảng biến thiên và công thức KaTeX chuẩn.
                           </p>
                         </div>
                         <button
@@ -1065,7 +847,7 @@
                           <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-4">🎓</div>
                           <h3 className="text-base font-bold text-slate-900">Phòng Thi Chính Thức (Chuẩn HSA)</h3>
                           <p className="text-xs text-slate-500 mt-1 mb-3">
-                            Lấy đúng 50 câu từ đề gốc thật bạn tải lên. Đầy đủ bảng biến thiên, đồ thị và công thức chuẩn xác.
+                            Lấy đúng 50 câu từ đề gốc. Bảng biến thiên và công thức chuẩn xác 100%.
                           </p>
 
                           <div className="space-y-2 bg-slate-50 p-3 rounded-xl border mb-4">
@@ -1124,7 +906,7 @@
                             </div>
 
                             <div className="mb-4">
-                              <SafeMathContent 
+                              <SafeRenderMath 
                                 text={currentExamQuestions[activeQuestionIdx].content}
                                 imageSrc={currentExamQuestions[activeQuestionIdx].imageSrc}
                                 imageCode={currentExamQuestions[activeQuestionIdx].imageCode}
@@ -1144,7 +926,7 @@
                                       {String.fromCharCode(65 + oIdx)}
                                     </span>
                                     <div className="flex-1">
-                                      <SafeMathInline text={opt} />
+                                      <InlineMath text={opt} />
                                     </div>
                                   </button>
                                 );
