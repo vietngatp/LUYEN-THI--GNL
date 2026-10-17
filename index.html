@@ -12,12 +12,10 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- JSZip: Giải nén và đọc file .docx nhị phân an toàn -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
   <!-- KaTeX CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <style>
     body { font-family: "Times New Roman", Times, serif, -apple-system, sans-serif; }
@@ -28,14 +26,10 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen">
-  <div id="root">
-    <div style="padding: 30px; text-align: center; font-weight: bold; color: #1e3a8a; font-family: 'Times New Roman', serif;">
-      Đang khởi tạo Hệ thống Khảo thí HSA 2026...
-    </div>
-  </div>
+  <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef, useMemo, memo } = React;
+    const { useState, useEffect, useRef } = React;
 
     const SUBJECTS = [
       { code: "T", name: "Toán", fullName: "Toán và xử lý số liệu" },
@@ -48,10 +42,10 @@
       { code: "D", name: "Địa", fullName: "Địa lý" }
     ];
 
-    const SAMPLE_SVG_VARIATION = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14' font-family='Times New Roman'>-∞</text><text x='180' y='26' font-size='14' font-family='Times New Roman'>-1</text><text x='280' y='26' font-size='14' font-family='Times New Roman'>1</text><text x='390' y='26' font-size='14' font-family='Times New Roman'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='15'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13' font-family='Times New Roman'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669' font-family='Times New Roman'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c' font-family='Times New Roman'>-2</text><text x='390' y='95' font-size='13' font-family='Times New Roman'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
+    const SAMPLE_SVG_VARIATION = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14' font-family='Times New Roman'>-∞</text><text x='180' y='26' font-size='14' font-family='Times New Roman'>-1</text><text x='280' y='26' font-size='14' font-family='Times New Roman'>1</text><text x='390' y='26' font-size='14' font-family='Times New Roman'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13' font-family='Times New Roman'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669' font-family='Times New Roman'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c' font-family='Times New Roman'>-2</text><text x='390' y='95' font-size='12' font-family='Times New Roman'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
-    // CHUẨN HÓA VĂN BẢN VÀ BẢO TỒN FONT TIMES NEW ROMAN
-    function cleanAndFixFont(str) {
+    // Bộ chuẩn hóa phông chữ Times New Roman & Unicode dựng sẵn NFC
+    function fixFontTimesNewRoman(str) {
       if (!str) return "";
       let s = String(str);
       const tcvn = "a\u00B8\u00B5\u00B6\u00B7\u00B9\u00A8\u00CA\u00C7\u00C8\u00C9\u00CB\u00A9\u00D0\u00CC\u00CE\u00CF\u00D1\u00E9\u00E5\u00E6\u00E7\u00E8\u00AA\u00F3\u00EE\u00EF\u00F1\u00F2\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00ED\u00EB\u00EC\u00EE\u00EF\u00F3\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD";
@@ -62,65 +56,33 @@
         const idx = tcvn.indexOf(c);
         res += (idx !== -1 && idx < uni.length) ? uni[idx] : c;
       }
-      try {
-        res = res.normalize('NFC');
-      } catch (e) {}
+      try { res = res.normalize('NFC'); } catch (e) {}
       return res;
     }
 
-    // TỰ ĐỘNG CHUYỂN TOÁN TỪ WORD SANG LATEX
-    function convertMathSymbolsToLatex(text) {
-      if (!text) return "";
-      let s = cleanAndFixFont(text);
-      s = s.replace(/√\((.*?)\)/g, "$\sqrt{$1}$");
-      s = s.replace(/√([a-zA-Z0-9]+)/g, "$\sqrt{$1}$");
-      s = s.replace(/²/g, "$^2$").replace(/³/g, "$^3$");
-      s = s.replace(/∫/g, "$\int$");
-      s = s.replace(/∞/g, "$\infty$").replace(/\+∞/g, "$+\infty$").replace(/-∞/g, "$-\infty$");
-      s = s.replace(/∈/g, "$\in$").replace(/∉/g, "$\notin$");
-      s = s.replace(/≤/g, "$\le$").replace(/≥/g, "$\ge$").replace(/≠/g, "$\ne$");
-      s = s.replace(/→/g, "$\to$").replace(/⇔/g, "$\Leftrightarrow$").replace(/⇒/g, "$\Rightarrow$");
-      s = s.replace(/∆/g, "$\Delta$").replace(/π/g, "$\pi$");
-      s = s.replace(/R/g, "$\mathbb{R}$");
-      return s;
-    }
+    // Component hiển thị câu hỏi, công thức KaTeX & Đồ thị
+    function MathViewer({ content, imageSrc, imageCode }) {
+      const containerRef = useRef(null);
 
-    // RENDER TOÁN KA-TEX AN TOÀN TUYỆT ĐỐI (TRÁNH LỖI ĐƠ TRANG)
-    function renderSafeMathHtml(text) {
-      if (!text) return "";
-      const prepared = convertMathSymbolsToLatex(text);
-      const parts = prepared.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
-
-      return parts.map((part, idx) => {
-        if (!part) return null;
-        if (part.startsWith("$$") && part.endsWith("$$")) {
-          const formula = part.slice(2, -2).trim();
+      useEffect(() => {
+        if (containerRef.current && window.renderMathInElement) {
           try {
-            if (window.katex) {
-              const html = window.katex.renderToString(formula, { displayMode: true, throwOnError: false });
-              return <span key={idx} dangerouslySetInnerHTML={{ __html: html }} />;
-            }
-          } catch (e) {
-            return <span key={idx} className="font-bold text-blue-900 block my-1">[{formula}]</span>;
-          }
-        } else if (part.startsWith("$") && part.endsWith("$")) {
-          const formula = part.slice(1, -1).trim();
-          try {
-            if (window.katex) {
-              const html = window.katex.renderToString(formula, { displayMode: false, throwOnError: false });
-              return <span key={idx} dangerouslySetInnerHTML={{ __html: html }} />;
-            }
-          } catch (e) {
-            return <span key={idx} className="font-bold text-blue-900">[{formula}]</span>;
-          }
+            window.renderMathInElement(containerRef.current, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\\\[", right: "\\\\]", display: true },
+                { left: "\\\\(", right: "\\\\)", display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {}
         }
-        return <span key={idx}>{part}</span>;
-      });
-    }
+      }, [content]);
 
-    const MathViewer = memo(function MathViewer({ content, imageSrc, imageCode }) {
-      const cleanContent = useMemo(() => cleanAndFixFont(content), [content]);
+      if (!content) return null;
 
+      const cleanContent = fixFontTimesNewRoman(content);
       const hasPlaceholder = cleanContent.includes("[HINH_ANH]");
       let partBefore = cleanContent;
       let partAfter = "";
@@ -132,13 +94,13 @@
       }
 
       return (
-        <div className="math-text text-sm leading-relaxed text-slate-900 space-y-2">
+        <div ref={containerRef} className="math-text text-sm leading-relaxed text-slate-900 space-y-2">
           {hasPlaceholder ? (
             <div>
-              <div className="whitespace-pre-wrap">{renderSafeMathHtml(partBefore)}</div>
+              <div className="whitespace-pre-wrap">{partBefore}</div>
               <div className="my-3 flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
                 {imageSrc ? (
-                  <img src={imageSrc} alt="Hình vẽ đề bài" className="max-h-64 max-w-full rounded object-contain" />
+                  <img src={imageSrc} alt="Đồ thị / Bảng biến thiên" className="max-h-64 max-w-full rounded object-contain" />
                 ) : (
                   <div className="w-full max-w-md py-6 bg-slate-50 border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center text-blue-900">
                     <span className="text-3xl mb-1">📈</span>
@@ -147,15 +109,15 @@
                   </div>
                 )}
               </div>
-              <div className="whitespace-pre-wrap">{renderSafeMathHtml(partAfter)}</div>
+              <div className="whitespace-pre-wrap">{partAfter}</div>
             </div>
           ) : (
             <div>
-              <div className="whitespace-pre-wrap">{renderSafeMathHtml(cleanContent)}</div>
+              <div className="whitespace-pre-wrap">{cleanContent}</div>
               {(imageSrc || imageCode) && (
                 <div className="my-3 flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
                   {imageSrc ? (
-                    <img src={imageSrc} alt="Hình vẽ đề bài" className="max-h-64 max-w-full rounded object-contain" />
+                    <img src={imageSrc} alt="Đồ thị / Bảng biến thiên" className="max-h-64 max-w-full rounded object-contain" />
                   ) : (
                     <div className="w-full max-w-md py-6 bg-slate-50 border-2 border-dashed border-blue-300 rounded-lg flex flex-col items-center justify-center text-blue-900">
                       <span className="text-3xl mb-1">📈</span>
@@ -169,11 +131,26 @@
           )}
         </div>
       );
-    });
+    }
 
-    const MathSpan = memo(function MathSpan({ text }) {
-      return <span className="inline math-text">{renderSafeMathHtml(text)}</span>;
-    });
+    function MathSpan({ text }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current && window.renderMathInElement) {
+          try {
+            window.renderMathInElement(ref.current, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {}
+        }
+      }, [text]);
+
+      return <span ref={ref} className="inline math-text">{fixFontTimesNewRoman(text)}</span>;
+    }
 
     const INITIAL_STUDENTS = [
       { id: "07-12A1-001", name: "Nguyễn Văn An", birthYear: "2007", classUnit: "12A1", email: "an.nguyen@example.com", eligible: true, feeStatus: "approved", regTime: "2026-10-15 08:30" },
@@ -183,14 +160,7 @@
 
     const generateRootMathQuestions = () => {
       const list = [];
-      const topics = [
-        "Hàm số & Ứng dụng đạo hàm",
-        "Hàm số Mũ - Logarit",
-        "Nguyên hàm - Tích phân",
-        "Tọa độ Oxyz trong không gian",
-        "Thống kê mẫu số liệu & Xác suất",
-        "Hình học không gian"
-      ];
+      const topics = ["Hàm số & Đạo hàm", "Mũ - Logarit", "Tích phân", "Tọa độ Oxyz", "Xác suất", "Hình không gian"];
 
       for (let i = 1; i <= 50; i++) {
         const numStr = i < 10 ? '0' + i : '' + i;
@@ -205,16 +175,16 @@
 
         if (i % 3 === 1) {
           content = `Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.`;
-          opts = [`$m \in (-1; 1)$`, `$m \in [-2; 2]$`, `$m < -1$ hoặc $m > 1$`, `$m = 0$`];
-          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào bảng biến thiên trên hình vẽ, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1. Chọn đáp án A.`;
+          opts = [`$m \\in (-1; 1)$`, `$m \\in [-2; 2]$`, `$m < -1$ hoặc $m > 1$`, `$m = 0$`];
+          sol = `Phương trình tương đương $f(x) = 2m$. Dựa vào bảng biến thiên, phương trình có 3 nghiệm phân biệt khi cực tiểu < 2m < cực đại <=> -2 < 2m < 2 <=> -1 < m < 1. Chọn đáp án A.`;
         } else if (i % 3 === 2) {
-          content = `Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và $\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
+          content = `Biết tích phân $I = \\int_{1}^{e} \\frac{\\ln x}{x\\sqrt{1 + \\ln x}} dx = \\frac{a - b\\sqrt{2}}{c}$, với $a, b, c \\in \\mathbb{Z}$ và $\\frac{a}{c}$ tối giản. Giá trị biểu thức $S = a + b + c$ bằng:`;
           opts = [`$S = 9$`, `$S = 12$`, `$S = 15$`, `$S = 7$`];
-          sol = `Đặt $t = \sqrt{1 + \ln x} \Rightarrow 2t dt = \frac{dx}{x}$. Ta tính được $I = \frac{4 - 2\sqrt{2}}{3}$. Suy ra $a = 4, b = 2, c = 3 \Rightarrow S = 4 + 2 + 3 = 9$.`;
+          sol = `Đặt $t = \\sqrt{1 + \\ln x} \\Rightarrow 2t dt = \\frac{dx}{x}$. Ta tính được $I = \\frac{4 - 2\\sqrt{2}}{3} \\Rightarrow S = 4 + 2 + 3 = 9$.`;
         } else {
           content = `Trong không gian $Oxyz$, cho mặt cầu $(S): (x - 1)^2 + (y + 2)^2 + (z - 3)^2 = 25$ và mặt phẳng $(P): 2x - 2y + z + 4 = 0$. Khoảng cách từ tâm $I$ của $(S)$ đến $(P)$ là:`;
-          opts = [`$d = \frac{13}{3}$`, `$d = 5$`, `$d = 3$`, `$d = \sqrt{29}$`];
-          sol = `Tâm mặt cầu $I(1; -2; 3)$. Áp dụng công thức khoảng cách: $d(I, (P)) = \frac{|2(1) - 2(-2) + 1(3) + 4|}{\sqrt{2^2 + (-2)^2 + 1^2}} = \frac{13}{3}$.`;
+          opts = [`$d = \\frac{13}{3}$`, `$d = 5$`, `$d = 3$`, `$d = \\sqrt{29}$`];
+          sol = `Tâm mặt cầu $I(1; -2; 3)$. Áp dụng công thức khoảng cách: $d = \\frac{13}{3}$.`;
         }
 
         list.push({
@@ -259,17 +229,14 @@
       return pList;
     };
 
-    const INITIAL_ROOT_QUESTIONS = generateRootMathQuestions();
-    const INITIAL_PRACTICE_QUESTIONS = generateInitialPractice(INITIAL_ROOT_QUESTIONS);
-
     function App() {
       const [view, setView] = useState('student');
       const [adminTab, setAdminTab] = useState('audit');
       const [currentUserIndex, setCurrentUserIndex] = useState(0);
 
       const [students, setStudents] = useState(INITIAL_STUDENTS);
-      const [rootQuestions, setRootQuestions] = useState(INITIAL_ROOT_QUESTIONS);
-      const [practiceQuestions, setPracticeQuestions] = useState(INITIAL_PRACTICE_QUESTIONS);
+      const [rootQuestions, setRootQuestions] = useState(generateRootMathQuestions());
+      const [practiceQuestions, setPracticeQuestions] = useState(generateInitialPractice(rootQuestions));
       const [exams, setExams] = useState([
         { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 150 }
       ]);
@@ -283,11 +250,7 @@
       const [analyzingAI, setAnalyzingAI] = useState(false);
       const [aiAuditedResult, setAiAuditedResult] = useState(null);
 
-      // Ảnh bóc tách từ file Word
-      const [extractedWordImages, setExtractedWordImages] = useState([]);
-
       const [showConfirmAddModal, setShowConfirmAddModal] = useState(false);
-
       const [editingQuestion, setEditingQuestion] = useState(null);
       const [editingModalOpen, setEditingModalOpen] = useState(false);
 
@@ -361,8 +324,8 @@
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
       };
 
-      // XỬ LÝ ĐỌC FILE AN TOÀN TUYỆT ĐỐI (KHÔNG BAO GIỜ BỊ ĐƠ HAY HIỆN MÃ RÁC)
-      const handleFileUpload = async (e) => {
+      // XỬ LÝ NẠP FILE TEXT / ẢNH (BẢO VỆ CHỐNG ĐỌC NHỊ PHÂN DOCX/PDF)
+      const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -371,103 +334,37 @@
         setAuditExamCode(code);
         setUploadedFileName(file.name);
 
-        const lowerName = file.name.toLowerCase();
+        const lower = file.name.toLowerCase();
 
-        // 1. FILE WORD (.DOCX) - ĐỌC QUA JSZIP DẠNG ARRAYBUFFER
-        if (lowerName.endsWith(".docx")) {
-          try {
-            const arrayBuffer = await file.arrayBuffer();
-            const zip = await JSZip.loadAsync(arrayBuffer);
+        // Nếu là file Word hoặc PDF: Hướng dẫn người dùng dán text để tránh lỗi nhị phân làm đơ trình duyệt
+        if (lower.endsWith(".docx") || lower.endsWith(".pdf")) {
+          alert(`Bạn đã chọn file: ${file.name}.\n\nLƯU Ý QUAN TRỌNG: Để tránh lỗi font chữ và đơ trình duyệt, bạn hãy mở file trên máy, bấm Ctrl+A -> Ctrl+C (Copy) rồi Ctrl+V (Dán) vào khung bên dưới. Đây là cách chuẩn xác 100%!`);
+          return;
+        }
 
-            // Bóc tách hình ảnh từ word/media/
-            const images = [];
-            const mediaFiles = Object.keys(zip.files).filter(path => path.startsWith("word/media/"));
-            for (const path of mediaFiles) {
-              const base64 = await zip.files[path].async("base64");
-              const ext = path.split('.').pop().toLowerCase();
-              const mime = (ext === 'jpg' || ext === 'jpeg') ? 'image/jpeg' : 'image/png';
-              images.push(`data:${mime};base64,${base64}`);
-            }
-            setExtractedWordImages(images);
-
-            // Bóc tách văn bản và công thức từ word/document.xml
-            if (zip.files["word/document.xml"]) {
-              const xmlText = await zip.files["word/document.xml"].async("text");
-              const parser = new DOMParser();
-              const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-              const paragraphs = xmlDoc.getElementsByTagName("w:p");
-              let lines = [];
-
-              for (let i = 0; i < paragraphs.length; i++) {
-                const p = paragraphs[i];
-                let lineText = "";
-                let hasImg = p.getElementsByTagName("w:drawing").length > 0;
-
-                for (const node of p.childNodes) {
-                  if (node.nodeName === "w:r") {
-                    const texts = node.getElementsByTagName("w:t");
-                    for (let t = 0; t < texts.length; t++) {
-                      lineText += texts[t].textContent;
-                    }
-                  } else if (node.nodeName === "m:oMath" || node.nodeName === "m:oMathPara") {
-                    const mTexts = node.getElementsByTagName("m:t");
-                    let mathExpr = "";
-                    for (let m = 0; m < mTexts.length; m++) {
-                      mathExpr += mTexts[m].textContent;
-                    }
-                    if (mathExpr.trim()) {
-                      lineText += " $" + mathExpr.trim() + "$ ";
-                    }
-                  }
-                }
-
-                if (hasImg) {
-                  lineText += " [HINH_ANH] ";
-                }
-
-                if (lineText.trim()) {
-                  lines.push(lineText.trim());
-                }
-              }
-
-              const extractedText = cleanAndFixFont(lines.join("
-"));
-              setRawQuestionInput(extractedText);
-              alert(`Đã nạp file Word ${file.name}! Bóc tách được văn bản, công thức toán và ${images.length} hình ảnh.`);
-            }
-          } catch (err) {
-            console.error("Lỗi đọc docx:", err);
-            alert("Không thể giải nén tệp docx. Vui lòng mở Word copy nội dung và dán vào ô bên dưới!");
-          }
-        } 
-        // 2. FILE TEXT THUẦN (.TXT, .TEX)
-        else if (lowerName.endsWith(".txt") || lowerName.endsWith(".tex")) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            setRawQuestionInput(cleanAndFixFont(event.target.result));
-            alert(`Đã nạp file ${file.name} chuẩn UTF-8.`);
-          };
-          reader.readAsText(file, "UTF-8");
-        } 
-        // 3. FILE ẢNH (.PNG, .JPG)
-        else if (lowerName.endsWith(".png") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
+        // File ảnh: Tải và chuyển thành hình ảnh
+        if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
           const reader = new FileReader();
           reader.onload = (ev) => {
-            setExtractedWordImages([ev.target.result]);
-            alert(`Đã nạp ảnh ${file.name}. Ảnh này sẽ được gắn vào câu hỏi khi thẩm định!`);
+            setAiAuditedResult(prev => prev ? { ...prev, imageSrc: ev.target.result, hasImage: true } : null);
+            alert(`Đã nhận ảnh: ${file.name}. Ảnh sẽ được dán vào câu hỏi!`);
           };
           reader.readAsDataURL(file);
+          return;
         }
-        else {
-          alert("Với file PDF, bạn hãy mở file, bôi đen copy (Ctrl+C) và dán (Ctrl+V) vào ô bên dưới. Đây là cách chuẩn nhất để không bị lỗi ký tự!");
-        }
+
+        // File văn bản thuần
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setRawQuestionInput(fixFontTimesNewRoman(event.target.result));
+        };
+        reader.readAsText(file, "UTF-8");
       };
 
       // KÍCH HOẠT THẨM ĐỊNH AI
       const handleRunAiAudit = () => {
         if (!rawQuestionInput.trim()) {
-          alert("Vui lòng tải file đề lên hoặc dán nội dung câu hỏi!");
+          alert("Vui lòng nhập hoặc dán nội dung câu hỏi đề gốc!");
           return;
         }
 
@@ -492,13 +389,6 @@
           const subjectObj = SUBJECTS.find(s => s.code === auditSubjectCode) || SUBJECTS[0];
           const hasImg = rawQuestionInput.includes("[HINH_ANH]") || rawQuestionInput.toLowerCase().includes("bảng biến thiên") || rawQuestionInput.toLowerCase().includes("đồ thị");
 
-          let finalImgSrc = null;
-          if (extractedWordImages.length > 0) {
-            finalImgSrc = extractedWordImages[0];
-          } else if (hasImg) {
-            finalImgSrc = SAMPLE_SVG_VARIATION;
-          }
-
           const audited = {
             id: formattedId,
             subjectCode: auditSubjectCode,
@@ -506,9 +396,9 @@
             topic: "Trọng tâm CT GDPT 2018",
             level: "VD",
             content: rawQuestionInput + (hasImg && !rawQuestionInput.includes("[HINH_ANH]") ? " [HINH_ANH] " : ""),
-            hasImage: hasImg || extractedWordImages.length > 0,
+            hasImage: hasImg,
             imageCode: `${formattedId}.png`,
-            imageSrc: finalImgSrc,
+            imageSrc: hasImg ? SAMPLE_SVG_VARIATION : null,
             options: [
               "Phương án A (Tối ưu)",
               "Phương án B",
@@ -516,7 +406,7 @@
               "Phương án D"
             ],
             correctIndex: 0,
-            solution: `Lời giải chi tiết chuẩn xác 100% từ chuyên gia giải đề độc lập.`,
+            solution: `Lời giải chi tiết chuẩn xác 100% từ chuyên gia thẩm định đề độc lập.`,
             variants: [
               {
                 id: `${formattedId}1`,
@@ -541,7 +431,7 @@
 
           setAiAuditedResult(audited);
           setAnalyzingAI(false);
-        }, 400);
+        }, 300);
       };
 
       const handleConfirmAddQuestion = () => {
@@ -582,14 +472,11 @@
         setPracticeQuestions([...newPracticeVariants, ...practiceQuestions]);
         setShowConfirmAddModal(false);
 
-        alert(`ĐÃ THÊM THÀNH CÔNG!
-- Đã nạp câu gốc ${newRoot.id} vào Ngân hàng Đề Gốc.
-- Tự động sinh 3 câu phái sinh (${newPracticeVariants.map(x => x.id).join(', ')}) nạp vào Ngân hàng Luyện Thi theo môn ${newRoot.subjectName}.`);
+        alert(`ĐÃ THÊM THÀNH CÔNG!\n- Đã nạp câu gốc ${newRoot.id} vào Ngân hàng Đề Gốc.\n- Tự động sinh 3 câu phái sinh (${newPracticeVariants.map(x => x.id).join(', ')}) nạp vào Ngân hàng Luyện Thi.`);
 
         setAiAuditedResult(null);
         setRawQuestionInput("");
         setUploadedFileName("");
-        setExtractedWordImages([]);
       };
 
       const handleCancelAddQuestion = () => {
@@ -618,9 +505,7 @@
         };
 
         setExams([newEx, ...exams]);
-        alert(`TẠO ĐỢT THI THÀNH CÔNG!
-- Tên: ${newEx.name}
-- Mật khẩu: ${newEx.passCode}`);
+        alert(`TẠO ĐỢT THI THÀNH CÔNG!\n- Tên: ${newEx.name}\n- Mật khẩu: ${newEx.passCode}`);
       };
 
       const handleRegisterExam = () => {
@@ -704,7 +589,7 @@
                 </div>
                 <div>
                   <h1 className="font-extrabold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-                  <span className="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Bản v18 Khắc Phục Triệt Để Treo Trang</span>
+                  <span className="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Chuẩn Phông Chữ Times New Roman</span>
                 </div>
               </div>
 
@@ -718,7 +603,7 @@
                   >
                     {students.map((st, i) => (
                       <option key={st.id} value={i} className="text-slate-900">
-                        {st.name} ({st.id} - {st.feeStatus === 'approved' ? 'Đã duyệt phí' : st.feeStatus === 'pending' ? 'Chờ duyệt' : 'Chưa nộp'})
+                        {st.name} ({st.id} - {st.feeStatus === 'approved' ? 'Đã duyệt phí' : 'Chưa duyệt'})
                       </option>
                     ))}
                   </select>
@@ -827,7 +712,7 @@
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Tải lên file đề (Word .docx, PDF, Ảnh scan, Text):</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Tải ảnh hoặc dán nội dung câu hỏi:</label>
                           <input
                             type="file"
                             onChange={handleFileUpload}
@@ -835,18 +720,22 @@
                             className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-xl p-1 bg-white shadow-sm"
                           />
                           {uploadedFileName && (
-                            <span className="text-xs text-emerald-700 font-bold block mt-1">✓ Đã nhận tệp: {uploadedFileName}</span>
+                            <span className="text-xs text-emerald-700 font-bold block mt-1">✓ Tệp: {uploadedFileName}</span>
                           )}
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Bảo tồn công thức Toán và phông chữ Times New Roman):</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ Word/PDF):</label>
                           <textarea
-                            rows="5"
+                            rows="6"
                             value={rawQuestionInput}
                             onChange={(e) => setRawQuestionInput(e.target.value)}
-                            placeholder="Dán hoặc nhập nguyên văn đề bài từ Word/PDF:
-Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số m để phương trình f(x) - 2m = 0 có đúng 3 nghiệm phân biệt."
+                            placeholder="Mở file Word/PDF trên máy, nhấn Ctrl+A -> Ctrl+C (Copy) rồi Ctrl+V (Dán) vào đây:
+Ví dụ:
+Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]
+Tìm tất cả các giá trị thực của tham số m để phương trình f(x) - 2m = 0 có đúng 3 nghiệm phân biệt.
+A. m thuộc (-1; 1)
+B. m thuộc [-2; 2]"
                             className="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
                           ></textarea>
                           <span className="text-[11px] text-blue-600 cursor-pointer font-bold block mt-0.5" onClick={() => setRawQuestionInput(rawQuestionInput + " [HINH_ANH] ")}>
@@ -876,9 +765,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                               <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">
                                 Độ khó: {aiAuditedResult.level}
                               </span>
-                              <span className="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded font-mono">
-                                Ảnh: {aiAuditedResult.imageCode}
-                              </span>
                             </div>
 
                             <div className="bg-white p-3 rounded-xl border">
@@ -889,21 +775,12 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                               <p className="font-bold text-emerald-800">✓ Lời giải tối ưu từ chuyên gia:</p>
                               <p className="text-slate-700">{aiAuditedResult.solution}</p>
                             </div>
-
-                            <div className="bg-blue-50/80 p-3 rounded-xl border border-blue-200">
-                              <span className="font-bold text-blue-950 block mb-1">Tự động sinh 3 câu tương đương (Ngân hàng Luyện thi):</span>
-                              <ul className="list-disc pl-4 space-y-0.5 text-slate-700 text-[11px]">
-                                {aiAuditedResult.variants.map(v => (
-                                  <li key={v.id}><strong>{v.id}:</strong> {v.content}</li>
-                                ))}
-                              </ul>
-                            </div>
                           </div>
                         ) : (
                           <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
                             <span className="text-4xl mb-2">⚖️</span>
                             <span className="font-bold text-slate-600">Chưa có câu hỏi được thẩm định.</span>
-                            <span className="text-[11px] mt-1 text-slate-500">Chọn môn, nhập mã đề và nhấn "Kích Hoạt Quy Trình Thẩm Định".</span>
+                            <span className="text-[11px] mt-1 text-slate-500">Dán câu hỏi vào ô bên trái và nhấn "Kích Hoạt Quy Trình Thẩm Định".</span>
                           </div>
                         )}
 
@@ -921,11 +798,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                                   ✓ Xác nhận thêm vào Ngân hàng đề
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    if (confirm("Bạn có chắc chắn muốn hủy bỏ kết quả thẩm định này không?")) {
-                                      setAiAuditedResult(null);
-                                    }
-                                  }}
+                                  onClick={() => setAiAuditedResult(null)}
                                   className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
                                 >
                                   ✕ Hủy bỏ
@@ -951,13 +824,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         <p className="text-xs text-slate-600">
                           Bạn có chắc chắn muốn nạp câu hỏi <strong className="text-blue-900 font-mono">{aiAuditedResult.id}</strong> ({aiAuditedResult.subjectName}) vào <strong>Ngân hàng Đề Gốc</strong> và tự động sinh 3 câu tương đương vào <strong>Ngân hàng Luyện Thi</strong> không?
                         </p>
-                      </div>
-
-                      <div className="bg-slate-50 p-3 rounded-xl border text-xs text-slate-600 space-y-1">
-                        <div>• Mã định danh: <strong className="font-mono text-blue-950">{aiAuditedResult.id}</strong></div>
-                        <div>• Môn thi: <strong>{aiAuditedResult.subjectName}</strong></div>
-                        <div>• Phông chữ: <strong>Times New Roman chuẩn</strong></div>
-                        <div>• Công thức Toán: <strong>KaTeX sắc nét 100%</strong></div>
                       </div>
 
                       <div className="flex gap-2 pt-2">
@@ -1063,7 +929,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                         <p className="text-xs text-slate-500">Chỉ thể hiện mã câu hỏi và đề bài. Không thể hiện nội dung phái sinh hay nội dung đã thay đổi.</p>
                       </div>
                       <button
-                        onClick={() => alert("Đang xuất bộ câu hỏi theo chuyên đề môn học ra file Word/PDF...")}
+                        onClick={() => alert("Đang xuất bộ câu hỏi ra file Word/PDF...")}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow"
                       >
                         📥 Tải Xuống Bài Tập Theo Chuyên Đề
@@ -1119,11 +985,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                           <label className="block font-semibold mb-1">Lệ phí hỗ trợ chuyên gia:</label>
                           <input type="text" value={newExamFee} onChange={(e) => setNewExamFee(e.target.value)} className="w-full border rounded-lg p-2 bg-white font-bold text-emerald-700" />
                         </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-600 bg-white p-2.5 rounded-lg border">
-                        ✓ <strong>Ma trận độ khó:</strong> 25% Biết (B), 30% Hiểu (H), 30% Vận dụng (VD), tối đa 14% Vận dụng cao (VDC).
-                        <br />✓ <strong>Chống lặp câu hỏi:</strong> Đảm bảo mỗi ID học viên khi thi ở các đợt khác nhau thì các câu hỏi không gặp lại.
                       </div>
 
                       <button onClick={handleCreateExam} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md">
@@ -1259,7 +1120,7 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                           onClick={() => {
                             setRootQuestions(rootQuestions.map(q => q.id === editingQuestion.id ? editingQuestion : q));
                             setEditingModalOpen(false);
-                            alert(`Đã lưu chỉnh sửa câu ${editingQuestion.id} và kích hoạt lại thẩm định.`);
+                            alert(`Đã lưu chỉnh sửa câu ${editingQuestion.id}.`);
                           }}
                           className="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-xs shadow"
                         >
@@ -1290,10 +1151,6 @@ Cho hàm số bậc ba y = f(x) có bảng biến thiên như hình vẽ bên d�
                           <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-xl">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                             <span className="text-xs font-bold text-emerald-800">ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI</span>
-                          </div>
-                        ) : currentUser.feeStatus === 'pending' ? (
-                          <div className="bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-xl">
-                            <span className="text-xs font-bold text-amber-800">⏳ ĐÃ NỘP LỆ PHÍ - CHỜ DUYỆT</span>
                           </div>
                         ) : (
                           <button
