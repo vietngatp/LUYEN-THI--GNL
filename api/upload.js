@@ -524,4 +524,543 @@
       }
     }
 
-    function switchAdminTab(tab
+    function switchAdminTab(tab) {
+      document.getElementById("admin-tab-audit").classList.toggle("hidden", tab !== 'audit');
+      document.getElementById("admin-tab-bank").classList.toggle("hidden", tab !== 'bank');
+      document.getElementById("admin-tab-practice").classList.toggle("hidden", tab !== 'practice');
+      document.getElementById("admin-tab-exams").classList.toggle("hidden", tab !== 'exams');
+      document.getElementById("admin-tab-students").classList.toggle("hidden", tab !== 'students');
+
+      const tabs = ['audit', 'bank', 'practice', 'exams', 'students'];
+      tabs.forEach(t => {
+        const btn = document.getElementById("tab-btn-" + t);
+        if (btn) {
+          btn.className = t === tab ? 'px-3.5 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-3.5 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
+        }
+      });
+
+      if (tab === 'exams') renderExamsList();
+      if (tab === 'students') renderStudentsTable();
+    }
+
+    // AI THẨM ĐỊNH (gemini-3.8-flash)
+    async function processUploadWithAI() {
+      const fileInput = document.getElementById("file-uploader");
+      const file = fileInput ? fileInput.files[0] : null;
+      if (!file) {
+        alert("Vui lòng chọn một file Word (.docx) hoặc PDF đề thi!");
+        return;
+      }
+
+      const apiKeyInput = document.getElementById("input-api-key");
+      const apiKey = apiKeyInput ? apiKeyInput.value.trim() : "";
+      if (!apiKey) {
+        alert("Vui lòng nhập Gemini API Key!");
+        return;
+      }
+
+      localStorage.setItem('HSA_GEMINI_KEY', apiKey);
+
+      const sub = document.getElementById("audit-subject").value;
+      const code = document.getElementById("audit-exam-code").value.trim() || "01";
+
+      document.getElementById("ai-loading").classList.remove("hidden");
+      document.getElementById("btn-process-ai").disabled = true;
+
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64Data = reader.result.split(',')[1];
+          const mimeType = file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf');
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileData: base64Data,
+              fileName: file.name,
+              mimeType: mimeType,
+              subject: sub,
+              examCode: code,
+              apiKey: apiKey
+            })
+          });
+
+          const result = await response.json();
+          document.getElementById("ai-loading").classList.add("hidden");
+          document.getElementById("btn-process-ai").disabled = false;
+
+          if (!response.ok || result.error) {
+            alert("Lỗi từ máy chủ: " + (result.error || "Không rõ nguyên nhân"));
+            return;
+          }
+
+          if (result.questions && result.questions.length > 0) {
+            tempParsedQuestions = result.questions.map(q => ({
+              ...q,
+              imageCode: q.id + ".png",
+              imageSrc: null // Quản lý ảnh riêng biệt cho từng câu
+            }));
+            displayAuditedResults(tempParsedQuestions);
+          } else {
+            alert("AI không nhận diện được câu hỏi nào từ file.");
+          }
+        };
+      } catch (err) {
+        document.getElementById("ai-loading").classList.add("hidden");
+        document.getElementById("btn-process-ai").disabled = false;
+        alert("Lỗi kết nối: " + err.message);
+      }
+    }
+
+    function displayAuditedResults(questions) {
+      const container = document.getElementById("audit-result-box");
+      let html = `<div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">`;
+      html += `<div class="p-2 bg-emerald-100 text-emerald-900 rounded font-bold text-xs">✓ Đã bóc tách thành công ${questions.length} câu hỏi từ file!</div>`;
+
+      questions.forEach((q, idx) => {
+        html += `
+          <div class="p-3 bg-white border rounded-xl space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded">${q.id}</span>
+              <label class="text-[11px] text-blue-600 hover:underline cursor-pointer font-bold">
+                📷 Chọn ảnh/đồ thị riêng
+                <input type="file" accept="image/*" onchange="attachImageToParsed(${idx}, this)" class="hidden" />
+              </label>
+            </div>
+            <div class="leading-relaxed">
+              ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
+              ${q.hasImage ? `
+                <div class="my-2 p-3 bg-slate-50 border rounded text-center">
+                  ${q.imageSrc ? `<img src="${q.imageSrc}" class="max-h-40 mx-auto rounded shadow-sm" />` : `<span class="font-mono text-blue-700 font-bold">[Vị trí ảnh riêng của câu: ${q.imageCode}]</span>`}
+                </div>
+              ` : ''}
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[11px]">
+              ${q.options.map(opt => `<div class="p-1 border rounded bg-slate-50">${parseKaTeX(opt)}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      container.innerHTML = html;
+      document.getElementById("audit-action-box").classList.remove("hidden");
+      document.getElementById("confirm-msg").innerText = `Bạn có chắc chắn muốn nạp toàn bộ ${questions.length} câu hỏi này vào Ngân Hàng Đề Gốc không?`;
+    }
+
+    function attachImageToParsed(idx, input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          tempParsedQuestions[idx].hasImage = true;
+          tempParsedQuestions[idx].imageSrc = e.target.result;
+          displayAuditedResults(tempParsedQuestions);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function confirmAddAuditedToBank() {
+      if (tempParsedQuestions.length === 0) return;
+
+      tempParsedQuestions.forEach(q => {
+        dbQuestions.unshift({
+          id: q.id,
+          subject: "Toán",
+          content: q.content,
+          hasImage: q.hasImage,
+          imageCode: q.imageCode || (q.id + ".png"),
+          imageSrc: q.imageSrc,
+          options: q.options,
+          correctIndex: q.correctIndex || 0
+        });
+
+        if (q.variants && q.variants.length > 0) {
+          q.variants.forEach(v => {
+            practiceDb.unshift({
+              id: v.id,
+              content: v.content,
+              hasImage: q.hasImage,
+              imageCode: q.imageCode,
+              imageSrc: q.imageSrc,
+              options: v.options || q.options
+            });
+          });
+        }
+      });
+
+      alert(`✓ THÀNH CÔNG! Đã nạp ${tempParsedQuestions.length} câu hỏi gốc vào Ngân hàng Đề Gốc.`);
+      clearAuditBox();
+      renderBankList();
+      renderPracticeList();
+    }
+
+    function clearAuditBox() {
+      tempParsedQuestions = [];
+      document.getElementById("audit-result-box").innerHTML = `
+        <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
+          <span class="text-3xl mb-1">📄</span>
+          <span class="font-bold text-slate-600">Chưa có kết quả bóc tách.</span>
+          <span class="text-[11px] mt-1 text-slate-500">Nhập mã đề, chọn file Word hoặc PDF và bấm nút Bắt Đầu ở bên trái.</span>
+        </div>
+      `;
+      document.getElementById("audit-action-box").classList.add("hidden");
+      const fileInput = document.getElementById("file-uploader");
+      if (fileInput) fileInput.value = "";
+    }
+
+    // NGÂN HÀNG ĐỀ GỐC CÓ ĐẦY ĐỦ NÚT SỬA & XÓA
+    function renderBankList() {
+      document.getElementById("bank-count").innerText = dbQuestions.length;
+      document.getElementById("bank-list").innerHTML = dbQuestions.map((q, idx) => `
+        <div class="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded">${q.id}</span>
+            <div class="flex gap-2">
+              <button onclick="openEditModal(${idx})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded shadow text-xs">
+                ✏️ Sửa câu / Thêm ảnh
+              </button>
+              <button onclick="if(confirm('Xóa câu ${q.id}?')){ dbQuestions.splice(${idx}, 1); renderBankList(); }" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2 py-1 rounded bg-white">
+                🗑️ Xóa
+              </button>
+            </div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border leading-relaxed">
+            ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
+            ${q.hasImage ? `
+              <div class="my-2 p-2 bg-slate-50 border rounded text-center">
+                ${q.imageSrc ? `<img src="${q.imageSrc}" class="max-h-48 mx-auto rounded" />` : `<span class="font-mono text-blue-700 font-bold">[Ảnh riêng của câu: ${q.imageCode}]</span>`}
+              </div>
+            ` : ''}
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1">
+            ${q.options.map((opt, oIdx) => `
+              <div class="p-1.5 border rounded bg-white ${oIdx === q.correctIndex ? 'border-emerald-500 font-bold text-emerald-900 bg-emerald-50' : ''}">
+                <span class="font-bold mr-1">${String.fromCharCode(65 + oIdx)}.</span>${parseKaTeX(opt)}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPracticeList() {
+      document.getElementById("practice-count").innerText = practiceDb.length;
+      document.getElementById("practice-list").innerHTML = practiceDb.map((q, idx) => `
+        <div class="p-3 bg-slate-50 border rounded-xl text-xs space-y-1.5">
+          <span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-2 py-0.5 rounded">${q.id}</span>
+          <div class="bg-white p-2.5 rounded-lg border leading-relaxed">
+            ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
+            ${q.hasImage && q.imageSrc ? `<div class="my-2 p-1 text-center"><img src="${q.imageSrc}" class="max-h-36 mx-auto rounded" /></div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // QUẢN LÝ ĐỢT THI
+    function renderExamsList() {
+      const container = document.getElementById("exams-list");
+      if (!container) return;
+      container.innerHTML = exams.map((ex, idx) => `
+        <div class="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm text-blue-950">${ex.name}</span>
+              <span class="font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Mật khẩu: ${ex.passCode}</span>
+            </div>
+            <p class="text-slate-500 mt-1">Lệ phí: <strong class="text-emerald-700">${ex.fee}</strong> | 150 câu (3 phần thi HSA)</p>
+          </div>
+          <button onclick="deleteExam(${idx})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-lg transition">
+            🗑️ Xóa Đợt Thi
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function createNewExam() {
+      const name = document.getElementById("new-exam-name").value.trim();
+      const pass = document.getElementById("new-exam-passcode").value.trim();
+      const fee = document.getElementById("new-exam-fee").value.trim();
+
+      if (!name || !pass) {
+        alert("Vui lòng nhập tên đợt thi và mật khẩu!");
+        return;
+      }
+
+      exams.push({
+        id: "EXAM-" + Date.now().toString().slice(-4),
+        name: name,
+        passCode: pass,
+        startTime: "2026-11-01 08:00",
+        fee: fee || "50.000 VNĐ",
+        totalQuestions: 150
+      });
+
+      renderExamsList();
+      alert("✓ ĐÃ TẠO ĐỢT THI MỚI THÀNH CÔNG!");
+    }
+
+    function deleteExam(idx) {
+      if (confirm("Bạn có chắc chắn muốn xóa đợt thi này?")) {
+        exams.splice(idx, 1);
+        renderExamsList();
+      }
+    }
+
+    // QUẢN LÝ THÍ SINH & HỌC VIÊN
+    function renderStudentsTable() {
+      const tbody = document.getElementById("students-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = students.map((st, idx) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-mono font-bold text-blue-900">${st.id}</td>
+          <td class="py-2.5 px-3 font-semibold">${st.name}</td>
+          <td class="py-2.5 px-3">${st.birthYear}</td>
+          <td class="py-2.5 px-3">${st.classUnit}</td>
+          <td class="py-2.5 px-3 text-slate-500">${st.email}</td>
+          <td class="py-2.5 px-3 text-center">
+            ${st.feeStatus === 'approved' ? '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[11px]">ĐÃ NỘP</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[11px]">CHỜ DUYỆT</span>'}
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <span class="px-2.5 py-0.5 rounded font-bold text-[11px] ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}">
+              ${st.eligible ? '✓ ĐỦ ĐIỀU KIỆN' : '✗ KHÓA THI'}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            <button onclick="toggleStudentEligibility(${idx})" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">
+              ${st.eligible ? 'Tắt quyền thi' : 'Duyệt phí & Bật quyền thi'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleStudentEligibility(idx) {
+      students[idx].eligible = !students[idx].eligible;
+      if (students[idx].eligible) students[idx].feeStatus = 'approved';
+      renderStudentsTable();
+    }
+
+    function addNewStudentPrompt() {
+      const name = prompt("Họ và tên thí sinh:");
+      if (!name) return;
+      const year = prompt("Năm sinh (ví dụ: 2007):", "2007") || "2007";
+      const cls = prompt("Đơn vị lớp (ví dụ: 12A1 hoặc để trống nếu tự do):", "12A1") || "TP";
+      const email = prompt("Email nhận kết quả:", "hocsinh@example.com") || "";
+
+      const yShort = year.slice(-2);
+      const stt = (students.length + 1 < 10 ? '00' : (students.length + 1 < 100 ? '0' : '')) + (students.length + 1);
+      const newId = `${yShort}-${cls}-${stt}`;
+
+      students.push({
+        id: newId,
+        name: name,
+        birthYear: year,
+        classUnit: cls,
+        email: email,
+        eligible: true,
+        feeStatus: "approved",
+        regTime: new Date().toLocaleString('vi-VN')
+      });
+
+      renderStudentsTable();
+      alert(`✓ Đã thêm thí sinh ${name} với ID: ${newId}!`);
+    }
+
+    // MODAL CHỈNH SỬA CÂU HỎI
+    function openEditModal(idx) {
+      editingIndex = idx;
+      const q = dbQuestions[idx];
+      document.getElementById("edit-modal-id").innerText = q.id;
+      document.getElementById("edit-modal-content").value = q.content;
+      document.getElementById("edit-opt-0").value = q.options[0] || "";
+      document.getElementById("edit-opt-1").value = q.options[1] || "";
+      document.getElementById("edit-opt-2").value = q.options[2] || "";
+      document.getElementById("edit-opt-3").value = q.options[3] || "";
+
+      currentEditImgData = q.imageSrc;
+      const previewBox = document.getElementById("edit-modal-preview");
+      const imgEl = document.getElementById("edit-modal-img");
+
+      if (q.imageSrc) {
+        imgEl.src = q.imageSrc;
+        previewBox.classList.remove("hidden");
+      } else {
+        previewBox.classList.add("hidden");
+      }
+
+      document.getElementById("edit-modal-file").value = "";
+      document.getElementById("edit-modal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("edit-modal").classList.add("hidden");
+      editingIndex = -1;
+      currentEditImgData = null;
+    }
+
+    function insertTagToEditModal() {
+      const el = document.getElementById("edit-modal-content");
+      el.value += " [HINH_ANH] ";
+    }
+
+    function previewEditImage(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentEditImgData = e.target.result;
+          document.getElementById("edit-modal-img").src = currentEditImgData;
+          document.getElementById("edit-modal-preview").classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function removeEditImage() {
+      currentEditImgData = null;
+      document.getElementById("edit-modal-preview").classList.add("hidden");
+      document.getElementById("edit-modal-file").value = "";
+    }
+
+    function saveEditModalChanges() {
+      if (editingIndex < 0) return;
+      const q = dbQuestions[editingIndex];
+      q.content = document.getElementById("edit-modal-content").value;
+      q.options = [
+        document.getElementById("edit-opt-0").value,
+        document.getElementById("edit-opt-1").value,
+        document.getElementById("edit-opt-2").value,
+        document.getElementById("edit-opt-3").value
+      ];
+      q.imageSrc = currentEditImgData;
+      q.hasImage = !!currentEditImgData || q.content.includes("[HINH_ANH]");
+
+      closeEditModal();
+      renderBankList();
+      alert("✓ Đã lưu thay đổi cho câu " + q.id + "!");
+    }
+
+    // Thi & Luyện tập
+    function startPracticeSession() {
+      activeExamQuestions = dbQuestions.slice(0, 30);
+      initExamSession("BÀI LUYỆN TẬP CHUYÊN ĐỀ", 45 * 60);
+    }
+
+    function startOfficialExam() {
+      const pass = document.getElementById("input-exam-pass").value;
+      if (pass !== "HSA2026") {
+        alert("Mật khẩu không chính xác! (Nhập: HSA2026)");
+        return;
+      }
+      activeExamQuestions = dbQuestions.slice(0, 50);
+      initExamSession("BÀI THI CHÍNH THỨC HSA", 75 * 60);
+    }
+
+    function initExamSession(title, seconds) {
+      document.getElementById("student-hub").classList.add("hidden");
+      document.getElementById("student-exam").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+      document.getElementById("exam-badge").innerText = title;
+
+      activeQuestionIdx = 0;
+      userAnswers = {};
+      timeLeft = seconds;
+
+      renderCurrentQuestion();
+      renderMatrix();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById("exam-timer").innerText = (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
+        if (timeLeft <= 0) submitExam();
+      }, 1000);
+    }
+
+    function renderCurrentQuestion() {
+      const q = activeExamQuestions[activeQuestionIdx];
+      if (!q) return;
+
+      document.getElementById("q-number").innerText = "Câu " + (activeQuestionIdx + 1);
+      document.getElementById("q-code").innerText = q.id;
+
+      let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
+      if (q.hasImage && q.imageSrc) {
+        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
+      }
+      document.getElementById("q-content").innerHTML = contentHtml;
+
+      document.getElementById("q-options").innerHTML = q.options.map((opt, oIdx) => `
+        <div onclick="selectAnswer(${oIdx})" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${userAnswers[activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50 bg-white'}">
+          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
+          ${parseKaTeX(opt)}
+        </div>
+      `).join('');
+    }
+
+    function renderMatrix() {
+      const container = document.getElementById("q-matrix");
+      container.innerHTML = activeExamQuestions.map((_, idx) => `
+        <button onclick="activeQuestionIdx = ${idx}; renderCurrentQuestion(); renderMatrix();" class="h-8 rounded text-xs font-bold ${activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${userAnswers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
+          ${idx + 1}
+        </button>
+      `).join('');
+    }
+
+    function selectAnswer(oIdx) {
+      userAnswers[activeQuestionIdx] = oIdx;
+      renderCurrentQuestion();
+      renderMatrix();
+    }
+
+    function prevQuestion() {
+      if (activeQuestionIdx > 0) {
+        activeQuestionIdx--;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function nextQuestion() {
+      if (activeQuestionIdx < activeExamQuestions.length - 1) {
+        activeQuestionIdx++;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function submitExam() {
+      if (timerInterval) clearInterval(timerInterval);
+      let score = 0;
+      activeExamQuestions.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correctIndex) score++;
+      });
+
+      document.getElementById("student-exam").classList.add("hidden");
+      document.getElementById("student-result").classList.remove("hidden");
+      document.getElementById("result-score").innerText = (score * 3) + " / 150";
+    }
+
+    function backToHub() {
+      document.getElementById("student-hub").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+    }
+
+    // Chống rời màn hình
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
+        alert("⚠️ CẢNH BÁO: Rời màn hình thi! Hãy tập trung làm bài.");
+      }
+    });
+
+    // Mặc định khởi động vào phòng học viên
+    switchView('student');
+  </script>
+</body>
+</html>
