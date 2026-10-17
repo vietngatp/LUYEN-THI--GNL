@@ -935,4 +935,133 @@
         document.getElementById("edit-opt-0").value,
         document.getElementById("edit-opt-1").value,
         document.getElementById("edit-opt-2").value,
-        document.getElementById("edit-opt-3
+        document.getElementById("edit-opt-3").value
+      ];
+      q.imageSrc = currentEditImgData;
+      q.hasImage = !!currentEditImgData || q.content.includes("[HINH_ANH]");
+
+      closeEditModal();
+      renderBankList();
+      alert("✓ Đã lưu thay đổi cho câu " + q.id + "!");
+    }
+
+    // Thi & Luyện tập
+    function startPracticeSession() {
+      activeExamQuestions = dbQuestions.slice(0, 30);
+      initExamSession("BÀI LUYỆN TẬP CHUYÊN ĐỀ", 45 * 60);
+    }
+
+    function startOfficialExam() {
+      const pass = document.getElementById("input-exam-pass").value;
+      if (pass !== "HSA2026") {
+        alert("Mật khẩu không chính xác! (Nhập: HSA2026)");
+        return;
+      }
+      activeExamQuestions = dbQuestions.slice(0, 50);
+      initExamSession("BÀI THI CHÍNH THỨC HSA", 75 * 60);
+    }
+
+    function initExamSession(title, seconds) {
+      document.getElementById("student-hub").classList.add("hidden");
+      document.getElementById("student-exam").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+      document.getElementById("exam-badge").innerText = title;
+
+      activeQuestionIdx = 0;
+      userAnswers = {};
+      timeLeft = seconds;
+
+      renderCurrentQuestion();
+      renderMatrix();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById("exam-timer").innerText = (m < 10 ? '0' : '') + m + ":" + (s < 10 ? '0' : '') + s;
+        if (timeLeft <= 0) submitExam();
+      }, 1000);
+    }
+
+    function renderCurrentQuestion() {
+      const q = activeExamQuestions[activeQuestionIdx];
+      if (!q) return;
+
+      document.getElementById("q-number").innerText = "Câu " + (activeQuestionIdx + 1);
+      document.getElementById("q-code").innerText = q.id;
+
+      let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
+      if (q.hasImage && q.imageSrc) {
+        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
+      }
+      document.getElementById("q-content").innerHTML = contentHtml;
+
+      document.getElementById("q-options").innerHTML = q.options.map((opt, oIdx) => `
+        <div onclick="selectAnswer(${oIdx})" class="p-3 border rounded-xl text-xs md:text-sm font-medium cursor-pointer transition ${userAnswers[activeQuestionIdx] === oIdx ? 'bg-blue-50 border-blue-600 font-bold text-blue-900' : 'hover:bg-slate-50 bg-white'}">
+          <span class="mr-2 font-bold">${String.fromCharCode(65 + oIdx)}.</span>
+          ${parseKaTeX(opt)}
+        </div>
+      `).join('');
+    }
+
+    function renderMatrix() {
+      const container = document.getElementById("q-matrix");
+      container.innerHTML = activeExamQuestions.map((_, idx) => `
+        <button onclick="activeQuestionIdx = ${idx}; renderCurrentQuestion(); renderMatrix();" class="h-8 rounded text-xs font-bold ${activeQuestionIdx === idx ? 'ring-2 ring-blue-600' : ''} ${userAnswers[idx] !== undefined ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200'}">
+          ${idx + 1}
+        </button>
+      `).join('');
+    }
+
+    function selectAnswer(oIdx) {
+      userAnswers[activeQuestionIdx] = oIdx;
+      renderCurrentQuestion();
+      renderMatrix();
+    }
+
+    function prevQuestion() {
+      if (activeQuestionIdx > 0) {
+        activeQuestionIdx--;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function nextQuestion() {
+      if (activeQuestionIdx < activeExamQuestions.length - 1) {
+        activeQuestionIdx++;
+        renderCurrentQuestion();
+        renderMatrix();
+      }
+    }
+
+    function submitExam() {
+      if (timerInterval) clearInterval(timerInterval);
+      let score = 0;
+      activeExamQuestions.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correctIndex) score++;
+      });
+
+      document.getElementById("student-exam").classList.add("hidden");
+      document.getElementById("student-result").classList.remove("hidden");
+      document.getElementById("result-score").innerText = (score * 3) + " / 150";
+    }
+
+    function backToHub() {
+      document.getElementById("student-hub").classList.remove("hidden");
+      document.getElementById("student-result").classList.add("hidden");
+    }
+
+    // Chống rời màn hình
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
+        alert("⚠️ CẢNH BÁO: Rời màn hình thi! Hãy tập trung làm bài.");
+      }
+    });
+
+    // Mặc định khởi động vào phòng học viên
+    switchView('student');
+  </script>
+</body>
+</html>
