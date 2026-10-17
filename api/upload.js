@@ -76,18 +76,39 @@ HÃY TRẢ VỀ DỮ LIỆU ĐÚNG ĐỊNH DẠNG JSON DUY NHẤT theo cấu tr�
       }
     };
 
-    // Sử dụng endpoint chuẩn xác tương thích 100% với khóa Google AI Studio mới
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Danh sách các mô hình và endpoint thử lần lượt
+    const candidateUrls = [
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`
+    ];
 
-    const apiResponse = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
+    let apiResponse = null;
+    let lastErrorText = "";
 
-    if (!apiResponse.ok) {
-      const errText = await apiResponse.text();
-      return res.status(500).json({ error: 'Lỗi từ Gemini AI API: ' + errText });
+    for (const url of candidateUrls) {
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (resp.ok) {
+          apiResponse = resp;
+          break; // Tìm thấy mô hình hoạt động thành công
+        } else {
+          lastErrorText = await resp.text();
+        }
+      } catch (e) {
+        lastErrorText = e.message;
+      }
+    }
+
+    if (!apiResponse) {
+      return res.status(500).json({ error: 'Lỗi từ Gemini AI API: ' + lastErrorText });
     }
 
     const data = await apiResponse.json();
