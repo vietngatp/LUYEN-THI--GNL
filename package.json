@@ -1,0 +1,9 @@
+{
+  "name": "luyen-thi-dgnl-backend",
+  "version": "1.0.0",
+  "description": "Backend Serverless xử lý file đề thi ĐGNL và LaTeX hóa tự động",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {}
+}

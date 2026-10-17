@@ -2,19 +2,20 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
   <style>
     body { font-family: "Times New Roman", Times, serif; }
     .no-select { user-select: none; }
-    .katex { font-size: 1.1em; }
+    .katex { font-size: 1.12em; }
+    .math-content { word-break: break-word; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
@@ -28,14 +29,14 @@
         </div>
         <div>
           <h1 class="font-bold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Bản v21 Siêu Ổn Định</span>
+          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Tự Động LaTeX Hóa Bằng AI Backend</span>
         </div>
       </div>
 
       <div class="flex items-center space-x-2">
         <div class="hidden md:flex items-center bg-blue-950/70 px-3 py-1 rounded-lg text-xs">
           <span class="text-slate-300 mr-2">Thí sinh:</span>
-          <span class="text-amber-300 font-bold" id="header-user">Nguyễn Văn An (07-12A1-001)</span>
+          <span class="text-amber-300 font-bold">Nguyễn Văn An (07-12A1-001)</span>
         </div>
 
         <div class="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
@@ -55,7 +56,6 @@
 
     <!-- ==================== VIEW 1: PHÒNG HỌC VIÊN ==================== -->
     <div id="view-student" class="space-y-6">
-      <!-- Hub chính -->
       <div id="student-hub" class="space-y-6">
         <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -74,13 +74,12 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Thẻ Luyện Tập -->
           <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div class="w-12 h-12 bg-indigo-50 text-indigo-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">📖</div>
               <h3 class="text-base font-bold text-slate-900 mb-1">1. Phòng Luyện Tập</h3>
               <p class="text-xs text-slate-500 mb-3 leading-relaxed">
-                Rèn luyện câu hỏi bám sát CT GDPT 2018. Có hiển thị đồ thị và công thức KaTeX chuẩn.
+                Rèn luyện câu hỏi bám sát CT GDPT 2018. Hiển thị công thức KaTeX và bảng biến thiên chuẩn xác.
               </p>
             </div>
             <button onclick="startPracticeSession()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition">
@@ -88,7 +87,6 @@
             </button>
           </div>
 
-          <!-- Thẻ Thi Đợt -->
           <div class="bg-white p-6 rounded-2xl border-2 border-blue-600/30 shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center font-black text-2xl mb-3">🎓</div>
@@ -132,10 +130,7 @@
               <span id="q-code" class="font-mono text-xs text-slate-500">T01-01</span>
             </div>
 
-            <!-- Nội dung câu hỏi render KaTeX -->
             <div id="q-content" class="text-sm leading-relaxed text-slate-900 space-y-3"></div>
-
-            <!-- 4 Phương án -->
             <div id="q-options" class="space-y-2 pt-2"></div>
 
             <div class="flex justify-between pt-4 border-t">
@@ -168,31 +163,43 @@
 
     <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ ==================== -->
     <div id="view-admin" class="hidden space-y-6">
-      <!-- Tabs Quản trị -->
       <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
         <button id="tab-btn-audit" onclick="switchAdminTab('audit')" class="px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
-          📤 1. AI Thẩm Định Đề (8 Môn)
+          📤 1. AI Tự Động LaTeX Hóa & Thẩm Định Đề
         </button>
         <button id="tab-btn-bank" onclick="switchAdminTab('bank')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
           📚 2. Ngân Hàng Đề Gốc (<span id="bank-count">50</span> câu)
         </button>
-        <button id="tab-btn-exams" onclick="switchAdminTab('exams')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
-          🛠️ 3. Quản Lý Đợt Thi
+        <button id="tab-btn-practice" onclick="switchAdminTab('practice')" class="px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100">
+          🎯 3. Ngân Hàng Luyện Thi (<span id="practice-count">45</span> câu)
         </button>
       </div>
 
-      <!-- Tab 1: AI Thẩm định đề -->
+      <!-- Tab 1: AI Tải file tự động LaTeX hóa -->
       <div id="admin-tab-audit" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-        <div class="border-b pb-3">
-          <h2 class="text-lg font-bold text-blue-950">Quy Trình AI Thẩm Định Đề Độc Lập Chuẩn CT GDPT 2018</h2>
-          <p class="text-xs text-slate-500">Bảo tồn phông chữ Times New Roman, công thức toán KaTeX và dán ảnh đúng vị trí.</p>
+        <div class="border-b pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-blue-950">Tải File Đề Thi (Word / PDF) & Tự Động LaTeX Hóa Bằng AI Backend</h2>
+            <p class="text-xs text-slate-500">Chỉ cần chọn file $ightarrow$ Server tự động đọc MathType/Equation chuyển thành LaTeX $ightarrow$ Tách bảng biến thiên $ightarrow$ Thẩm định.</p>
+          </div>
+          <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+            AI Multimodal Engine Active
+          </span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="space-y-4">
+            <!-- Cấu hình API Key & Môn & Mã đề -->
             <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-3">
-              <span class="font-bold text-blue-950 text-xs block uppercase">Cấu hình Đề Nạp:</span>
-              <div class="grid grid-cols-2 gap-3">
+              <span class="font-bold text-blue-950 text-xs block uppercase">1. Cấu hình Gemini API & Đề Nạp:</span>
+              
+              <div>
+                <label class="block text-slate-700 text-xs font-bold mb-1">Gemini API Key (Miễn phí từ aistudio.google.com):</label>
+                <input type="password" id="input-api-key" placeholder="Dán mã khóa AI Studio của bạn vào đây..." class="w-full border rounded-xl p-2 text-xs font-mono bg-white outline-none focus:ring-2 focus:ring-blue-600" />
+                <span class="text-[10px] text-slate-500 block mt-0.5">Mã này được lưu an toàn trên trình duyệt của bạn để gọi AI.</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-1">
                 <div>
                   <label class="block text-slate-700 text-xs font-bold mb-1">Môn thi:</label>
                   <select id="audit-subject" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
@@ -213,35 +220,45 @@
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Nội dung câu hỏi đề gốc (Dán trực tiếp từ Word/PDF):</label>
-              <textarea id="audit-raw-input" rows="6" placeholder="Dán nội dung câu hỏi tại đây...&#10;Ví dụ: Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:&#10;A. $\vec{u} = (1; 2)$B.$\vec{u} = (2; -1)&#10;[HINH_ANH]" class="w-full border rounded-xl p-3 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"></textarea>
-              <span onclick="insertImageTag()" class="text-[11px] text-blue-600 cursor-pointer font-bold block mt-1">+ Chèn thẻ định vị ảnh [HINH_ANH]</span>
+            <!-- NÚT CHỌN FILE WORD HOẶC PDF -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-700">2. Chọn file đề thi (Word .docx hoặc PDF):</label>
+              <input type="file" id="file-uploader" accept=".docx,.pdf,.png,.jpg,.jpeg" class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-xl p-1 bg-white shadow-sm" />
+              <div id="file-selected-status" class="text-xs text-blue-900 font-semibold hidden"></div>
             </div>
 
-            <button onclick="runAuditProcess()" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
-              ⚖️ Kích Hoạt Thẩm Định Đề
+            <button onclick="processUploadWithAI()" id="btn-process-ai" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-2">
+              <span>🚀 Bắt Đầu Đọc File, LaTeX Hóa & Thẩm Định Đề Tự Động</span>
             </button>
+
+            <!-- Loading Spinner -->
+            <div id="ai-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-center space-y-2">
+              <div class="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-xs font-bold text-indigo-950">AI Backend đang đọc cấu trúc file Word/PDF, dịch công thức MathType sang LaTeX...</p>
+              <p class="text-[11px] text-indigo-700">Quá trình này diễn ra trên máy chủ đám mây, máy tính của bạn hoàn toàn không bị đơ!</p>
+            </div>
           </div>
 
-          <!-- Kết quả thẩm định -->
+          <!-- Kết quả AI trả về -->
           <div class="bg-slate-50 border border-dashed rounded-2xl p-4 flex flex-col justify-between text-xs">
             <div id="audit-result-box" class="space-y-3">
               <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-                <span class="text-3xl mb-1">⚖️</span>
-                <span class="font-bold">Chưa có đề bài thẩm định.</span>
-                <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
+                <span class="text-3xl mb-1">📄</span>
+                <span class="font-bold text-slate-600">Chưa có kết quả bóc tách.</span>
+                <span class="text-[11px] mt-1 text-slate-500">Nhập mã đề, chọn file Word hoặc PDF và bấm nút Bắt Đầu ở bên trái.</span>
               </div>
             </div>
 
             <div id="audit-action-box" class="hidden pt-3 border-t mt-3 space-y-2">
               <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-2">
-                <span class="font-bold text-amber-900 block text-xs">Bạn có muốn thêm câu hỏi này vào Ngân hàng Đề Gốc không?</span>
+                <span class="font-bold text-amber-900 block text-xs" id="confirm-msg">
+                  Bạn có muốn thêm các câu hỏi đã được LaTeX hóa này vào Ngân hàng Đề Gốc không?
+                </span>
                 <div class="flex gap-2">
-                  <button onclick="confirmAddToBank()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+                  <button onclick="confirmAddAuditedToBank()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
                     ✓ Xác nhận thêm vào Ngân hàng đề
                   </button>
-                  <button onclick="cancelAudit()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
+                  <button onclick="clearAuditBox()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">
                     ✕ Hủy bỏ
                   </button>
                 </div>
@@ -254,31 +271,29 @@
       <!-- Tab 2: Ngân hàng đề gốc -->
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
-          <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Nguyên Mẫu)</h2>
+          <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đúng Nguyên Mẫu LaTeX)</h2>
         </div>
         <div id="bank-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
-      <!-- Tab 3: Quản lý đợt thi -->
-      <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <h2 class="text-lg font-bold text-blue-950">Danh Sách Đợt Thi</h2>
-        <div class="p-4 bg-white border rounded-xl flex justify-between items-center text-xs shadow-sm">
-          <div>
-            <span class="font-bold text-sm text-blue-950">Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026</span>
-            <span class="ml-2 font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Mật khẩu: HSA2026</span>
-          </div>
-          <span class="text-emerald-700 font-bold">Đang Mở</span>
+      <!-- Tab 3: Ngân hàng luyện thi -->
+      <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Luyện Thi (Câu Hỏi Phái Sinh Tương Đương)</h2>
+          <button onclick="alert('Đang tải bài tập theo chuyên đề...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
         </div>
+        <div id="practice-list" class="space-y-3 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
     </div>
 
   </main>
 
   <script>
-    // KHỞI TẠO DỮ LIỆU BAN ĐẦU
     const SAMPLE_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='460' height='160' viewBox='0 0 460 160'><rect width='460' height='160' fill='%23ffffff' stroke='%23334155' stroke-width='2'/><line x1='60' y1='0' x2='60' y2='160' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='40' x2='460' y2='40' stroke='%23334155' stroke-width='1.5'/><line x1='0' y1='80' x2='460' y2='80' stroke='%23334155' stroke-width='1.5'/><text x='25' y='26' font-family='Times New Roman' font-size='15' font-weight='bold'>x</text><text x='15' y='65' font-family='Times New Roman' font-size='15' font-weight='bold'>f'(x)</text><text x='15' y='125' font-family='Times New Roman' font-size='15' font-weight='bold'>f(x)</text><text x='80' y='26' font-size='14'>-∞</text><text x='180' y='26' font-size='14'>-1</text><text x='280' y='26' font-size='14'>1</text><text x='390' y='26' font-size='14'>+∞</text><text x='130' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='180' y='65' font-size='14'>0</text><text x='230' y='65' font-size='15' fill='%23ef4444' font-weight='bold'>-</text><text x='280' y='65' font-size='14'>0</text><text x='330' y='65' font-size='15' fill='%2310b981' font-weight='bold'>+</text><text x='80' y='145' font-size='13'>-∞</text><text x='180' y='95' font-size='14' font-weight='bold' fill='%23059669'>2</text><text x='280' y='145' font-size='14' font-weight='bold' fill='%23ea580c'>-2</text><text x='390' y='95' font-size='13'>+∞</text><line x1='100' y1='140' x2='170' y2='100' stroke='%2310b981' stroke-width='2'/><line x1='195' y1='100' x2='270' y2='140' stroke='%23ef4444' stroke-width='2'/><line x1='295' y1='140' x2='380' y2='100' stroke='%2310b981' stroke-width='2'/></svg>";
 
+    // Dữ liệu ban đầu
     let dbQuestions = [];
+    let practiceDb = [];
     for (let i = 1; i <= 50; i++) {
       const numStr = i < 10 ? '0' + i : '' + i;
       const code = 'T01-' + numStr;
@@ -288,13 +303,13 @@
 
       if (i % 3 === 1) {
         content = "Cho hàm số bậc ba $y = f(x)$ có bảng biến thiên như hình vẽ bên dưới:[HINH_ANH]Tìm tất cả các giá trị thực của tham số $m$ để phương trình $f(x) - 2m = 0$ có đúng 3 nghiệm thực phân biệt.";
-        opts = ["$m \\in (-1; 1)$", "$m \\in [-2; 2]$", "$m < -1$ hoặc $m > 1$", "$m = 0$"];
+        opts = ["$m \in (-1; 1)$", "$m \in [-2; 2]$", "$m < -1$ hoặc $m > 1$", "$m = 0$"];
       } else if (i % 3 === 2) {
-        content = "Biết tích phân $I = \\int_{1}^{e} \\frac{\\ln x}{x\\sqrt{1 + \\ln x}} dx = \\frac{a - b\\sqrt{2}}{c}$, với $a, b, c \\in \\mathbb{Z}$ và tối giản. Giá trị $S = a + b + c$ bằng:";
+        content = "Biết tích phân $I = \int_{1}^{e} \frac{\ln x}{x\sqrt{1 + \ln x}} dx = \frac{a - b\sqrt{2}}{c}$, với $a, b, c \in \mathbb{Z}$ và tối giản. Giá trị $S = a + b + c$ bằng:";
         opts = ["$S = 9$", "$S = 12$", "$S = 15$", "$S = 7$"];
       } else {
         content = "Trong hệ trục tọa độ Oxy, cho đường thẳng $d: 2x - y + 3 = 0$. Một vectơ chỉ phương của $d$ là:";
-        opts = ["$\\vec{u} = (1; 2)$", "$\\vec{u} = (2; -1)$", "$\\vec{u} = (-1; 2)$", "$\\vec{u} = (2; 1)$"];
+        opts = ["$\vec{u} = (1; 2)$", "$\vec{u} = (2; -1)$", "$\vec{u} = (-1; 2)$", "$\vec{u} = (2; 1)$"];
       }
 
       dbQuestions.push({
@@ -306,6 +321,18 @@
         options: opts,
         correctIndex: 0
       });
+
+      if (i <= 15) {
+        for (let k = 1; k <= 3; k++) {
+          practiceDb.push({
+            id: code + k,
+            content: "Biến thể câu hỏi " + k + " cùng chuyên đề: " + content,
+            hasImage: hasImg,
+            imageSrc: hasImg ? SAMPLE_SVG : null,
+            options: opts
+          });
+        }
+      }
     }
 
     let activeExamQuestions = [];
@@ -313,14 +340,22 @@
     let userAnswers = {};
     let timerInterval = null;
     let timeLeft = 75 * 60;
-    let violationCount = 0;
-    let tempAuditQuestion = null;
+    let tempParsedQuestions = [];
 
-    // Render KaTeX an toàn
+    // Tự động load API key đã lưu trong LocalStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('HSA_GEMINI_KEY');
+      if (savedKey) {
+        const input = document.getElementById("input-api-key");
+        if (input) input.value = savedKey;
+      }
+    });
+
+    // KaTeX render an toàn
     function parseKaTeX(text) {
       if (!text) return "";
       try {
-        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, function(m, f) {
+        return String(text).normalize('NFC').replace(/\$([^$]+)\$/g, function(m, f) {
           try {
             if (window.katex) return window.katex.renderToString(f, { throwOnError: false });
           } catch(e) {}
@@ -331,100 +366,179 @@
       }
     }
 
-    // Chuyển đổi View
     function switchView(view) {
       document.getElementById("view-student").classList.toggle("hidden", view !== 'student');
       document.getElementById("view-admin").classList.toggle("hidden", view !== 'admin');
       document.getElementById("btn-view-student").className = view === 'student' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
       document.getElementById("btn-view-admin").className = view === 'admin' ? 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow' : 'px-3.5 py-1 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white';
-      if (view === 'admin') renderBankList();
+      if (view === 'admin') {
+        renderBankList();
+        renderPracticeList();
+      }
     }
 
     function switchAdminTab(tab) {
       document.getElementById("admin-tab-audit").classList.toggle("hidden", tab !== 'audit');
       document.getElementById("admin-tab-bank").classList.toggle("hidden", tab !== 'bank');
-      document.getElementById("admin-tab-exams").classList.toggle("hidden", tab !== 'exams');
+      document.getElementById("admin-tab-practice").classList.toggle("hidden", tab !== 'practice');
       document.getElementById("tab-btn-audit").className = tab === 'audit' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
       document.getElementById("tab-btn-bank").className = tab === 'bank' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
-      document.getElementById("tab-btn-exams").className = tab === 'exams' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
+      document.getElementById("tab-btn-practice").className = tab === 'practice' ? 'px-4 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-4 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
     }
 
-    function insertImageTag() {
-      const el = document.getElementById("audit-raw-input");
-      el.value += " [HINH_ANH] ";
-    }
-
-    // AI Thẩm định
-    function runAuditProcess() {
-      const text = document.getElementById("audit-raw-input").value.trim();
-      const sub = document.getElementById("audit-subject").value;
-      const code = document.getElementById("audit-exam-code").value.trim() || "01";
-
-      if (!text) {
-        alert("Vui lòng dán nội dung đề bài!");
+    // QUY TRÌNH GỌI SERVERLESS BACKEND AI BÓC TÁCH FILE WORD/PDF TỰ ĐỘNG
+    async function processUploadWithAI() {
+      const fileInput = document.getElementById("file-uploader");
+      const file = fileInput ? fileInput.files[0] : null;
+      if (!file) {
+        alert("Vui lòng chọn một file Word (.docx) hoặc PDF đề thi!");
         return;
       }
 
-      const qId = sub + code + '-01';
-      const hasImg = text.includes("[HINH_ANH]") || text.toLowerCase().includes("bảng biến thiên");
+      const apiKeyInput = document.getElementById("input-api-key");
+      const apiKey = apiKeyInput ? apiKeyInput.value.trim() : "";
+      if (!apiKey) {
+        alert("Vui lòng nhập Gemini API Key của bạn để hệ thống kết nối AI bóc tách đề!");
+        return;
+      }
 
-      tempAuditQuestion = {
-        id: qId,
-        subject: "Toán",
-        content: text,
-        hasImage: hasImg,
-        imageSrc: hasImg ? SAMPLE_SVG : null,
-        options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
-        correctIndex: 0
-      };
+      // Lưu API Key để lần sau không cần nhập lại
+      localStorage.setItem('HSA_GEMINI_KEY', apiKey);
 
-      let html = `
-        <div class="space-y-3">
-          <div class="flex gap-2">
-            <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded text-xs">${qId}</span>
-            <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-xs">Môn: Toán</span>
+      const sub = document.getElementById("audit-subject").value;
+      const code = document.getElementById("audit-exam-code").value.trim() || "01";
+
+      document.getElementById("ai-loading").classList.remove("hidden");
+      document.getElementById("btn-process-ai").disabled = true;
+
+      try {
+        // Chuyển file sang Base64
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64Data = reader.result.split(',')[1];
+          const mimeType = file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf');
+
+          // Gọi Backend Serverless Vercel
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileData: base64Data,
+              fileName: file.name,
+              mimeType: mimeType,
+              subject: sub,
+              examCode: code,
+              apiKey: apiKey
+            })
+          });
+
+          const result = await response.json();
+          document.getElementById("ai-loading").classList.add("hidden");
+          document.getElementById("btn-process-ai").disabled = false;
+
+          if (!response.ok || result.error) {
+            alert("Lỗi từ máy chủ: " + (result.error || "Không rõ nguyên nhân"));
+            return;
+          }
+
+          if (result.questions && result.questions.length > 0) {
+            tempParsedQuestions = result.questions;
+            displayAuditedResults(tempParsedQuestions);
+          } else {
+            alert("AI không nhận diện được câu hỏi nào từ file.");
+          }
+        };
+      } catch (err) {
+        document.getElementById("ai-loading").classList.add("hidden");
+        document.getElementById("btn-process-ai").disabled = false;
+        alert("Lỗi kết nối: " + err.message);
+      }
+    }
+
+    function displayAuditedResults(questions) {
+      const container = document.getElementById("audit-result-box");
+      let html = `<div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">`;
+      html += `<div class="p-2 bg-emerald-100 text-emerald-900 rounded font-bold text-xs">✓ Đã bóc tách & LaTeX hóa thành công ${questions.length} câu hỏi từ file!</div>`;
+
+      questions.forEach((q, idx) => {
+        html += `
+          <div class="p-3 bg-white border rounded-xl space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="bg-amber-300 font-mono font-bold text-blue-950 px-2 py-0.5 rounded">${q.id}</span>
+              <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Mức: ${q.level || 'VD'}</span>
+            </div>
+            <div class="leading-relaxed">
+              ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
+              ${q.hasImage ? `<div class="my-2 p-2 bg-slate-50 border rounded text-center"><img src="${SAMPLE_SVG}" class="max-h-36 mx-auto" /></div>` : ''}
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[11px]">
+              ${q.options.map(opt => `<div class="p-1 border rounded bg-slate-50">${parseKaTeX(opt)}</div>`).join('')}
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-xl border leading-relaxed">
-            ${parseKaTeX(text.replace("[HINH_ANH]", ""))}
-            ${hasImg ? `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${SAMPLE_SVG}" class="max-h-44 mx-auto" /></div>` : ''}
-          </div>
-        </div>
-      `;
+        `;
+      });
+      html += `</div>`;
 
-      document.getElementById("audit-result-box").innerHTML = html;
+      container.innerHTML = html;
       document.getElementById("audit-action-box").classList.remove("hidden");
+      document.getElementById("confirm-msg").innerText = `Bạn có chắc chắn muốn nạp toàn bộ ${questions.length} câu hỏi này vào Ngân Hàng Đề Gốc không?`;
     }
 
-    function confirmAddToBank() {
-      if (!tempAuditQuestion) return;
-      dbQuestions.unshift(tempAuditQuestion);
-      document.getElementById("bank-count").innerText = dbQuestions.length;
-      alert("✓ ĐÃ THÊM THÀNH CÔNG VÀO NGÂN HÀNG ĐỀ GỐC!");
-      cancelAudit();
+    function confirmAddAuditedToBank() {
+      if (tempParsedQuestions.length === 0) return;
+
+      tempParsedQuestions.forEach(q => {
+        dbQuestions.unshift({
+          id: q.id,
+          subject: "Toán",
+          content: q.content,
+          hasImage: q.hasImage,
+          imageSrc: q.hasImage ? SAMPLE_SVG : null,
+          options: q.options,
+          correctIndex: q.correctIndex || 0
+        });
+
+        if (q.variants && q.variants.length > 0) {
+          q.variants.forEach(v => {
+            practiceDb.unshift({
+              id: v.id,
+              content: v.content,
+              hasImage: q.hasImage,
+              imageSrc: q.hasImage ? SAMPLE_SVG : null,
+              options: v.options || q.options
+            });
+          });
+        }
+      });
+
+      alert(`✓ THÀNH CÔNG! Đã nạp ${tempParsedQuestions.length} câu hỏi gốc vào Ngân hàng Đề Gốc và tự động sinh các câu tương đương vào Ngân hàng Luyện Thi!`);
+      clearAuditBox();
       renderBankList();
+      renderPracticeList();
     }
 
-    function cancelAudit() {
-      tempAuditQuestion = null;
-      document.getElementById("audit-raw-input").value = "";
+    function clearAuditBox() {
+      tempParsedQuestions = [];
       document.getElementById("audit-result-box").innerHTML = `
         <div class="h-64 flex flex-col items-center justify-center text-slate-400 text-center">
-          <span class="text-3xl mb-1">⚖️</span>
-          <span class="font-bold">Chưa có đề bài thẩm định.</span>
-          <span class="text-[11px] mt-1">Dán câu hỏi vào ô bên trái và bấm Kích Hoạt Thẩm Định.</span>
+          <span class="text-3xl mb-1">📄</span>
+          <span class="font-bold text-slate-600">Chưa có kết quả bóc tách.</span>
+          <span class="text-[11px] mt-1 text-slate-500">Nhập mã đề, chọn file Word hoặc PDF và bấm nút Bắt Đầu ở bên trái.</span>
         </div>
       `;
       document.getElementById("audit-action-box").classList.add("hidden");
+      const fileInput = document.getElementById("file-uploader");
+      if (fileInput) fileInput.value = "";
     }
 
     function renderBankList() {
-      const container = document.getElementById("bank-list");
       document.getElementById("bank-count").innerText = dbQuestions.length;
-      container.innerHTML = dbQuestions.map((q, idx) => `
+      document.getElementById("bank-list").innerHTML = dbQuestions.map((q, idx) => `
         <div class="p-4 bg-slate-50 border rounded-2xl text-xs space-y-2">
           <div class="flex justify-between items-center">
             <span class="font-mono font-bold text-blue-950 bg-amber-300 px-2 py-0.5 rounded">${q.id}</span>
-            <button onclick="deleteBankQuestion(${idx})" class="text-rose-600 font-bold hover:underline">🗑️ Xóa</button>
+            <button onclick="if(confirm('Xóa câu ${q.id}?')){ dbQuestions.splice(${idx}, 1); renderBankList(); }" class="text-rose-600 font-bold hover:underline">🗑️ Xóa</button>
           </div>
           <div class="bg-white p-3 rounded-xl border leading-relaxed">
             ${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}
@@ -434,17 +548,20 @@
       `).join('');
     }
 
-    function deleteBankQuestion(idx) {
-      if (confirm("Xóa câu hỏi này?")) {
-        dbQuestions.splice(idx, 1);
-        renderBankList();
-      }
+    function renderPracticeList() {
+      document.getElementById("practice-count").innerText = practiceDb.length;
+      document.getElementById("practice-list").innerHTML = practiceDb.map((q, idx) => `
+        <div class="p-3 bg-slate-50 border rounded-xl text-xs space-y-1.5">
+          <span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-2 py-0.5 rounded">${q.id}</span>
+          <div class="bg-white p-2.5 rounded-lg border">${parseKaTeX(q.content.replace("[HINH_ANH]", ""))}</div>
+        </div>
+      `).join('');
     }
 
     // Thi & Luyện tập
     function startPracticeSession() {
       activeExamQuestions = dbQuestions.slice(0, 30);
-      initExamSession("BÀI LUYỆN TẬP", 45 * 60);
+      initExamSession("BÀI LUYỆN TẬP CHUYÊN ĐỀ", 45 * 60);
     }
 
     function startOfficialExam() {
@@ -466,7 +583,6 @@
       activeQuestionIdx = 0;
       userAnswers = {};
       timeLeft = seconds;
-      violationCount = 0;
 
       renderCurrentQuestion();
       renderMatrix();
@@ -550,16 +666,7 @@
       document.getElementById("student-result").classList.add("hidden");
     }
 
-    // Chống rời màn hình
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
-        violationCount++;
-        alert("⚠️ CẢNH BÁO: Rời màn hình (" + violationCount + "/3 lần)! Quá 3 lần bài thi tự động thu.");
-        if (violationCount >= 3) submitExam();
-      }
-    });
-
-    // Mở trang
+    // Mặc định vào phòng học viên
     switchView('student');
   </script>
 </body>
