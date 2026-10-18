@@ -23,8 +23,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Chưa có Gemini API Key.' });
     }
 
-    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm và:
-1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $SA \bot (ABC)$, $\int_{0}^{1} f(x)dx$).
+    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và trích xuất toàn bộ câu hỏi. 
+QUAN TRỌNG: 
+1. TẤT CẢ các ký hiệu toán học, phân số, biến số, hàm số, biểu thức, ký hiệu hình học (như f(x), \int, \frac, x^2, AB, \vec{u},...) BẮT BUỘC phải được đặt trong dấu đô la đơn (ví dụ: $f(x)$, $\int_{0}^{1} f(x)dx$, $\frac{a}{b}$). Tuyệt đối không để chữ toán học dạng text thuần mà không có dấu $...$.
 2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
 3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
 4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
@@ -36,9 +37,9 @@ Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
     {
       "id": "${subject}${examCode}-01",
       "subject": "${subject}",
-      "content": "Nội dung câu hỏi kèm $...$ và [HINH_ANH] nếu có",
+      "content": "Nội dung câu hỏi kèm $...$ đầy đủ công thức và [HINH_ANH] nếu có",
       "hasImage": true,
-      "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+      "options": ["A. $...$", "B. $...$", "C. $...$", "D. $...$"],
       "correctIndex": 0,
       "level": "VD"
     }
