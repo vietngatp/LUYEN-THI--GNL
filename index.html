@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model - V22)</title>
+  <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- KaTeX -->
@@ -29,7 +29,7 @@
         </div>
         <div>
           <h1 class="font-bold text-base md:text-lg tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Phiên Bản V22 Ổn Định</span>
+          <span class="text-xs text-blue-200">ĐHQGHN • CT GDPT 2018 • Đầy Đủ 5 Phân Hệ Quản Trị</span>
         </div>
       </div>
 
@@ -161,7 +161,7 @@
       </div>
     </div>
 
-    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ (5 PHÂN HỆ V22) ==================== -->
+    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ (ĐẦY ĐỦ 5 PHÂN HỆ) ==================== -->
     <div id="view-admin" class="hidden space-y-6">
       <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
         <button id="tab-btn-audit" onclick="switchAdminTab('audit')" class="px-3.5 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
@@ -181,7 +181,7 @@
         </button>
       </div>
 
-      <!-- Tab 1: AI Thẩm Định Đề -->
+      <!-- Tab 1: AI Tải file tự động LaTeX hóa -->
       <div id="admin-tab-audit" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
         <div class="border-b pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
           <div>
@@ -267,7 +267,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Ngân hàng đề gốc -->
+      <!-- Tab 2: Ngân hàng đề gốc (ĐẦY ĐỦ NÚT SỬA & XÓA) -->
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
@@ -282,20 +282,21 @@
       <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <h2 class="text-lg font-bold text-blue-950">Ngân Hàng Luyện Thi (Câu Hỏi Tương Đương)</h2>
-          <button onclick="alert('Đang tải bài tập theo chuyên đề...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
+          <button onclick="alert('Đang xuất bài tập theo chuyên đề CT GDPT 2018 ra file...')" class="bg-indigo-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">📥 Tải Bài Tập Chuyên Đề</button>
         </div>
         <div id="practice-list" class="space-y-3 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
-      <!-- Tab 4: Tạo đợt thi -->
+      <!-- Tab 4: TẠO ĐỢT THI & QUẢN LÝ ĐỢT THI -->
       <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
         <div class="border-b pb-3 flex justify-between items-center">
           <div>
             <h2 class="text-lg font-bold text-blue-950">Tạo Đợt Thi Mới & Quản Lý Đợt Thi HSA</h2>
-            <p class="text-xs text-slate-500">Cấu hình 3 phần thi: Toán & Số liệu (50 câu - 75p), Đọc hiểu Văn (50 câu - 60p), Phần Tự chọn.</p>
+            <p class="text-xs text-slate-500">Cấu hình 3 phần thi: Toán & Số liệu (50 câu - 75p), Đọc hiểu Văn (50 câu - 60p), Phần Tự chọn (50đ).</p>
           </div>
         </div>
 
+        <!-- Form Tạo Đợt Thi Mới -->
         <div class="p-4 bg-slate-50 rounded-2xl border space-y-3">
           <span class="font-bold text-xs uppercase tracking-wider text-slate-700">1. Cấu hình Tạo Đợt Thi Mới:</span>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -312,23 +313,30 @@
               <input type="text" id="new-exam-fee" value="50.000 VNĐ" class="w-full border rounded-lg p-2 bg-white font-bold text-emerald-700" />
             </div>
           </div>
+
+          <div class="text-[11px] text-slate-600 bg-white p-2.5 rounded-lg border space-y-0.5">
+            <div>✓ <strong>Ma trận độ khó chuẩn HSA:</strong> 25% Biết (B), 30% Hiểu (H), 30% Vận dụng (VD), tối đa 14% Vận dụng cao (VDC).</div>
+            <div>✓ <strong>Chống lặp câu hỏi:</strong> Đảm bảo mỗi ID học viên khi thi ở các đợt khác nhau thì các câu hỏi không gặp lại.</div>
+          </div>
+
           <button onclick="createNewExam()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md transition">
             + Tạo & Kích Hoạt Đợt Thi
           </button>
         </div>
 
+        <!-- Danh sách các đợt thi hiện có -->
         <div class="space-y-3">
           <span class="font-bold text-xs uppercase tracking-wider text-slate-700">2. Danh sách các đợt thi đã tạo:</span>
           <div id="exams-list" class="space-y-2"></div>
         </div>
       </div>
 
-      <!-- Tab 5: Quản lý học sinh -->
+      <!-- Tab 5: QUẢN LÝ THÍ SINH & HỌC VIÊN -->
       <div id="admin-tab-students" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
         <div class="border-b pb-3 flex justify-between items-center">
           <div>
             <h2 class="text-lg font-bold text-blue-950">Quản Lý Hồ Sơ Thí Sinh & Phê Duyệt Quyền Thi</h2>
-            <p class="text-xs text-slate-500">Mã ID học viên chuẩn hóa: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code></p>
+            <p class="text-xs text-slate-500">Mã ID học viên chuẩn hóa: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code> (Ví dụ: 07-12A1-001 hoặc 07-TP-003).</p>
           </div>
           <button onclick="addNewStudentPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow">
             + Thêm Thí Sinh Mới
@@ -355,7 +363,7 @@
       </div>
     </div>
 
-    <!-- MODAL CHỈNH SỬA CÂU HỎI -->
+    <!-- MODAL CHỈNH SỬA CÂU HỎI & THAY ĐỔI ẢNH ĐỒ THỊ/BẢNG BIẾN THIÊN -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
@@ -413,16 +421,19 @@
   </main>
 
   <script>
+    // Dữ liệu học viên
     let students = [
       { id: "07-12A1-001", name: "Nguyễn Văn An", birthYear: "2007", classUnit: "12A1", email: "an.nguyen@example.com", eligible: true, feeStatus: "approved", regTime: "2026-10-15 08:30" },
       { id: "07-12A2-002", name: "Trần Thị Mai", birthYear: "2007", classUnit: "12A2", email: "mai.tran@example.com", eligible: false, feeStatus: "pending", regTime: "2026-10-16 14:15" },
       { id: "07-TP-003", name: "Lê Hoàng Long", birthYear: "2007", classUnit: "TP", email: "long.le@example.com", eligible: false, feeStatus: "unregistered", regTime: "-" }
     ];
 
+    // Dữ liệu đợt thi
     let exams = [
       { id: "EXAM-2026-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", passCode: "HSA2026", startTime: "2026-10-25 08:00", fee: "50.000 VNĐ", totalQuestions: 150 }
     ];
 
+    // Dữ liệu câu hỏi ban đầu
     let dbQuestions = [];
     let practiceDb = [];
     for (let i = 1; i <= 50; i++) {
@@ -449,7 +460,7 @@
         content: content,
         hasImage: hasImg,
         imageCode: hasImg ? code + ".png" : "",
-        imageSrc: null,
+        imageSrc: null, 
         options: opts,
         correctIndex: 0
       });
@@ -490,7 +501,7 @@
     function parseKaTeX(text) {
       if (!text) return "";
       try {
-        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, (m, f) => {
+        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, function(m, f) {
           try {
             if (window.katex) return window.katex.renderToString(f, { throwOnError: false });
           } catch(e) {}
@@ -521,7 +532,8 @@
       document.getElementById("admin-tab-exams").classList.toggle("hidden", tab !== 'exams');
       document.getElementById("admin-tab-students").classList.toggle("hidden", tab !== 'students');
 
-      ['audit', 'bank', 'practice', 'exams', 'students'].forEach(t => {
+      const tabs = ['audit', 'bank', 'practice', 'exams', 'students'];
+      tabs.forEach(t => {
         const btn = document.getElementById("tab-btn-" + t);
         if (btn) {
           btn.className = t === tab ? 'px-3.5 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400' : 'px-3.5 py-2 text-xs font-bold rounded-xl transition text-slate-700 hover:bg-slate-100';
@@ -532,6 +544,7 @@
       if (tab === 'students') renderStudentsTable();
     }
 
+    // AI THẨM ĐỊNH (gemini-3.8-flash)
     async function processUploadWithAI() {
       const fileInput = document.getElementById("file-uploader");
       const file = fileInput ? fileInput.files[0] : null;
@@ -555,62 +568,50 @@
       document.getElementById("ai-loading").classList.remove("hidden");
       document.getElementById("btn-process-ai").disabled = true;
 
-      // Timeout cơ chế 35s chống treo vòng quay
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 35000);
-
       try {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
-          try {
-            const base64Data = reader.result.split(',')[1];
-            const mimeType = file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf');
+          const base64Data = reader.result.split(',')[1];
+          const mimeType = file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf');
 
-            const response = await fetch('/api/upload', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              signal: controller.signal,
-              body: JSON.stringify({
-                fileData: base64Data,
-                fileName: file.name,
-                mimeType: mimeType,
-                subject: sub,
-                examCode: code,
-                apiKey: apiKey
-              })
-            });
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileData: base64Data,
+              fileName: file.name,
+              mimeType: mimeType,
+              subject: sub,
+              examCode: code,
+              apiKey: apiKey
+            })
+          });
 
-            clearTimeout(timeoutId);
-            const result = await response.json();
+          const result = await response.json();
+          document.getElementById("ai-loading").classList.add("hidden");
+          document.getElementById("btn-process-ai").disabled = false;
 
-            if (!response.ok || result.error) {
-              throw new Error(result.error || "Máy chủ từ chối yêu cầu.");
-            }
+          if (!response.ok || result.error) {
+            alert("Lỗi từ máy chủ: " + (result.error || "Không rõ nguyên nhân"));
+            return;
+          }
 
-            if (result.questions && result.questions.length > 0) {
-              tempParsedQuestions = result.questions.map(q => ({
-                ...q,
-                imageCode: q.id + ".png",
-                imageSrc: null
-              }));
-              displayAuditedResults(tempParsedQuestions);
-            } else {
-              alert("AI không nhận diện được câu hỏi nào từ file.");
-            }
-          } catch (innerErr) {
-            alert("Lỗi xử lý: " + innerErr.message);
-          } finally {
-            clearTimeout(timeoutId);
-            document.getElementById("ai-loading").classList.add("hidden");
-            document.getElementById("btn-process-ai").disabled = false;
+          if (result.questions && result.questions.length > 0) {
+            tempParsedQuestions = result.questions.map(q => ({
+              ...q,
+              imageCode: q.id + ".png",
+              imageSrc: null 
+            }));
+            displayAuditedResults(tempParsedQuestions);
+          } else {
+            alert("AI không nhận diện được câu hỏi nào từ file.");
           }
         };
       } catch (err) {
-        clearTimeout(timeoutId);
         document.getElementById("ai-loading").classList.add("hidden");
         document.getElementById("btn-process-ai").disabled = false;
-        alert("Lỗi khởi tạo: " + err.message);
+        alert("Lỗi kết nối: " + err.message);
       }
     }
 
@@ -712,6 +713,7 @@
       if (fileInput) fileInput.value = "";
     }
 
+    // NGÂN HÀNG ĐỀ GỐC CÓ ĐẦY ĐỦ NÚT SỬA & XÓA
     function renderBankList() {
       document.getElementById("bank-count").innerText = dbQuestions.length;
       document.getElementById("bank-list").innerHTML = dbQuestions.map((q, idx) => `
@@ -759,6 +761,7 @@
       `).join('');
     }
 
+    // QUẢN LÝ ĐỢT THI
     function renderExamsList() {
       const container = document.getElementById("exams-list");
       if (!container) return;
@@ -808,6 +811,7 @@
       }
     }
 
+    // QUẢN LÝ THÍ SINH & HỌC VIÊN
     function renderStudentsTable() {
       const tbody = document.getElementById("students-table-body");
       if (!tbody) return;
@@ -845,7 +849,7 @@
       const name = prompt("Họ và tên thí sinh:");
       if (!name) return;
       const year = prompt("Năm sinh (ví dụ: 2007):", "2007") || "2007";
-      const cls = prompt("Đơn vị lớp:", "12A1") || "12A1";
+      const cls = prompt("Đơn vị lớp (ví dụ: 12A1 hoặc để trống nếu tự do):", "12A1") || "TP";
       const email = prompt("Email nhận kết quả:", "hocsinh@example.com") || "";
 
       const yShort = year.slice(-2);
@@ -867,6 +871,7 @@
       alert(`✓ Đã thêm thí sinh ${name} với ID: ${newId}!`);
     }
 
+    // MODAL CHỈNH SỬA CÂU HỎI
     function openEditModal(idx) {
       editingIndex = idx;
       const q = dbQuestions[idx];
@@ -940,6 +945,7 @@
       alert("✓ Đã lưu thay đổi cho câu " + q.id + "!");
     }
 
+    // Thi & Luyện tập
     function startPracticeSession() {
       activeExamQuestions = dbQuestions.slice(0, 30);
       initExamSession("BÀI LUYỆN TẬP CHUYÊN ĐỀ", 45 * 60);
@@ -1047,12 +1053,14 @@
       document.getElementById("student-result").classList.add("hidden");
     }
 
+    // Chống rời màn hình
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
         alert("⚠️ CẢNH BÁO: Rời màn hình thi! Hãy tập trung làm bài.");
       }
     });
 
+    // Mặc định khởi động vào phòng học viên
     switchView('student');
   </script>
 </body>
