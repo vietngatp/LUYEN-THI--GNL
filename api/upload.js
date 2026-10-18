@@ -3,7 +3,6 @@ export const config = {
     bodyParser: {
       sizeLimit: '15mb',
     },
-    // Tăng thời gian phản hồi tối đa trên Vercel Pro nếu có (tối đa 60s trên gói Hobby)
     maxDuration: 60,
   },
 };
@@ -14,60 +13,60 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { fileData, mimeType, subject = 'T', examCode = '01', apiKey } = req.body;
+    const { fileData, mimeType, targetType = 'bank', subject = 'T', examCode = '01', apiKey } = req.body;
 
     if (!fileData) {
-      return res.status(400).json({ error: 'Chưa nhận được tệp tải lên' });
+      return res.status(400).json({ error: 'Chưa nhận được tệp đề thi tải lên.' });
     }
 
     const GEMINI_API_KEY = apiKey || process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
-      return res.status(400).json({ error: 'Chưa cấu hình Gemini API Key.' });
+      return res.status(400).json({ error: 'Chưa có Gemini API Key.' });
     }
 
-    // 1. Chuẩn hóa Base64: Lọc bỏ tiền tố "data:...;base64," nếu client gửi lên
     let cleanBase64 = fileData;
     if (fileData.includes(';base64,')) {
       cleanBase64 = fileData.split(';base64,')[1];
     }
 
-    // 2. Kiểm tra định dạng hỗ trợ (Word cần chuyển sang PDF trước ở Client)
-    let safeMimeType = mimeType || 'application/pdf';
-    if (safeMimeType.includes('word') || safeMimeType.includes('officedocument')) {
-      return res.status(400).json({
-        error: 'Gemini API hiện chưa hỗ trợ trực tiếp file .doc/.docx qua inline_data. Vui lòng xuất đề sang PDF hoặc file ảnh trước khi tải lên.'
-      });
-    }
+    const isPractice = targetType === 'practice';
 
-    const promptText = `Bạn là chuyên gia thẩm định và số hóa đề thi Đánh giá năng lực (HSA).
-Nhiệm vụ: Trích xuất chính xác các câu hỏi từ tài liệu được cung cấp (PDF/Ảnh) theo cấu trúc chuẩn.
+    const promptText = `Bạn là chuyên gia thẩm định và chuẩn hóa đề thi Đánh giá năng lực (HSA) theo CT GDPT 2018.
+Nhiệm vụ: Phân tích và trích xuất câu hỏi từ tài liệu được tải lên.
+Mục tiêu nạp: ${isPractice ? 'NGÂN HÀNG CÂU HỎI LUYỆN TẬP' : 'NGÂN HÀNG ĐỀ GỐC NGUYÊN MẪU'}.
 
-Yêu cầu định dạng:
-1. Chuyển TẤT CẢ công thức toán học/khoa học sang định dạng LaTeX chuẩn, đặt trong cặp dấu $...$ (ví dụ: $d: 2x - y + 3 = 0$, $\\int_0^1 f(x)dx$).
-2. Giữ nguyên 100% ngữ nghĩa tiếng Việt, thứ tự câu và các đáp án A, B, C, D.
-3. Nếu câu hỏi có hình vẽ, đồ thị hoặc bảng biến thiên, bắt buộc chèn ký hiệu [HINH_ANH] vào đúng vị trí của câu hỏi và đặt "hasImage": true.
-4. Gắn mã câu hỏi: ${subject}${examCode}-01, ${subject}${examCode}-02,...
-5. KHÔNG sinh câu hỏi tương đương ở bước này để tránh lỗi quá tải token và timeout. Chỉ tập trung bóc tách chuẩn xác toàn bộ câu gốc trong đề.
+Yêu cầu định dạng bắt buộc:
+1. Chuyển TẤT CẢ công thức toán học/khoa học sang định dạng LaTeX chuẩn đặt trong cặp dấu $...$ (inline) hoặc $$...$$ (display).
+2. Quy định thoát chuỗi: Mọi dấu gạch chéo ngược trong công thức LaTeX PHẢI được escape 2 lần trong chuỗi JSON (ví dụ: \\frac, \\sqrt, \\alpha).
+3. Giữ nguyên 100% ngữ nghĩa tiếng Việt, thứ tự câu hỏi và phương án A, B, C, D.
+4. Nếu câu hỏi có hình ảnh/đồ thị/bảng biến thiên, đặt ký hiệu [HINH_ANH] vào đúng vị trí câu và đặt hasImage = true.
+5. Gắn mã ID:
+   ${isPractice 
+     ? `- Gắn mã định danh theo chuẩn: ${subject}${examCode}-[stt]LT (Ví dụ: ${subject}${examCode}-01LT, ${subject}${examCode}-02LT,...)
+- Phân loại chuyên đề bám sát Chương trình GDPT 2018 vào trường "topic".
+- Đánh giá độ khó chính xác vào trường "level": B (Biết - 25%), H (Hiểu - 30%), VD (Vận dụng - 30%), VDC (Vận dụng cao - tối đa 14%).`
+     : `- Gắn mã định danh: ${subject}${examCode}-01, ${subject}${examCode}-02,...
+- Đánh giá độ khó vào trường "level": B, H, VD, VDC.`}
+6. TUYỆT ĐỐI KHÔNG sinh câu hỏi biến thể/tương đương để tiết kiệm token và đảm bảo tính nguyên bản.
 
-Cấu trúc JSON đầu ra bắt buộc:
+Trả về kết quả DUY NHẤT dưới dạng JSON hợp lệ (không kèm giải thích markdown thừa):
 {
   "questions": [
     {
-      "id": "${subject}${examCode}-01",
+      "id": "${subject}${examCode}-01${isPractice ? 'LT' : ''}",
       "subject": "${subject}",
-      "content": "Nội dung câu hỏi có kèm KaTeX $...$ và [HINH_ANH] nếu có",
+      "topic": "${isPractice ? 'Tên chuyên đề CT GDPT 2018' : 'Tổng hợp'}",
+      "content": "Nội dung câu hỏi kèm KaTeX $...$ và [HINH_ANH] nếu có",
       "hasImage": false,
       "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "correctIndex": 0,
-      "level": "TH",
-      "solution": "Lời giải chi tiết nếu có trong tài liệu"
+      "level": "H",
+      "solution": "Lời giải tóm tắt (nếu có)"
     }
   ]
 }`;
 
-    // 3. Sử dụng model chuẩn đang hoạt động ổn định: gemini-3.8-flash hoặc gemini-1.5-flash
-    const MODEL_NAME = 'gemini-3.8-flash';
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -79,7 +78,7 @@ Cấu trúc JSON đầu ra bắt buộc:
               { text: promptText },
               {
                 inline_data: {
-                  mime_type: safeMimeType,
+                  mime_type: mimeType || 'application/pdf',
                   data: cleanBase64
                 }
               }
@@ -87,7 +86,7 @@ Cấu trúc JSON đầu ra bắt buộc:
           }
         ],
         generationConfig: {
-          response_mime_type: 'application/json',
+          response_mime_type: "application/json",
           temperature: 0.1,
           max_output_tokens: 8192
         }
@@ -97,23 +96,40 @@ Cấu trúc JSON đầu ra bắt buộc:
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({
-        error: data.error?.message || JSON.stringify(data)
+      return res.status(response.status || 500).json({ error: JSON.stringify(data.error || data) });
+    }
+
+    const candidate = data.candidates?.[0];
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      return res.status(400).json({
+        error: 'Đề thi quá dài khiến phản hồi bị tràn giới hạn token. Hãy chia nhỏ đề thi thành 15-20 câu mỗi lần tải.'
       });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = candidate?.content?.parts?.[0]?.text;
     if (!text) {
-      return res.status(500).json({ error: 'AI không trả về nội dung bóc tách.' });
+      return res.status(500).json({ error: 'AI không trả về dữ liệu nội dung.' });
     }
 
-    // 4. Parse JSON an toàn
-    const cleanJson = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
-    const parsedData = JSON.parse(cleanJson);
+    let cleanJson = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
 
-    return res.status(200).json(parsedData);
+    try {
+      const parsedData = JSON.parse(cleanJson);
+      return res.status(200).json(parsedData);
+    } catch (parseError) {
+      const lastBrace = cleanJson.lastIndexOf('}');
+      if (lastBrace !== -1) {
+        const recovered = cleanJson.substring(0, lastBrace + 1) + ']}';
+        try {
+          return res.status(200).json(JSON.parse(recovered));
+        } catch (e) {}
+      }
+      return res.status(500).json({
+        error: 'Lỗi chuỗi JSON chưa hoàn chỉnh từ AI. Hãy giảm bớt số lượng câu hỏi trong file nạp.'
+      });
+    }
 
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Lỗi xử lý máy chủ nội bộ' });
+    return res.status(500).json({ error: error.message || 'Lỗi xử lý serverless.' });
   }
 }
