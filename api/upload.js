@@ -24,13 +24,13 @@ export default async function handler(req, res) {
     }
 
     const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và:
-1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $d: 2x - y + 3 = 0$, $\\vec{u} = (1; 2)$).
+1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $d: 2x - y + 3 = 0$).
 2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
 3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
 4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
 5. Tự động sinh 3 câu tương đương cho mỗi câu gốc.
 
-Trả về kết quả DUY NHẤT dưới dạng JSON:
+Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
 {
   "questions": [
     {
@@ -51,6 +51,7 @@ Trả về kết quả DUY NHẤT dưới dạng JSON:
   ]
 }`;
 
+    // Khóa chặt model gemini-3.8-flash để tránh lỗi 404 hoặc xung đột tài khoản
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
