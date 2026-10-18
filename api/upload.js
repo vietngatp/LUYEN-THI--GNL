@@ -45,7 +45,7 @@ Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
   ]
 }`;
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
