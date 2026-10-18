@@ -65,8 +65,8 @@ Cấu trúc JSON đầu ra bắt buộc:
   ]
 }`;
 
-    // 3. Sử dụng model chuẩn đang hoạt động ổn định: gemini-2.5-flash hoặc gemini-1.5-flash
-    const MODEL_NAME = 'gemini-2.5-flash';
+    // 3. Sử dụng model chuẩn đang hoạt động ổn định: gemini-3.8-flash hoặc gemini-1.5-flash
+    const MODEL_NAME = 'gemini-3.8-flash';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
