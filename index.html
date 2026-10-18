@@ -5,16 +5,21 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hệ Thống Luyện Thi Đánh Giá Năng Lực (HSA Model)</title>
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
+  <!-- Mammoth.js: Bóc tách nội dung Word (.docx) trực tiếp trên Client -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
   <style>
     body { font-family: "Times New Roman", Times, serif; }
     .no-select { user-select: none; }
-    .katex { font-size: 1.12em; }
+    .katex { font-size: 1.1em; }
     .math-content { word-break: break-word; }
   </style>
 </head>
@@ -151,7 +156,7 @@
         <h2 class="text-xl font-bold text-slate-900">KẾT QUẢ BÀI THI HSA</h2>
         <div class="inline-block bg-blue-50 border border-blue-200 px-8 py-4 rounded-2xl">
           <span class="text-xs text-blue-700 font-bold uppercase">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
-          <div id="result-score" class="text-4xl font-black text-blue-950 mt-1">126 / 150</div>
+          <div id="result-score" class="text-4xl font-black text-blue-950 mt-1">0 / 150</div>
         </div>
         <div>
           <button onclick="backToHub()" class="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow transition">
@@ -161,7 +166,7 @@
       </div>
     </div>
 
-    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ (ĐẦY ĐỦ 5 PHÂN HỆ) ==================== -->
+    <!-- ==================== VIEW 2: PHÒNG QUẢN TRỊ ==================== -->
     <div id="view-admin" class="hidden space-y-6">
       <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2">
         <button id="tab-btn-audit" onclick="switchAdminTab('audit')" class="px-3.5 py-2 text-xs font-bold rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
@@ -189,7 +194,7 @@
             <p class="text-xs text-slate-500">Mỗi câu có hình đều mang mã ảnh riêng biệt và có thể chọn tệp ảnh riêng.</p>
           </div>
           <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-            AI Engine (gemini-3.8-flash)
+            AI Engine (gemini-2.5-flash)
           </span>
         </div>
 
@@ -225,7 +230,7 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-700">2. Chọn file đề thi (Word .docx hoặc PDF):</label>
+              <label class="block text-xs font-bold text-slate-700">2. Chọn file đề thi (Word .docx, PDF hoặc Ảnh):</label>
               <input type="file" id="file-uploader" accept=".docx,.pdf,.png,.jpg,.jpeg" class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-xl p-1 bg-white shadow-sm" />
             </div>
 
@@ -267,7 +272,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Ngân hàng đề gốc (ĐẦY ĐỦ NÚT SỬA & XÓA) -->
+      <!-- Tab 2: Ngân hàng đề gốc -->
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
@@ -296,7 +301,6 @@
           </div>
         </div>
 
-        <!-- Form Tạo Đợt Thi Mới -->
         <div class="p-4 bg-slate-50 rounded-2xl border space-y-3">
           <span class="font-bold text-xs uppercase tracking-wider text-slate-700">1. Cấu hình Tạo Đợt Thi Mới:</span>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -324,7 +328,6 @@
           </button>
         </div>
 
-        <!-- Danh sách các đợt thi hiện có -->
         <div class="space-y-3">
           <span class="font-bold text-xs uppercase tracking-wider text-slate-700">2. Danh sách các đợt thi đã tạo:</span>
           <div id="exams-list" class="space-y-2"></div>
@@ -363,7 +366,7 @@
       </div>
     </div>
 
-    <!-- MODAL CHỈNH SỬA CÂU HỎI & THAY ĐỔI ẢNH ĐỒ THỊ/BẢNG BIẾN THIÊN -->
+    <!-- MODAL CHỈNH SỬA CÂU HỎI -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-2xl w-full rounded-2xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
@@ -498,15 +501,33 @@
       renderStudentsTable();
     });
 
+    // Hàm render KaTeX chuẩn cho cả display math ($$...$$) và inline math ($...$)
     function parseKaTeX(text) {
       if (!text) return "";
       try {
-        return String(text).normalize('NFC').replace(/\\$([^$]+)\\$/g, function(m, f) {
+        let str = String(text).normalize('NFC');
+        
+        // Render Display Math $$...$$ trước
+        str = str.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
           try {
-            if (window.katex) return window.katex.renderToString(f, { throwOnError: false });
+            if (window.katex) {
+              return window.katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false });
+            }
           } catch(e) {}
-          return '<span class="font-bold text-blue-900">' + f + '</span>';
+          return match;
         });
+
+        // Render Inline Math $...$
+        str = str.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+          try {
+            if (window.katex) {
+              return window.katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false });
+            }
+          } catch(e) {}
+          return match;
+        });
+
+        return str;
       } catch(e) {
         return text;
       }
@@ -544,12 +565,12 @@
       if (tab === 'students') renderStudentsTable();
     }
 
-    // AI THẨM ĐỊNH (gemini-3.8-flash)
+    // AI THẨM ĐỊNH & BÓC TÁCH (Hỗ trợ DOCX qua Mammoth, PDF và Ảnh)
     async function processUploadWithAI() {
       const fileInput = document.getElementById("file-uploader");
       const file = fileInput ? fileInput.files[0] : null;
       if (!file) {
-        alert("Vui lòng chọn một file Word (.docx) hoặc PDF đề thi!");
+        alert("Vui lòng chọn một file Word (.docx), PDF hoặc ảnh đề thi!");
         return;
       }
 
@@ -569,49 +590,70 @@
       document.getElementById("btn-process-ai").disabled = true;
 
       try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-          const base64Data = reader.result.split(',')[1];
-          const mimeType = file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf');
-
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileData: base64Data,
-              fileName: file.name,
-              mimeType: mimeType,
-              subject: sub,
-              examCode: code,
-              apiKey: apiKey
-            })
-          });
-
-          const result = await response.json();
-          document.getElementById("ai-loading").classList.add("hidden");
-          document.getElementById("btn-process-ai").disabled = false;
-
-          if (!response.ok || result.error) {
-            alert("Lỗi từ máy chủ: " + (result.error || "Không rõ nguyên nhân"));
-            return;
-          }
-
-          if (result.questions && result.questions.length > 0) {
-            tempParsedQuestions = result.questions.map(q => ({
-              ...q,
-              imageCode: q.id + ".png",
-              imageSrc: null 
-            }));
-            displayAuditedResults(tempParsedQuestions);
-          } else {
-            alert("AI không nhận diện được câu hỏi nào từ file.");
-          }
+        let payload = {
+          subject: sub,
+          examCode: code,
+          apiKey: apiKey
         };
+
+        // Nếu là file Word .docx, bóc tách text trước bằng Mammoth.js
+        if (file.name.endsWith('.docx')) {
+          const arrayBuffer = await file.arrayBuffer();
+          const mammothResult = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          const rawText = mammothResult.value;
+          
+          if (!rawText.trim()) {
+            throw new Error("Không thể trích xuất văn bản từ file Word này hoặc file rỗng.");
+          }
+
+          // Mã hóa text sang Base64 chuẩn UTF-8
+          const utf8Bytes = new TextEncoder().encode(rawText);
+          let binary = '';
+          utf8Bytes.forEach(b => binary += String.fromCharCode(b));
+          payload.fileData = btoa(binary);
+          payload.mimeType = 'text/plain';
+        } else {
+          // File PDF hoặc Ảnh: Đọc DataURL và tách Base64
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          payload.fileData = base64Data;
+          payload.mimeType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+        }
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        document.getElementById("ai-loading").classList.add("hidden");
+        document.getElementById("btn-process-ai").disabled = false;
+
+        if (!response.ok || result.error) {
+          alert("Lỗi từ máy chủ: " + (result.error || "Không rõ nguyên nhân"));
+          return;
+        }
+
+        if (result.questions && result.questions.length > 0) {
+          tempParsedQuestions = result.questions.map(q => ({
+            ...q,
+            imageCode: q.id + ".png",
+            imageSrc: null 
+          }));
+          displayAuditedResults(tempParsedQuestions);
+        } else {
+          alert("AI không nhận diện được câu hỏi nào từ file.");
+        }
+
       } catch (err) {
         document.getElementById("ai-loading").classList.add("hidden");
         document.getElementById("btn-process-ai").disabled = false;
-        alert("Lỗi kết nối: " + err.message);
+        alert("Lỗi xử lý tệp: " + err.message);
       }
     }
 
@@ -693,7 +735,7 @@
         }
       });
 
-      alert(`✓ THÀNH CÔNG! Đã nạp ${tempParsedQuestions.length} câu hỏi gốc vào Ngân hàng Đề Gốc.`);
+      alert(`✓ THÀNH CÔNG! Đã nạp ${tempParsedQuestions.length} câu hỏi vào Ngân hàng.`);
       clearAuditBox();
       renderBankList();
       renderPracticeList();
@@ -713,7 +755,7 @@
       if (fileInput) fileInput.value = "";
     }
 
-    // NGÂN HÀNG ĐỀ GỐC CÓ ĐẦY ĐỦ NÚT SỬA & XÓA
+    // NGÂN HÀNG ĐỀ GỐC
     function renderBankList() {
       document.getElementById("bank-count").innerText = dbQuestions.length;
       document.getElementById("bank-list").innerHTML = dbQuestions.map((q, idx) => `
@@ -993,7 +1035,7 @@
 
       let contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
       if (q.hasImage && q.imageSrc) {
-        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto" /></div>`;
+        contentHtml += `<div class="my-3 p-2 bg-slate-50 border rounded text-center"><img src="${q.imageSrc}" class="max-h-52 mx-auto rounded shadow-sm" /></div>`;
       }
       document.getElementById("q-content").innerHTML = contentHtml;
 
@@ -1038,14 +1080,19 @@
 
     function submitExam() {
       if (timerInterval) clearInterval(timerInterval);
-      let score = 0;
+      let correctCount = 0;
+      const total = activeExamQuestions.length;
+
       activeExamQuestions.forEach((q, idx) => {
-        if (userAnswers[idx] === q.correctIndex) score++;
+        if (userAnswers[idx] === q.correctIndex) correctCount++;
       });
+
+      // Quy đổi điểm chuẩn theo thang 150 điểm của HSA
+      const finalScore = total > 0 ? Math.round((correctCount / total) * 150) : 0;
 
       document.getElementById("student-exam").classList.add("hidden");
       document.getElementById("student-result").classList.remove("hidden");
-      document.getElementById("result-score").innerText = (score * 3) + " / 150";
+      document.getElementById("result-score").innerText = `${finalScore} / 150 (Đúng ${correctCount}/${total} câu)`;
     }
 
     function backToHub() {
@@ -1053,7 +1100,7 @@
       document.getElementById("student-result").classList.add("hidden");
     }
 
-    // Chống rời màn hình
+    // Chống rời màn hình thi
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && !document.getElementById("student-exam").classList.contains("hidden")) {
         alert("⚠️ CẢNH BÁO: Rời màn hình thi! Hãy tập trung làm bài.");
