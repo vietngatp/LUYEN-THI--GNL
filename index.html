@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Luyện Thi HSA 2026 - Bản V2</title>
+  <title>Hệ Thống Luyện Thi HSA 2026 - Bản V2 Hoàn Chỉnh</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -61,7 +61,7 @@
   <!-- ==================== MAIN CONTAINER ==================== -->
   <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1 flex flex-col justify-center">
 
-    <!-- 1. GIAO DIỆN MỞ ĐẦU -->
+    <!-- 1. GIAO DIỆN MỞ ĐẦU (MẶC ĐỊNH) -->
     <div id="view-auth" class="max-w-md w-full mx-auto bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-200 my-auto">
       <div class="text-center space-y-2 mb-6">
         <div class="w-16 h-16 bg-blue-900 text-amber-400 rounded-2xl flex items-center justify-center font-black text-3xl mx-auto shadow-md">HSA</div>
@@ -133,7 +133,7 @@
     <div id="view-student" class="hidden space-y-6">
       <div id="student-hub" class="space-y-6">
         
-        <!-- Khung nhắc nộp lệ phí -->
+        <!-- Khung nhắc nộp lệ phí kèm QR và Cú pháp chuyển khoản chuẩn -->
         <div id="shub-fee-alert" class="hidden p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl shadow-sm space-y-4">
           <div class="flex items-center gap-2 border-b border-amber-200 pb-2">
             <span class="text-2xl">⚠️</span>
@@ -449,7 +449,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Ngân Hàng Đề Gốc (Phân chia 8 ngăn môn học độc lập) -->
+      <!-- Tab 2: Ngân Hàng Đề Gốc (8 Ngăn Môn Độc Lập) -->
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b pb-3">
           <div>
@@ -466,13 +466,11 @@
           </div>
         </div>
 
-        <!-- Thanh điều hướng 8 ngăn môn học Ngân Hàng Đề Gốc -->
         <div id="bank-drawer-nav" class="flex flex-wrap gap-2 p-2 bg-slate-50 border rounded-2xl text-sm md:text-base font-bold"></div>
-
         <div id="bank-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
-      <!-- Tab 3: Ngân Hàng Luyện Thi (Phân chia 8 ngăn môn học độc lập) -->
+      <!-- Tab 3: Ngân Hàng Luyện Thi (8 Ngăn Môn Độc Lập) -->
       <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b pb-3">
           <div>
@@ -489,9 +487,7 @@
           </div>
         </div>
 
-        <!-- Thanh điều hướng 8 ngăn môn học Ngân Hàng Luyện Thi -->
         <div id="practice-drawer-nav" class="flex flex-wrap gap-2 p-2 bg-slate-50 border rounded-2xl text-sm md:text-base font-bold"></div>
-
         <div id="practice-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
@@ -590,18 +586,26 @@
       </div>
     </div>
 
-    <!-- MODAL SỬA CÂU HỎI -->
+    <!-- MODAL SỬA CÂU HỎI (CHO PHÉP THAY ĐỔI MÃ CÂU HỎI) -->
     <div id="modal-edit-question" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-2xl w-full rounded-3xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h3 class="text-xl font-bold text-blue-950">Chỉnh Sửa Câu Hỏi & Bổ Sung Hình Vẽ</h3>
-            <span class="text-sm text-slate-500 font-mono">Mã câu hỏi: <strong id="edit-q-id" class="text-blue-900"></strong></span>
+            <h3 class="text-xl font-bold text-blue-950">Chỉnh Sửa Câu Hỏi & Thay Đổi Mã Định Danh</h3>
+            <span class="text-xs text-slate-500">Cập nhật mã câu hỏi, nội dung, đồ thị và các phương án.</span>
           </div>
           <button type="button" id="btn-close-edit-q-x" class="text-slate-400 hover:text-slate-700 font-bold text-2xl">✕</button>
         </div>
 
         <div class="space-y-4 text-base">
+          <div class="p-3 bg-blue-50/80 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <label class="block font-bold text-blue-950 text-sm uppercase">Mã câu hỏi:</label>
+              <input type="text" id="edit-q-id-input" class="bg-white font-mono font-bold text-blue-900 px-3 py-1.5 rounded-xl border border-blue-300 text-base outline-none focus:ring-2 focus:ring-blue-600 w-44" placeholder="Ví dụ: T01-01" />
+            </div>
+            <span class="text-xs text-slate-500 italic">* Đổi mã trực tiếp tại đây để tránh trùng</span>
+          </div>
+
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="block font-bold text-slate-700 text-sm">Nội dung câu hỏi (kèm KaTeX $...$):</label>
@@ -643,7 +647,7 @@
                 <input type="text" id="edit-q-opt-2" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
               <div class="flex items-center gap-2">
-                <input type="radio" name="editCorrectOpt" value="3" id="opt-radio-3" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <input type="radio" name="editCorrectOpt" value="3" id="opt-radio-3" class="w-5 h-5 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
                 <span class="font-bold w-5">D.</span>
                 <input type="text" id="edit-q-opt-3" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
@@ -725,7 +729,6 @@
     // --- 1. DỮ LIỆU & ĐỊNH NGHĨA 8 NGĂN MÔN HỌC ---
     var currentUser = null;
 
-    // Danh mục chuẩn hóa 8 ngăn môn thi độc lập
     var SUBJECT_DRAWERS = [
       { code: 'T', name: 'Toán học & Xử lý số liệu' },
       { code: 'V', name: 'Ngữ văn - Đọc hiểu' },
@@ -737,8 +740,8 @@
       { code: 'D', name: 'Địa lý' }
     ];
 
-    var currentBankDrawer = 'T';     // Ngăn môn đang xem tại Ngân Hàng Đề Gốc
-    var currentPracticeDrawer = 'T'; // Ngăn môn đang xem tại Ngân Hàng Luyện Thi
+    var currentBankDrawer = 'T';
+    var currentPracticeDrawer = 'T';
 
     var adminAccounts = [
       { id: "ADM-01", username: "admin", name: "Quản Trị Viên HSA", password: "123" }
@@ -771,7 +774,6 @@
       }
     ];
 
-    // Khởi tạo và phục hồi qua LocalStorage
     var students = JSON.parse(localStorage.getItem('HSA_STUDENTS_V2') || 'null') || defaultStudents;
     var exams = JSON.parse(localStorage.getItem('HSA_EXAMS_V2') || 'null') || defaultExams;
     var dbQuestions = JSON.parse(localStorage.getItem('HSA_DB_QUESTIONS_V2') || '[]');
@@ -1058,7 +1060,7 @@
       updateStudentHubData();
     }
 
-    // --- 4. THUẬT TOÁN AI SINH ĐỀ: RÚT ĐÚNG VÀ ĐỦ CÂU TỪ TỪNG NGĂN RIÊNG BIỆT ---
+    // --- 4. THUẬT TOÁN AI SINH ĐỀ THEO TỪNG NGĂN RIÊNG BIỆT ---
     var currentExamSession = {
       partIndex: 1,
       partChoice: 'english',
@@ -1147,16 +1149,13 @@
       };
     }
 
-    // Thuật toán rút đúng & đủ số câu từ ngăn môn chỉ định, chống lặp tuyệt đối
     function generateQuestionsFromDrawer(subjectCode, count) {
       var studentTaken = currentUser.takenQuestionIds || [];
       
-      // Lấy câu hỏi chỉ từ đúng ngăn môn chỉ định và chưa từng làm
       var drawerQuestions = dbQuestions.filter(function(q) {
         return q.subject === subjectCode && !studentTaken.includes(q.id);
       });
 
-      // Nếu đã làm hết số câu chưa trùng trong ngăn, xoay vòng lại từ ngăn đó
       if (drawerQuestions.length === 0) {
         drawerQuestions = dbQuestions.filter(function(q) { return q.subject === subjectCode; });
       }
@@ -1177,13 +1176,11 @@
       grab('VD', targetVD);
       grab('VDC', targetVDC);
 
-      // Nếu còn thiếu trong ngăn, lấy thêm các câu còn lại trong ngăn đó
       if (selected.length < count && drawerQuestions.length > selected.length) {
         var rest = drawerQuestions.filter(function(q) { return !selected.includes(q); });
         selected.push.apply(selected, rest.slice(0, count - selected.length));
       }
 
-      // Nếu ngăn môn đó chưa nạp đủ số câu (ví dụ mới nạp 30 câu), tự động bù đủ đúng count câu
       var currentIdx = selected.length + 1;
       var levelsCycle = ['B', 'H', 'VD', 'VDC'];
       while (selected.length < count) {
@@ -1192,7 +1189,6 @@
         currentIdx++;
       }
 
-      // Đánh dấu để không gặp lại
       selected.forEach(function(q) {
         if (!studentTaken.includes(q.id)) studentTaken.push(q.id);
       });
@@ -1212,13 +1208,11 @@
       if (partIdx === 1) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 1 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 1: Toán Học & Xử Lý Số Liệu (50 câu - 75 phút)";
-        // Lấy đúng và đủ 50 câu từ ngăn TOÁN (T)
         activePartQuestions = generateQuestionsFromDrawer('T', 50);
         timeLeft = 75 * 60;
       } else if (partIdx === 2) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 2 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 2: Văn Học - Đọc Hiểu (50 câu - 60 phút)";
-        // Lấy đúng và đủ 50 câu từ ngăn VĂN (V)
         activePartQuestions = generateQuestionsFromDrawer('V', 50);
         timeLeft = 60 * 60;
       } else if (partIdx === 3) {
@@ -1226,12 +1220,10 @@
         timeLeft = 60 * 60;
         if (currentExamSession.partChoice === 'english') {
           document.getElementById("exam-part-title").innerText = "Phần 3: Tiếng Anh (50 câu - 60 phút)";
-          // Lấy đúng và đủ 50 câu từ ngăn TIẾNG ANH (E)
           activePartQuestions = generateQuestionsFromDrawer('E', 50);
         } else {
           document.getElementById("exam-part-title").innerText = "Phần 3: Tổ Hợp 3 Môn Khoa Học (51 câu - 60 phút)";
           var comboQuestions = [];
-          // Lấy chính xác 17 câu từ mỗi ngăn môn đã chọn
           currentExamSession.comboSubjects.forEach(function(sCode) {
             comboQuestions.push.apply(comboQuestions, generateQuestionsFromDrawer(sCode, 17));
           });
@@ -1406,7 +1398,7 @@
       updateStudentHubData();
     }
 
-    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH (PDF/ẢNH VÀO ĐÚNG NGĂN MÔN) ---
+    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH (SỬA MÃ CÂU HỎI TRƯỚC KHI NẠP) ---
     async function processUploadWithAI() {
       var fileInput = document.getElementById("file-uploader");
       var file = fileInput ? fileInput.files[0] : null;
@@ -1439,7 +1431,10 @@
 
         var base64Data = await new Promise(function(resolve, reject) {
           var reader = new FileReader();
-          reader.onload = function() { resolve(reader.result.split(',')[1]); };
+          reader.onload = function() { 
+            var res = reader.result;
+            resolve(res.split(',')[1]); 
+          };
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
@@ -1474,7 +1469,7 @@
           tempAuditQuestions = result.questions.map(function(q) {
             return {
               ...q,
-              subject: sub, // Khóa chặt câu hỏi vào đúng ngăn môn đã chọn
+              subject: sub,
               targetType: target,
               imageCode: q.id + ".png",
               imageSrc: null
@@ -1501,10 +1496,15 @@
       var html = '<div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">' +
         '<div class="p-3 bg-emerald-100 text-emerald-900 rounded-xl font-bold text-sm">✓ Bóc tách thành công ' + questions.length + ' câu hỏi vào ngăn: [' + subName + ']!</div>';
 
-      questions.forEach(function(q) {
+      questions.forEach(function(q, idx) {
         html += '<div class="p-4 bg-white border rounded-2xl space-y-2 text-base">' +
-          '<div class="flex justify-between items-center">' +
-            '<span class="bg-amber-300 font-mono font-bold text-blue-950 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
+          '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">' +
+            '<div class="flex items-center gap-2">' +
+              '<label class="text-xs font-bold text-slate-500 uppercase">Mã câu:</label>' +
+              '<input type="text" id="audit-id-input-' + idx + '" value="' + q.id + '" ' +
+                'class="bg-amber-100 font-mono font-bold text-blue-950 px-2.5 py-1 rounded-lg border border-amber-300 text-sm outline-none focus:ring-2 focus:ring-blue-600 w-36" ' +
+                'title="Bấm vào để sửa mã câu hỏi nếu bị trùng" />' +
+            '</div>' +
             '<span class="text-slate-500 font-bold text-sm">Môn: ' + subName + ' | Mức: ' + (q.level || 'H') + '</span>' +
           '</div>' +
           '<div class="leading-relaxed">' + renderContentWithImage(q.content, q.hasImage, q.imageSrc) + '</div>' +
@@ -1528,6 +1528,13 @@
       if (tempAuditQuestions.length === 0) return;
       var target = tempAuditQuestions[0].targetType;
       var subCode = tempAuditQuestions[0].subject;
+
+      tempAuditQuestions.forEach(function(q, idx) {
+        var inputEl = document.getElementById("audit-id-input-" + idx);
+        if (inputEl && inputEl.value.trim()) {
+          q.id = inputEl.value.trim();
+        }
+      });
 
       if (target === 'practice') {
         practiceDb.unshift.apply(practiceDb, tempAuditQuestions);
@@ -1881,7 +1888,7 @@
       document.body.removeChild(link);
     }
 
-    // --- 8. RENDER 8 NGĂN MÔN HỌC RIÊNG BIỆT CHO 2 NGÂN HÀNG ---
+    // --- 8. RENDER 8 NGĂN MÔN HỌC RIÊNG BIỆT ---
     function renderBankDrawers() {
       document.getElementById("bank-count").innerText = dbQuestions.length;
       var nav = document.getElementById("bank-drawer-nav");
@@ -1925,7 +1932,6 @@
       }
 
       container.innerHTML = currentQuestions.map(function(q) {
-        // Tìm index thực trong mảng dbQuestions gốc
         var realIdx = dbQuestions.indexOf(q);
 
         return '<div class="p-5 bg-slate-50 border rounded-2xl space-y-3">' +
@@ -1937,7 +1943,7 @@
             '<div class="flex items-center gap-2">' +
               '<span class="text-xs bg-slate-200 px-2.5 py-1 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
               '<button type="button" onclick="openEditQuestionModal(\'bank\', ' + realIdx + ')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">' +
-                '✏️ Sửa / Thêm ảnh' +
+                '✏️ Sửa / Đổi mã' +
               '</button>' +
               '<button type="button" onclick="deleteSingleQuestion(\'bank\', ' + realIdx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-3 py-1.5 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
@@ -2012,7 +2018,7 @@
             '<div class="flex items-center gap-2">' +
               '<span class="text-xs bg-slate-200 px-2.5 py-1 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
               '<button type="button" onclick="openEditQuestionModal(\'practice\', ' + realIdx + ')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">' +
-                '✏️ Sửa / Thêm ảnh' +
+                '✏️ Sửa / Đổi mã' +
               '</button>' +
               '<button type="button" onclick="deleteSingleQuestion(\'practice\', ' + realIdx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-3 py-1.5 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
@@ -2047,14 +2053,14 @@
       }
     }
 
-    // --- 9. MODAL CHỈNH SỬA CÂU HỎI & BỔ SUNG ẢNH ĐỒ THỊ ---
+    // --- 9. MODAL CHỈNH SỬA CÂU HỎI & THAY ĐỔI MÃ CÂU HỎI TRONG NGÂN HÀNG ---
     function openEditQuestionModal(target, idx) {
       currentEditingTarget = target;
       currentEditingIndex = idx;
       var arr = target === 'practice' ? practiceDb : dbQuestions;
       var q = arr[idx];
 
-      document.getElementById("edit-q-id").innerText = q.id;
+      document.getElementById("edit-q-id-input").value = q.id;
       document.getElementById("edit-q-content").value = q.content;
       document.getElementById("edit-q-opt-0").value = q.options[0] || "";
       document.getElementById("edit-q-opt-1").value = q.options[1] || "";
@@ -2106,6 +2112,23 @@
       var arr = currentEditingTarget === 'practice' ? practiceDb : dbQuestions;
       var q = arr[currentEditingIndex];
 
+      var newId = document.getElementById("edit-q-id-input").value.trim();
+      if (!newId) {
+        alert("Mã câu hỏi không được để trống!");
+        return;
+      }
+
+      var isDuplicate = arr.some(function(item, i) {
+        return i !== currentEditingIndex && item.id.toLowerCase() === newId.toLowerCase();
+      });
+
+      if (isDuplicate) {
+        if (!confirm('Cảnh báo: Mã câu hỏi "' + newId + '" đã tồn tại trong ngân hàng này! Bạn có chắc chắn muốn đặt mã này không?')) {
+          return;
+        }
+      }
+
+      q.id = newId;
       q.content = document.getElementById("edit-q-content").value.trim();
       q.options = [
         document.getElementById("edit-q-opt-0").value.trim(),
@@ -2248,7 +2271,6 @@
       document.getElementById("btn-confirm-save-audit").addEventListener("click", confirmAddAuditedToStorage);
       document.getElementById("btn-cancel-audit").addEventListener("click", clearAuditBox);
 
-      // Nút xóa ngăn môn hiện tại & Xóa toàn bộ 8 ngăn
       document.getElementById("btn-clear-current-bank-drawer").addEventListener("click", function() {
         var subObj = SUBJECT_DRAWERS.find(function(s) { return s.code === currentBankDrawer; });
         var subName = subObj ? subObj.name : currentBankDrawer;
