@@ -165,7 +165,7 @@
                 </tr>
               </thead>
               <tbody id="student-history-tbody" class="divide-y text-slate-700">
-                <tr><td colspan="6" class="text-center py-6 text-slate-400">Chưa có lịch sử thi.</td></tr>
+                <tr><td colspan="6" class="text-center py-6 text-slate-400">Bạn chưa tham gia đợt thi nào.</td></tr>
               </tbody>
             </table>
           </div>
@@ -618,8 +618,7 @@
         history: []
       });
 
-      alert(`✓ ĐĂNG KÝ THÀNH CÔNG!
-Mã ID của bạn là: ${generatedId}`);
+      alert(`✓ ĐĂNG KÝ THÀNH CÔNG!\nMã ID của bạn là: ${generatedId}`);
       switchAuthTab('login');
       document.getElementById("login-username").value = username;
     }
@@ -1172,7 +1171,6 @@ Mã ID của bạn là: ${generatedId}`);
       document.getElementById("audit-action-box").classList.add("hidden");
     }
 
-    // Bộ phân tích KaTeX hỗ trợ mọi biểu thức toán học
     function parseKaTeX(text) {
       if (!text) return "";
       try {
@@ -1197,4 +1195,230 @@ Mã ID của bạn là: ${generatedId}`);
         container.innerHTML = `<div class="text-center py-12 text-slate-400 font-medium">Ngân hàng đề gốc đang trống. Vui lòng sử dụng tab AI Thẩm Định để tải đề lên!</div>`;
         return;
       }
-      container.innerHTML = dbQuestions.map
+      container.innerHTML = dbQuestions.map((q, idx) => `
+        <div class="p-5 bg-slate-50 border rounded-2xl space-y-3 shadow-sm">
+          <div class="flex justify-between items-center">
+            <span class="font-mono font-bold text-blue-950 bg-amber-300 px-3 py-1 rounded text-sm">${q.id}</span>
+            <div class="space-x-2">
+              <span class="bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded text-xs">Mức độ: ${q.level}</span>
+              <button type="button" onclick="dbQuestions.splice(${idx}, 1); renderBankList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border leading-relaxed">${parseKaTeX(q.content)}</div>
+          ${q.imageSrc ? `<div class="my-2 text-center"><img src="${q.imageSrc}" class="max-h-48 mx-auto rounded shadow" /></div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderPracticeList() {
+      document.getElementById("practice-count").innerText = practiceQuestions.length;
+      const container = document.getElementById("practice-list");
+      if (practiceQuestions.length === 0) {
+        container.innerHTML = `<div class="text-center py-12 text-slate-400 font-medium">Ngân hàng luyện tập đang trống. Vui lòng tải đề luyện tập qua tab AI Thẩm Định!</div>`;
+        return;
+      }
+      container.innerHTML = practiceQuestions.map((q, idx) => `
+        <div class="p-5 bg-slate-50 border rounded-2xl space-y-3 shadow-sm">
+          <div class="flex justify-between items-center">
+            <span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-3 py-1 rounded text-sm">${q.id}</span>
+            <button type="button" onclick="practiceQuestions.splice(${idx}, 1); renderPracticeList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border leading-relaxed">${parseKaTeX(q.content)}</div>
+          ${q.imageSrc ? `<div class="my-2 text-center"><img src="${q.imageSrc}" class="max-h-48 mx-auto rounded shadow" /></div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderExamsList() {
+      const container = document.getElementById("exams-list");
+      if (!container) return;
+      container.innerHTML = examsList.map((ex, idx) => `
+        <div class="p-5 bg-white border rounded-2xl flex justify-between items-center shadow-sm">
+          <div>
+            <h4 class="font-bold text-base text-blue-950">${ex.name}</h4>
+            <p class="text-slate-500 mt-1">⏰ ${ex.timeStr}</p>
+          </div>
+          <button type="button" onclick="examsList.splice(${idx}, 1); renderExamsList();" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+            🗑️ Xóa Đợt Thi
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function createNewExam() {
+      const name = document.getElementById("new-exam-name").value.trim();
+      const timeStr = document.getElementById("new-exam-time").value.trim();
+      if (!name) {
+        alert("Vui lòng nhập tên đợt thi!");
+        return;
+      }
+      examsList.push({
+        id: "EXAM-" + Date.now().toString().slice(-4),
+        name: name,
+        timeStr: timeStr || "Thời gian mở linh hoạt"
+      });
+      renderExamsList();
+      alert("✓ TẠO ĐỢT THI MỚI THÀNH CÔNG!");
+    }
+
+    function renderAdminList() {
+      const container = document.getElementById("admin-list-container");
+      if (!container) return;
+      container.innerHTML = admins.map((ad, idx) => `
+        <div class="p-3.5 bg-white border rounded-xl flex justify-between items-center">
+          <div>
+            <div class="font-bold text-blue-950">${ad.name}</div>
+            <div class="text-xs text-slate-500 font-mono">User: ${ad.username} • Pass: ${ad.password}</div>
+          </div>
+          ${admins.length > 1 ? `<button type="button" onclick="admins.splice(${idx}, 1); renderAdminList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function addNewAdminPrompt() {
+      const name = prompt("Tên quản trị viên:");
+      if (!name) return;
+      const username = prompt("Tên đăng nhập:");
+      if (!username) return;
+      const password = prompt("Mật khẩu:", "admin123") || "admin123";
+      admins.push({ name, username, password });
+      renderAdminList();
+      alert("✓ Đã thêm quản trị viên mới!");
+    }
+
+    function renderStudentsTable() {
+      const tbody = document.getElementById("students-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = students.map((st, idx) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-3.5 px-3 font-mono font-bold text-blue-900">${st.id}</td>
+          <td class="py-3.5 px-3 font-semibold cursor-pointer text-blue-600 hover:underline" onclick="openStudentDetailModal(${idx})">${st.name}</td>
+          <td class="py-3.5 px-3">${st.birthYear}</td>
+          <td class="py-3.5 px-3">${st.classUnit}</td>
+          <td class="py-3.5 px-3 font-mono">${st.password}</td>
+          <td class="py-3.5 px-3 text-center">
+            <span class="px-3 py-1 rounded-full font-bold text-xs ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}">
+              ${st.eligible ? '✓ ĐỦ ĐIỀU KIỆN' : '✗ KHÓA THI'}
+            </span>
+          </td>
+          <td class="py-3.5 px-3 text-right space-x-2">
+            <button type="button" onclick="students[${idx}].eligible = !students[${idx}].eligible; renderStudentsTable();" class="text-blue-600 font-bold hover:underline cursor-pointer">${st.eligible ? 'Khóa' : 'Mở'}</button>
+            <button type="button" onclick="students.splice(${idx}, 1); renderStudentsTable();" class="text-rose-600 font-bold hover:underline cursor-pointer">Xóa</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addNewStudentPrompt() {
+      const name = prompt("Họ và tên thí sinh:");
+      if (!name) return;
+      const birthYear = prompt("Năm sinh:", "2007") || "2007";
+      const classUnit = prompt("Đơn vị lớp:", "12A1") || "12A1";
+      const email = prompt("Email:", "hocsinh@gmail.com") || "";
+
+      const yShort = birthYear.slice(-2);
+      const sttNum = students.length + 1;
+      const sttStr = sttNum < 10 ? '00' + sttNum : (sttNum < 100 ? '0' + sttNum : '' + sttNum);
+      const generatedId = `${yShort}-${classUnit}-${sttStr}`;
+
+      students.push({
+        id: generatedId,
+        name: name,
+        username: "hs" + sttNum,
+        birthYear: birthYear,
+        classUnit: classUnit,
+        email: email,
+        password: "123",
+        eligible: true,
+        history: []
+      });
+
+      renderStudentsTable();
+      alert(`✓ Đã thêm thí sinh ${name} với ID: ${generatedId}!`);
+    }
+
+    function handleBulkAddStudents() {
+      const text = document.getElementById("bulk-students-input").value.trim();
+      if (!text) {
+        alert("Vui lòng nhập danh sách!");
+        return;
+      }
+      const lines = text.split('\n');
+      let count = 0;
+      lines.forEach(line => {
+        const parts = line.split(',').map(p => p.trim());
+        if (parts.length >= 1 && parts[0]) {
+          const name = parts[0];
+          const birthYear = parts[1] || "2007";
+          const classUnit = parts[2] || "12A1";
+          const email = parts[3] || "";
+
+          const yShort = birthYear.slice(-2);
+          const sttNum = students.length + 1;
+          const sttStr = sttNum < 10 ? '00' + sttNum : (sttNum < 100 ? '0' + sttNum : '' + sttNum);
+          const generatedId = `${yShort}-${classUnit}-${sttStr}`;
+
+          students.push({
+            id: generatedId,
+            name: name,
+            username: "hs" + sttNum,
+            birthYear: birthYear,
+            classUnit: classUnit,
+            email: email,
+            password: "123",
+            eligible: true,
+            history: []
+          });
+          count++;
+        }
+      });
+
+      document.getElementById("bulk-students-input").value = "";
+      renderStudentsTable();
+      alert(`✓ Đã thêm thành công ${count} học sinh!`);
+    }
+
+    function openStudentDetailModal(idx) {
+      const st = students[idx];
+      document.getElementById("modal-student-title").innerText = `Hồ Sơ & Điểm Thi: ${st.name} (${st.id})`;
+      const contentBox = document.getElementById("modal-student-content");
+
+      if (!st.history || st.history.length === 0) {
+        contentBox.innerHTML = `<p class="text-slate-500 py-6 text-center">Thí sinh này chưa tham gia đợt thi nào.</p>`;
+      } else {
+        contentBox.innerHTML = st.history.map(h => `
+          <div class="p-4 bg-slate-50 border rounded-2xl space-y-1">
+            <div class="font-bold text-blue-950">${h.examName}</div>
+            <div class="text-slate-600">Toán & Số liệu: <strong>${h.mathScore}/50</strong> | Đọc hiểu: <strong>${h.litScore}/50</strong> | Lựa chọn: <strong>${h.choiceScore}/50</strong></div>
+            <div class="text-emerald-800 font-black">Tổng điểm: ${h.totalScore}/150 (Nộp lúc: ${h.submitTime})</div>
+          </div>
+        `).join('');
+      }
+      document.getElementById("student-detail-modal").classList.remove("hidden");
+    }
+
+    function closeStudentDetailModal() {
+      document.getElementById("student-detail-modal").classList.add("hidden");
+    }
+
+    function exportStudentResultsCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,Mã ID,Họ và Tên,Lớp,Đợt Thi,Toán,Đọc Hiểu,Lựa Chọn,Tổng Điểm,Thời Gian Nộp\r\n";
+      students.forEach(st => {
+        if (st.history && st.history.length > 0) {
+          st.history.forEach(h => {
+            csvContent += `"${st.id}","${st.name}","${st.classUnit}","${h.examName}",${h.mathScore},${h.litScore},${h.choiceScore},${h.totalScore},"${h.submitTime}"\r\n`;
+          });
+        }
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Ket_Qua_Thi_HSA.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
