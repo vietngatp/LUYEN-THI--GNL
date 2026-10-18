@@ -132,6 +132,49 @@
     <!-- 2. PHÒNG HỌC VIÊN -->
     <div id="view-student" class="hidden space-y-6">
       <div id="student-hub" class="space-y-6">
+        
+        <!-- Khung nhắc nộp lệ phí kèm Mã QR, Số tiền và Cú pháp chuẩn -->
+        <div id="shub-fee-alert" class="hidden p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl shadow-sm space-y-4">
+          <div class="flex items-center gap-2 border-b border-amber-200 pb-2">
+            <span class="text-2xl">⚠️</span>
+            <h3 class="font-bold text-amber-950 text-base md:text-lg">THÔNG BÁO HOÀN TẤT LỆ PHÍ DỰ THI</h3>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <!-- Cột hiển thị mã QR -->
+            <div class="bg-white p-3 rounded-2xl border border-amber-200 text-center shadow-sm">
+              <span class="block text-xs font-bold text-slate-600 mb-2 uppercase">Mã QR Thanh Toán</span>
+              <img id="shub-fee-qr" src="" alt="Mã QR Lệ Phí" class="w-44 h-44 object-contain mx-auto rounded-xl border" />
+              <span id="shub-fee-no-qr" class="hidden text-xs text-slate-400 py-16 block font-medium">Chưa có mã QR</span>
+            </div>
+
+            <!-- Cột thông tin lệ phí và cú pháp chuyển khoản -->
+            <div class="md:col-span-2 space-y-3 text-sm">
+              <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-amber-200">
+                <span class="text-slate-600 font-semibold">Mức lệ phí đợt thi:</span>
+                <span id="shub-fee-amount" class="text-lg font-black text-rose-600">50.000 VNĐ</span>
+              </div>
+
+              <div class="p-3.5 bg-white rounded-xl border border-amber-200 space-y-1.5">
+                <span class="block text-xs font-bold text-slate-600 uppercase">Cú pháp nội dung chuyển khoản bắt buộc:</span>
+                <div class="flex items-center justify-between gap-2 p-2.5 bg-amber-50/80 border border-amber-300 rounded-lg font-mono font-bold text-blue-950 text-base">
+                  <span id="shub-fee-syntax">ID... chuyen tien dot ...</span>
+                  <button type="button" onclick="copyTransferSyntax()" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-blue-950 text-xs font-bold rounded shadow transition">
+                    Sao chép
+                  </button>
+                </div>
+                <p class="text-[12px] text-slate-500 italic mt-1">
+                  * Ví dụ: Thí sinh mã ID <code>09-12A1-15</code> nộp lệ phí đợt 3 thì ghi: <code>ID09-12A1-15 chuyen tien dot 3</code>
+                </p>
+              </div>
+
+              <div id="shub-fee-action-container" class="pt-1">
+                <!-- Nút hoặc trạng thái sẽ được cập nhật động bằng JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-white p-6 rounded-3xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div class="flex items-center gap-3">
@@ -438,12 +481,13 @@
         <div id="practice-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
-      <!-- Tab 4: Quản Lý Đợt Thi -->
+      <!-- Tab 4: Quản Lý Đợt Thi (Tải mã QR & Nhập lệ phí thi) -->
       <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-6">
-        <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Quản Lý Đợt Thi HSA (Bỏ Mật Khẩu, AI Sinh Đề Tự Động)</h2>
+        <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Quản Lý Đợt Thi HSA (Cấu Hình QR & Lệ Phí)</h2>
         <div class="p-5 bg-slate-50 rounded-2xl border space-y-4">
           <span class="font-bold text-sm uppercase text-slate-700 block">Tạo Đợt Thi Khảo Sát Mới:</span>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <label class="block font-bold mb-1">Tên đợt thi:</label>
               <input type="text" id="new-exam-name" value="Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026" class="w-full border rounded-xl p-2.5 bg-white font-semibold" />
@@ -452,11 +496,29 @@
               <label class="block font-bold mb-1">Thời gian mở đợt thi:</label>
               <input type="datetime-local" id="new-exam-time" class="w-full border rounded-xl p-2.5 bg-white font-semibold" />
             </div>
+            <div>
+              <label class="block font-bold mb-1">Số tiền lệ phí thi (VNĐ):</label>
+              <input type="text" id="new-exam-fee" value="50.000 VNĐ" placeholder="Ví dụ: 50.000 VNĐ" class="w-full border rounded-xl p-2.5 bg-white font-bold text-rose-600" />
+            </div>
           </div>
+
+          <!-- Tải mã QR tài khoản nhận tiền -->
+          <div class="p-3.5 bg-white border rounded-2xl space-y-2">
+            <span class="block text-xs font-bold text-slate-700 uppercase">Tải lên ảnh Mã QR tài khoản đóng lệ phí:</span>
+            <div class="flex flex-col md:flex-row items-center gap-4">
+              <input type="file" id="new-exam-qr-file" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
+              <div id="new-exam-qr-preview-box" class="hidden flex items-center gap-2 border p-1 rounded-xl bg-slate-50">
+                <img id="new-exam-qr-preview" src="" alt="Xem trước QR" class="w-14 h-14 object-contain rounded-lg border bg-white" />
+                <span class="text-xs text-emerald-700 font-bold">✓ Đã tải ảnh QR</span>
+              </div>
+            </div>
+          </div>
+
           <button type="button" id="btn-create-exam" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl text-sm shadow transition">
             + Kích Hoạt & Mở Đợt Thi Mới
           </button>
         </div>
+
         <div class="space-y-3">
           <span class="font-bold text-sm uppercase text-slate-700 block">Danh sách đợt thi:</span>
           <div id="exams-list" class="space-y-3"></div>
@@ -478,8 +540,8 @@
         <div class="space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-3">
             <div>
-              <h3 class="text-lg font-bold text-blue-950">Danh Sách Thí Sinh & Học Viên</h3>
-              <p class="text-xs text-slate-500">Mã ID: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code>. Bấm vào tên học sinh để xem kết quả điểm.</p>
+              <h3 class="text-lg font-bold text-blue-950">Danh Sách Thí Sinh & Phê Duyệt Quyền Thi</h3>
+              <p class="text-xs text-slate-500">Mã ID: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code>. Bấm duyệt để mở khóa quyền thi cho học viên.</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <label class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow cursor-pointer">
@@ -503,7 +565,8 @@
                   <th class="py-3 px-3">Username</th>
                   <th class="py-3 px-3">Mật Khẩu</th>
                   <th class="py-3 px-3">Lớp</th>
-                  <th class="py-3 px-3 text-center">Đủ Điều Kiện Thi</th>
+                  <th class="py-3 px-3 text-center">Trạng Thái Lệ Phí</th>
+                  <th class="py-3 px-3 text-center">Quyền Thi</th>
                   <th class="py-3 px-3 text-right">Thao Tác</th>
                 </tr>
               </thead>
@@ -560,7 +623,7 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // --- 1. DỮ LIỆU CỐT LÕI (ĐÃ LÀM SẠCH HOÀN TOÀN ĐỂ NẠP ĐỀ) ---
+    // --- 1. DỮ LIỆU CỐT LÕI ---
     var currentUser = null;
 
     var adminAccounts = [
@@ -576,20 +639,29 @@
         classUnit: "12A1",
         email: "an.nguyen@example.com",
         password: "123",
-        eligible: true,
+        eligible: false,          // Mặc định khóa thi
+        feeStatus: 'unpaid',      // 'unpaid' | 'pending' | 'approved'
         takenQuestionIds: [],
         examHistory: []
       }
     ];
 
+    // Đợt thi kèm Lệ phí thi và Mã QR mẫu
     var exams = [
-      { id: "EXAM-HSA-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", openTime: "2026-10-25T08:00" }
+      {
+        id: "EXAM-HSA-01",
+        name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026",
+        openTime: "2026-10-25T08:00",
+        status: 'open',
+        feeAmount: "50.000 VNĐ",
+        qrImage: "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=HSA2026_LE_PHI_THI"
+      }
     ];
 
-    // Ngân hàng đề làm sạch 100% để quản trị viên tải đề lên
     var dbQuestions = [];
     var practiceDb = [];
     var tempAuditQuestions = [];
+    var tempNewExamQR = ""; // Biến tạm lưu ảnh QR khi tạo đợt thi mới
 
     // --- 2. HÀM RENDER KATEX ---
     function parseKaTeX(text) {
@@ -693,13 +765,14 @@
         classUnit: cls,
         email: email,
         password: pass,
-        eligible: true,
+        eligible: false,          // Mặc định khóa thi
+        feeStatus: 'unpaid',      // Mặc định chưa nộp lệ phí
         takenQuestionIds: [],
         examHistory: []
       };
 
       students.push(newStudent);
-      alert("✓ Đăng ký thành công! Mã định danh học sinh: " + newId + ". Hãy đăng nhập để bắt đầu.");
+      alert("✓ Đăng ký thành công! Mã định danh: " + newId + ". Tài khoản mặc định bị khóa quyền thi cho đến khi hoàn tất lệ phí.");
       switchAuthTab('login');
       document.getElementById("login-username").value = username;
       document.getElementById("login-password").value = "";
@@ -759,24 +832,94 @@
       }
     }
 
+    // Trích xuất số thứ tự đợt thi từ chuỗi tên đợt thi (Ví dụ: "Đợt 1 - ..." -> "1")
+    function extractExamRoundNumber(examName) {
+      if (!examName) return "1";
+      var match = examName.match(/đợt\s*(\d+)/i);
+      return match ? match[1] : "1";
+    }
+
+    // Cập nhật giao diện phòng học viên & hiển thị QR, Lệ phí, Cú pháp chuyển khoản
     function updateStudentHubData() {
       if (!currentUser || currentUser.role !== 'student') return;
       document.getElementById("shub-name").innerText = currentUser.name;
       document.getElementById("shub-id").innerText = currentUser.id;
       document.getElementById("shub-class").innerText = "Lớp: " + currentUser.classUnit;
-      document.getElementById("shub-active-exam").innerText = exams[0] ? exams[0].name : "Chưa có đợt thi";
+      
+      var activeEx = exams[0];
+      var exText = activeEx ? activeEx.name + (activeEx.status === 'closed' ? ' (ĐÃ ĐÓNG)' : '') : "Chưa có đợt thi";
+      document.getElementById("shub-active-exam").innerText = exText;
 
       var statusEl = document.getElementById("shub-status");
+      var alertBox = document.getElementById("shub-fee-alert");
+      var actionBox = document.getElementById("shub-fee-action-container");
+
       if (currentUser.eligible) {
         statusEl.className = "px-4 py-2 rounded-2xl text-sm font-bold border bg-emerald-50 text-emerald-800 border-emerald-200";
         statusEl.innerText = "✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI";
+        alertBox.classList.add("hidden");
       } else {
         statusEl.className = "px-4 py-2 rounded-2xl text-sm font-bold border bg-rose-50 text-rose-800 border-rose-200";
-        statusEl.innerText = "✗ CHƯA ĐỦ ĐIỀU KIỆN (BỊ KHÓA THI)";
+        statusEl.innerText = "✗ ĐANG KHÓA QUYỀN THI";
+        alertBox.classList.remove("hidden");
+
+        // Cập nhật số tiền lệ phí
+        var feeAmt = activeEx && activeEx.feeAmount ? activeEx.feeAmount : "50.000 VNĐ";
+        document.getElementById("shub-fee-amount").innerText = feeAmt;
+
+        // Cập nhật mã QR
+        var qrImgEl = document.getElementById("shub-fee-qr");
+        var noQrEl = document.getElementById("shub-fee-no-qr");
+        if (activeEx && activeEx.qrImage) {
+          qrImgEl.src = activeEx.qrImage;
+          qrImgEl.classList.remove("hidden");
+          noQrEl.classList.add("hidden");
+        } else {
+          qrImgEl.classList.add("hidden");
+          noQrEl.classList.remove("hidden");
+        }
+
+        // Tạo cú pháp chuyển tiền chuẩn: ID[mã ID thí sinh] chuyen tien dot[đợt thi]
+        var roundNum = extractExamRoundNumber(activeEx ? activeEx.name : "Đợt 1");
+        var syntaxStr = "ID" + currentUser.id + " chuyen tien dot " + roundNum;
+        document.getElementById("shub-fee-syntax").innerText = syntaxStr;
+
+        // Trạng thái nút bấm
+        if (currentUser.feeStatus === 'pending') {
+          actionBox.innerHTML = '<span class="px-4 py-2.5 bg-amber-200 text-amber-950 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-amber-300">' +
+            '⏳ ĐÃ BÁO NỘP PHÍ: CHỜ QUẢN TRỊ DUYỆT' +
+          '</span>';
+        } else {
+          actionBox.innerHTML = '<button type="button" onclick="requestFeeApproval()" class="w-full md:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow transition">' +
+            'Tôi Đã Nộp Lệ Phí - Yêu Cầu Mở Khóa' +
+          '</button>';
+        }
       }
     }
 
-    // --- 4. THUẬT TOÁN AI SINH ĐỀ CHUẨN ĐỦ 50 CÂU ---
+    // Sao chép nhanh cú pháp chuyển khoản
+    function copyTransferSyntax() {
+      var text = document.getElementById("shub-fee-syntax").innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert("✓ Đã sao chép cú pháp chuyển tiền: " + text);
+        });
+      } else {
+        alert("Cú pháp chuyển tiền: " + text);
+      }
+    }
+
+    // Thí sinh nhấn nút báo đã nộp lệ phí
+    function requestFeeApproval() {
+      currentUser.feeStatus = 'pending';
+      var idx = students.findIndex(function(s) { return s.id === currentUser.id; });
+      if (idx !== -1) students[idx].feeStatus = 'pending';
+
+      alert("✓ Yêu cầu mở khóa đã được gửi! Quản trị viên sẽ kiểm tra tài khoản và phê duyệt quyền dự thi cho bạn.");
+      updateStudentHubData();
+    }
+
+    // --- 4. PHÒNG THI CHUẨN 3 PHẦN ---
     var currentExamSession = {
       partIndex: 1,
       partChoice: 'english',
@@ -794,10 +937,17 @@
     var timeLeft = 0;
 
     function openExamChoiceModal() {
-      if (!currentUser.eligible) {
-        alert("Tài khoản của bạn hiện đang bị KHÓA quyền dự thi. Vui lòng liên hệ Quản trị viên để phê duyệt.");
+      var activeEx = exams[0];
+      if (!activeEx || activeEx.status === 'closed') {
+        alert("⚠️ THÔNG BÁO: Đợt thi hiện tại đã bị ĐÓNG hoặc tạm dừng. Thí sinh không thể vào phòng thi lúc này!");
         return;
       }
+
+      if (!currentUser.eligible) {
+        alert("⚠️ TÀI KHOẢN ĐANG BỊ KHÓA THI: Bạn chưa được kích hoạt quyền dự thi do chưa hoàn tất lệ phí. Vui lòng bấm 'Tôi Đã Nộp Lệ Phí' để chờ quản trị mở khóa.");
+        return;
+      }
+
       document.getElementById("student-choice-modal").classList.remove("hidden");
     }
 
@@ -833,7 +983,6 @@
       startExamPart(1);
     }
 
-    // Hàm tạo câu hỏi dự phòng chuẩn format khi ngân hàng chưa đủ 50 câu
     function createFallbackQuestion(subject, idx, level) {
       var subName = subject === 'T' ? 'Toán học & Xử lý số liệu' : (subject === 'V' ? 'Ngữ văn - Đọc hiểu' : (subject === 'E' ? 'Tiếng Anh' : 'Khoa học ' + subject));
       var lvlName = level === 'B' ? 'Biết' : (level === 'H' ? 'Thông hiểu' : (level === 'VD' ? 'Vận dụng' : 'Vận dụng cao'));
@@ -858,19 +1007,16 @@
       };
     }
 
-    // Thuật toán sinh đề đảm bảo luôn đủ chính xác 50 câu
     function generateQuestionsForPart(subject, count) {
       var studentTaken = currentUser.takenQuestionIds || [];
       var pool = dbQuestions.filter(function(q) {
         return q.subject === subject && !studentTaken.includes(q.id);
       });
 
-      // Nếu đã làm hết câu chưa trùng, lấy lại toàn bộ câu của môn này
       if (pool.length === 0) {
         pool = dbQuestions.filter(function(q) { return q.subject === subject; });
       }
 
-      // Phân bổ ma trận chuẩn: 25% B, 30% H, 30% VD, 15% VDC
       var targetB = Math.round(count * 0.25);
       var targetH = Math.round(count * 0.30);
       var targetVD = Math.round(count * 0.30);
@@ -887,13 +1033,11 @@
       grab('VD', targetVD);
       grab('VDC', targetVDC);
 
-      // Nếu còn thiếu trong ngân hàng, lấy tiếp các câu còn lại bất kỳ
       if (selected.length < count && pool.length > selected.length) {
         var rest = pool.filter(function(q) { return !selected.includes(q); });
         selected.push.apply(selected, rest.slice(0, count - selected.length));
       }
 
-      // Nếu ngân hàng tải lên chưa đủ số lượng (ví dụ bạn mới nạp 20 câu), tự động bù đủ chính xác count câu (50 câu)
       var currentIdx = selected.length + 1;
       var levelsCycle = ['B', 'H', 'VD', 'VDC'];
       while (selected.length < count) {
@@ -902,7 +1046,6 @@
         currentIdx++;
       }
 
-      // Ghi nhận ID các câu đã làm để chống trùng cho các đợt thi sau
       selected.forEach(function(q) {
         if (!studentTaken.includes(q.id)) studentTaken.push(q.id);
       });
@@ -922,13 +1065,11 @@
       if (partIdx === 1) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 1 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 1: Toán Học & Xử Lý Số Liệu (50 câu - 75 phút)";
-        // Luôn sinh đủ đúng 50 câu môn Toán
         activePartQuestions = generateQuestionsForPart('T', 50);
         timeLeft = 75 * 60;
       } else if (partIdx === 2) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 2 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 2: Văn Học - Đọc Hiểu (50 câu - 60 phút)";
-        // Luôn sinh đủ đúng 50 câu môn Văn
         activePartQuestions = generateQuestionsForPart('V', 50);
         timeLeft = 60 * 60;
       } else if (partIdx === 3) {
@@ -1117,7 +1258,7 @@
       updateStudentHubData();
     }
 
-    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH & TẢI ĐỀ ---
+    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH ---
     async function processUploadWithAI() {
       var fileInput = document.getElementById("file-uploader");
       var file = fileInput ? fileInput.files[0] : null;
@@ -1264,46 +1405,93 @@
       if (fileInput) fileInput.value = "";
     }
 
-    // --- 6. QUẢN LÝ ĐỢT THI ---
+    // --- 6. QUẢN LÝ ĐỢT THI (HIỂN THỊ LỆ PHÍ & QR CODE TRÊN DANH SÁCH) ---
     function renderExamsList() {
       var container = document.getElementById("exams-list");
       if (!container) return;
       container.innerHTML = exams.map(function(ex, idx) {
-        return '<div class="p-4 bg-white border rounded-2xl flex justify-between items-center text-sm shadow-sm">' +
-          '<div>' +
-            '<div class="flex items-center gap-2">' +
-              '<span class="font-bold text-base text-blue-950">' + ex.name + '</span>' +
-              '<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded font-bold">ĐANG MỞ</span>' +
+        var isOpen = ex.status !== 'closed';
+        var statusBadge = isOpen
+          ? '<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded font-bold">ĐANG MỞ</span>'
+          : '<span class="bg-rose-100 text-rose-800 text-xs px-2.5 py-0.5 rounded font-bold">ĐÃ ĐÓNG</span>';
+
+        var toggleBtn = isOpen
+          ? '<button type="button" onclick="toggleExamStatus(' + idx + ')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-3 py-1.5 rounded-xl transition text-xs">🔒 Đóng Đợt Thi</button>'
+          : '<button type="button" onclick="toggleExamStatus(' + idx + ')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-3 py-1.5 rounded-xl transition text-xs">🔓 Mở Lại Đợt Thi</button>';
+
+        var qrSnippet = ex.qrImage 
+          ? '<img src="' + ex.qrImage + '" class="w-10 h-10 object-contain rounded border bg-white" title="Mã QR nộp phí" />'
+          : '<span class="text-[11px] text-slate-400 italic">Chưa có QR</span>';
+
+        return '<div class="p-4 bg-white border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-sm shadow-sm">' +
+          '<div class="flex items-center gap-3">' +
+            qrSnippet +
+            '<div>' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="font-bold text-base text-blue-950">' + ex.name + '</span>' +
+                statusBadge +
+              '</div>' +
+              '<p class="text-xs text-slate-500 mt-1">' +
+                'Mở lúc: <strong>' + (ex.openTime ? ex.openTime.replace('T', ' ') : 'Mở tự do') + '</strong> | ' +
+                'Lệ phí: <strong class="text-rose-600">' + (ex.feeAmount || '50.000 VNĐ') + '</strong>' +
+              '</p>' +
             '</div>' +
-            '<p class="text-xs text-slate-500 mt-1">Mở lúc: <strong>' + (ex.openTime ? ex.openTime.replace('T', ' ') : 'Mở tự do') + '</strong> | Đề 3 phần chuẩn HSA</p>' +
           '</div>' +
-          '<button type="button" onclick="deleteExam(' + idx + ')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3.5 py-1.5 rounded-xl transition text-xs">' +
-            '🗑️ Xóa Đợt Thi' +
-          '</button>' +
+          '<div class="flex items-center gap-2">' +
+            toggleBtn +
+            '<button type="button" onclick="deleteExam(' + idx + ')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-xl transition text-xs">' +
+              '🗑️ Xóa' +
+            '</button>' +
+          '</div>' +
         '</div>';
       }).join('');
+    }
+
+    function toggleExamStatus(idx) {
+      if (exams[idx].status === 'closed') {
+        exams[idx].status = 'open';
+        alert('✓ Đã MỞ LẠI đợt thi: "' + exams[idx].name + '". Thí sinh đủ điều kiện có thể tiếp tục vào thi!');
+      } else {
+        exams[idx].status = 'closed';
+        alert('🔒 Đã ĐÓNG đợt thi: "' + exams[idx].name + '". Thí sinh sẽ không thể vào thi đợt này nữa!');
+      }
+      renderExamsList();
+      updateStudentHubData();
     }
 
     function createNewExam() {
       var name = (document.getElementById("new-exam-name").value || "").trim();
       var time = document.getElementById("new-exam-time").value;
+      var fee = (document.getElementById("new-exam-fee").value || "50.000 VNĐ").trim();
+
       if (!name) {
         alert("Vui lòng nhập tên đợt thi!");
         return;
       }
+
       exams.push({
         id: "EXAM-HSA-" + Date.now().toString().slice(-4),
         name: name,
-        openTime: time || new Date().toISOString().slice(0, 16)
+        openTime: time || new Date().toISOString().slice(0, 16),
+        status: 'open',
+        feeAmount: fee,
+        qrImage: tempNewExamQR || "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(name)
       });
+
+      // Reset form
+      tempNewExamQR = "";
+      document.getElementById("new-exam-qr-file").value = "";
+      document.getElementById("new-exam-qr-preview-box").classList.add("hidden");
+
       renderExamsList();
-      alert("✓ Đã kích hoạt đợt thi mới thành công!");
+      alert("✓ Đã kích hoạt đợt thi mới với mã QR và mức lệ phí thành công!");
     }
 
     function deleteExam(idx) {
       if (confirm('Bạn có chắc chắn muốn xóa đợt thi: "' + exams[idx].name + '"?')) {
         exams.splice(idx, 1);
         renderExamsList();
+        updateStudentHubData();
       }
     }
 
@@ -1360,17 +1548,27 @@
         var elBadge = st.eligible ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
         var elText = st.eligible ? '✓ ĐỦ ĐIỀU KIỆN' : '✗ KHÓA THI';
 
+        var feeBadge = '<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold text-[11px]">CHƯA NỘP</span>';
+        if (st.feeStatus === 'pending') {
+          feeBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[11px] animate-pulse">⏳ CHỜ DUYỆT</span>';
+        } else if (st.feeStatus === 'approved' || st.eligible) {
+          feeBadge = '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[11px]">ĐÃ NỘP</span>';
+        }
+
         return '<tr class="hover:bg-slate-50">' +
           '<td class="py-3 px-3 font-mono font-bold text-blue-900">' + st.id + '</td>' +
           '<td class="py-3 px-3 font-bold text-blue-800 hover:underline cursor-pointer" onclick="viewStudentScores(' + idx + ')">' + st.name + ' 📊</td>' +
           '<td class="py-3 px-3 font-mono text-slate-600">' + st.username + '</td>' +
           '<td class="py-3 px-3 font-mono text-rose-700 font-bold">' + st.password + '</td>' +
           '<td class="py-3 px-3 font-semibold">' + st.classUnit + '</td>' +
+          '<td class="py-3 px-3 text-center">' + feeBadge + '</td>' +
           '<td class="py-3 px-3 text-center">' +
-            '<button type="button" onclick="toggleStudentEligibility(' + idx + ')" class="px-2.5 py-1 rounded-full text-xs font-bold ' + elBadge + '">' + elText + '</button>' +
+            '<span class="px-2.5 py-1 rounded-full text-xs font-bold ' + elBadge + '">' + elText + '</span>' +
           '</td>' +
           '<td class="py-3 px-3 text-right space-x-2">' +
-            '<button type="button" onclick="viewStudentScores(' + idx + ')" class="text-indigo-600 font-bold hover:underline">Xem điểm</button>' +
+            '<button type="button" onclick="toggleStudentEligibility(' + idx + ')" class="text-blue-600 font-bold hover:underline">' +
+              (st.eligible ? 'Khóa quyền' : 'Duyệt phí & Bật quyền') +
+            '</button>' +
             '<button type="button" onclick="deleteStudent(' + idx + ')" class="text-rose-600 font-bold hover:underline">Xóa</button>' +
           '</td>' +
         '</tr>';
@@ -1379,7 +1577,17 @@
 
     function toggleStudentEligibility(idx) {
       students[idx].eligible = !students[idx].eligible;
+      if (students[idx].eligible) {
+        students[idx].feeStatus = 'approved';
+      } else {
+        students[idx].feeStatus = 'unpaid';
+      }
       renderStudentsTable();
+      if (currentUser && currentUser.id === students[idx].id) {
+        currentUser.eligible = students[idx].eligible;
+        currentUser.feeStatus = students[idx].feeStatus;
+        updateStudentHubData();
+      }
     }
 
     function deleteStudent(idx) {
@@ -1410,13 +1618,14 @@
         classUnit: cls,
         email: email,
         password: pass,
-        eligible: true,
+        eligible: false,          // Mặc định khóa thi
+        feeStatus: 'unpaid',
         takenQuestionIds: [],
         examHistory: []
       });
 
       renderStudentsTable();
-      alert("✓ Đã thêm thí sinh " + name + " với ID: " + newId + "!");
+      alert("✓ Đã thêm thí sinh " + name + " với ID: " + newId + "! (Mặc định ở trạng thái khóa thi)");
     }
 
     function importStudentsBatch(input) {
@@ -1451,7 +1660,8 @@
               classUnit: cls,
               email: em,
               password: pw,
-              eligible: true,
+              eligible: false,      // Mặc định khóa thi
+              feeStatus: 'unpaid',
               takenQuestionIds: [],
               examHistory: []
             });
@@ -1460,7 +1670,7 @@
         });
 
         renderStudentsTable();
-        alert("✓ Đã nạp thành công " + count + " học sinh từ tệp!");
+        alert("✓ Đã nạp thành công " + count + " học sinh từ tệp! (Mặc định ở trạng thái khóa thi)");
         input.value = "";
       };
       reader.readAsText(file, "UTF-8");
@@ -1720,6 +1930,23 @@
           alert("✓ Đã làm sạch toàn bộ Ngân Hàng Luyện Thi!");
         }
       });
+
+      // Xem trước ảnh QR khi chọn file ảnh QR
+      var qrFileInput = document.getElementById("new-exam-qr-file");
+      if (qrFileInput) {
+        qrFileInput.addEventListener("change", function(e) {
+          var f = e.target.files[0];
+          if (f) {
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+              tempNewExamQR = evt.target.result;
+              document.getElementById("new-exam-qr-preview").src = tempNewExamQR;
+              document.getElementById("new-exam-qr-preview-box").classList.remove("hidden");
+            };
+            reader.readAsDataURL(f);
+          }
+        });
+      }
 
       document.getElementById("btn-create-exam").addEventListener("click", createNewExam);
       document.getElementById("btn-add-admin").addEventListener("click", addNewAdminPrompt);
