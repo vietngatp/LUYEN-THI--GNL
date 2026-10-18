@@ -24,11 +24,11 @@ export default async function handler(req, res) {
     }
 
     const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và:
-1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $d: 2x - y + 3 = 0$).
+1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $SA \bot (ABC)$).
 2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
 3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
 4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
-5. Tự động sinh 3 câu tương đương cho mỗi câu gốc.
+5. Xác định mức độ khó (B: Biết, H: Hiểu, VD: Vận dụng, VDC: Vận dụng cao).
 
 Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
 {
@@ -40,19 +40,13 @@ Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
       "hasImage": true,
       "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "correctIndex": 0,
-      "level": "VD",
-      "solution": "Lời giải chi tiết",
-      "variants": [
-        { "id": "${subject}${examCode}-011", "content": "Câu tương đương 1", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 0 },
-        { "id": "${subject}${examCode}-012", "content": "Câu tương đương 2", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 1 },
-        { "id": "${subject}${examCode}-013", "content": "Câu tương đương 3", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 2 }
-      ]
+      "level": "VD"
     }
   ]
 }`;
 
-    // Khóa chặt model gemini-3.8-flash để tránh lỗi 404 hoặc xung đột tài khoản
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Sử dụng model gemini-2.5-flash hoặc gemini-3.8-flash
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
