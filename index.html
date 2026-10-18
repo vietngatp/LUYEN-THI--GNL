@@ -16,42 +16,43 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
   <style>
-    body { font-family: "Times New Roman", Times, serif; font-size: 16px; }
+    /* Lỗi 3: Tăng kích thước font hiển thị toàn hệ thống */
+    body { font-family: "Times New Roman", Times, serif; font-size: 18px; }
     .no-select { user-select: none; }
-    .katex { font-size: 1.15em; }
+    .katex { font-size: 1.25em !important; }
     .math-content { word-break: break-word; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col text-base">
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col text-lg">
 
   <!-- ==================== HEADER ==================== -->
   <header id="main-header" class="hidden bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-11 h-11 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-2xl shadow border-2 border-amber-300">HSA</div>
+        <div class="w-12 h-12 rounded-xl bg-amber-400 text-blue-950 flex items-center justify-center font-black text-2xl shadow border-2 border-amber-300">HSA</div>
         <div>
-          <h1 class="font-bold text-lg md:text-xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
-          <span class="text-xs md:text-sm text-blue-200">ĐHQGHN • CT GDPT 2018 • Phiên Bản Quản Trị V2</span>
+          <h1 class="font-bold text-xl md:text-2xl tracking-tight leading-none">HỆ THỐNG LUYỆN THI ĐÁNH GIÁ NĂNG LỰC</h1>
+          <span class="text-sm md:text-base text-blue-200">ĐHQGHN • CT GDPT 2018 • Phiên Bản Quản Trị V2</span>
         </div>
       </div>
 
       <div class="flex items-center space-x-3">
-        <div class="hidden md:flex items-center bg-blue-950/70 px-3.5 py-1.5 rounded-xl text-sm border border-blue-700/50">
+        <div class="hidden md:flex items-center bg-blue-950/70 px-4 py-2 rounded-xl text-base border border-blue-700/50">
           <span class="text-slate-300 mr-2">Xin chào:</span>
           <span class="text-amber-300 font-bold" id="header-user-name">-</span>
-          <span class="ml-2 text-xs bg-blue-800 text-blue-200 px-2 py-0.5 rounded font-mono" id="header-user-role">-</span>
+          <span class="ml-2 text-xs bg-blue-800 text-blue-200 px-2.5 py-1 rounded font-mono" id="header-user-role">-</span>
         </div>
 
         <div id="role-switcher" class="hidden flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow">
-          <button id="btn-view-student" type="button" class="px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow">
+          <button id="btn-view-student" type="button" class="px-4 py-2 text-sm md:text-base font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow">
             Phòng Học Viên
           </button>
-          <button id="btn-view-admin" type="button" class="px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white">
+          <button id="btn-view-admin" type="button" class="px-4 py-2 text-sm md:text-base font-bold rounded-lg transition text-blue-200 hover:text-white">
             Phòng Quản Trị
           </button>
         </div>
 
-        <button id="btn-logout" type="button" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs md:text-sm font-bold shadow">
+        <button id="btn-logout" type="button" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm md:text-base font-bold shadow">
           Đăng Xuất
         </button>
       </div>
@@ -66,7 +67,7 @@
       <div class="text-center space-y-2 mb-6">
         <div class="w-16 h-16 bg-blue-900 text-amber-400 rounded-2xl flex items-center justify-center font-black text-3xl mx-auto shadow-md">HSA</div>
         <h2 class="text-2xl font-black text-blue-950">CỔNG LUYỆN THI HSA 2026</h2>
-        <p class="text-sm text-slate-500">Khảo sát năng lực chuẩn CT GDPT 2018</p>
+        <p class="text-base text-slate-500">Khảo sát năng lực chuẩn CT GDPT 2018</p>
       </div>
 
       <div class="flex border-b mb-6 text-base font-bold">
@@ -96,32 +97,32 @@
       <!-- Form Đăng Ký -->
       <div id="form-register" class="hidden space-y-3">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Họ và tên đầy đủ:</label>
-          <input type="text" id="reg-fullname" placeholder="Nguyễn Văn An" class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+          <label class="block text-sm font-bold text-slate-700 mb-1">Họ và tên đầy đủ:</label>
+          <input type="text" id="reg-fullname" placeholder="Nguyễn Văn An" class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Username:</label>
-            <input type="text" id="reg-username" placeholder="an123" class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+            <label class="block text-sm font-bold text-slate-700 mb-1">Username:</label>
+            <input type="text" id="reg-username" placeholder="an123" class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Năm sinh:</label>
-            <input type="number" id="reg-year" value="2007" class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+            <label class="block text-sm font-bold text-slate-700 mb-1">Năm sinh:</label>
+            <input type="number" id="reg-year" value="2007" class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Email:</label>
-            <input type="email" id="reg-email" placeholder="hocsinh@example.com" class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+            <label class="block text-sm font-bold text-slate-700 mb-1">Email:</label>
+            <input type="email" id="reg-email" placeholder="hocsinh@example.com" class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Đơn vị lớp:</label>
-            <input type="text" id="reg-class" placeholder="12A1" class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+            <label class="block text-sm font-bold text-slate-700 mb-1">Đơn vị lớp:</label>
+            <input type="text" id="reg-class" placeholder="12A1" class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Mật khẩu:</label>
-          <input type="password" id="reg-password" placeholder="Tự tạo mật khẩu..." class="w-full border rounded-xl p-2.5 text-sm bg-white outline-none" />
+          <label class="block text-sm font-bold text-slate-700 mb-1">Mật khẩu:</label>
+          <input type="password" id="reg-password" placeholder="Tự tạo mật khẩu..." class="w-full border rounded-xl p-3 text-base bg-white outline-none" />
         </div>
         <button id="btn-submit-register" type="button" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base shadow-lg transition mt-2">
           Xác Nhận Đăng Ký Tài Khoản
@@ -137,31 +138,31 @@
         <div id="shub-fee-alert" class="hidden p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl shadow-sm space-y-4">
           <div class="flex items-center gap-2 border-b border-amber-200 pb-2">
             <span class="text-2xl">⚠️</span>
-            <h3 class="font-bold text-amber-950 text-base md:text-lg">THÔNG BÁO HOÀN TẤT LỆ PHÍ DỰ THI</h3>
+            <h3 class="font-bold text-amber-950 text-lg">THÔNG BÁO HOÀN TẤT LỆ PHÍ DỰ THI</h3>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <div class="bg-white p-3 rounded-2xl border border-amber-200 text-center shadow-sm">
-              <span class="block text-xs font-bold text-slate-600 mb-2 uppercase">Mã QR Thanh Toán</span>
-              <img id="shub-fee-qr" src="" alt="Mã QR Lệ Phí" class="w-44 h-44 object-contain mx-auto rounded-xl border" />
-              <span id="shub-fee-no-qr" class="hidden text-xs text-slate-400 py-16 block font-medium">Chưa có mã QR</span>
+              <span class="block text-sm font-bold text-slate-600 mb-2 uppercase">Mã QR Thanh Toán</span>
+              <img id="shub-fee-qr" src="" alt="Mã QR Lệ Phí" class="w-48 h-48 object-contain mx-auto rounded-xl border" />
+              <span id="shub-fee-no-qr" class="hidden text-sm text-slate-400 py-16 block font-medium">Chưa có mã QR</span>
             </div>
 
-            <div class="md:col-span-2 space-y-3 text-sm">
-              <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-amber-200">
-                <span class="text-slate-600 font-semibold">Mức lệ phí đợt thi:</span>
-                <span id="shub-fee-amount" class="text-lg font-black text-rose-600">50.000 VNĐ</span>
+            <div class="md:col-span-2 space-y-3">
+              <div class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-amber-200">
+                <span class="text-slate-600 font-semibold text-base">Mức lệ phí đợt thi:</span>
+                <span id="shub-fee-amount" class="text-xl font-black text-rose-600">50.000 VNĐ</span>
               </div>
 
-              <div class="p-3.5 bg-white rounded-xl border border-amber-200 space-y-1.5">
+              <div class="p-4 bg-white rounded-xl border border-amber-200 space-y-2">
                 <span class="block text-xs font-bold text-slate-600 uppercase">Cú pháp nội dung chuyển khoản bắt buộc:</span>
-                <div class="flex items-center justify-between gap-2 p-2.5 bg-amber-50/80 border border-amber-300 rounded-lg font-mono font-bold text-blue-950 text-base">
+                <div class="flex items-center justify-between gap-2 p-3 bg-amber-50/80 border border-amber-300 rounded-xl font-mono font-bold text-blue-950 text-lg">
                   <span id="shub-fee-syntax">ID... chuyen tien dot ...</span>
-                  <button type="button" onclick="copyTransferSyntax()" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-blue-950 text-xs font-bold rounded shadow transition">
+                  <button type="button" onclick="copyTransferSyntax()" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-500 text-blue-950 text-xs font-bold rounded-lg shadow transition">
                     Sao chép
                   </button>
                 </div>
-                <p class="text-[12px] text-slate-500 italic mt-1">
+                <p class="text-xs text-slate-500 italic">
                   * Ví dụ: Thí sinh mã ID <code>09-12A1-15</code> nộp lệ phí đợt 3 thì ghi: <code>ID09-12A1-15 chuyen tien dot 3</code>
                 </p>
               </div>
@@ -174,15 +175,15 @@
         <div class="bg-white p-6 rounded-3xl border shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div class="flex items-center gap-3">
-              <h2 class="text-2xl font-bold text-slate-900" id="shub-name">-</h2>
-              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-sm px-3 py-1 rounded-full" id="shub-id">-</span>
-              <span class="text-sm bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded" id="shub-class">-</span>
+              <h2 class="text-2xl md:text-3xl font-bold text-slate-900" id="shub-name">-</h2>
+              <span class="bg-blue-100 text-blue-900 font-mono font-bold text-base px-3.5 py-1 rounded-full" id="shub-id">-</span>
+              <span class="text-base bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded" id="shub-class">-</span>
             </div>
-            <p class="text-sm text-slate-500 mt-2">Đợt thi hiện tại: <strong id="shub-active-exam" class="text-blue-950 font-bold">-</strong></p>
+            <p class="text-base text-slate-500 mt-2">Đợt thi hiện tại: <strong id="shub-active-exam" class="text-blue-950 font-bold">-</strong></p>
           </div>
           <div class="flex items-center gap-3">
-            <span id="shub-status" class="px-4 py-2 rounded-2xl text-sm font-bold border">-</span>
-            <button type="button" id="btn-open-change-pass" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold border">
+            <span id="shub-status" class="px-4 py-2 rounded-2xl text-base font-bold border">-</span>
+            <button type="button" id="btn-open-change-pass" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-base font-bold border">
               🔑 Đổi Mật Khẩu
             </button>
           </div>
@@ -192,12 +193,12 @@
           <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div class="w-14 h-14 bg-indigo-50 text-indigo-700 rounded-2xl flex items-center justify-center font-black text-3xl mb-3">📖</div>
-              <h3 class="text-xl font-bold text-slate-900 mb-1">1. Phòng Luyện Tập Tự Do</h3>
-              <p class="text-sm text-slate-500 leading-relaxed">
+              <h3 class="text-xl md:text-2xl font-bold text-slate-900 mb-2">1. Phòng Luyện Tập Tự Do</h3>
+              <p class="text-base text-slate-600 leading-relaxed">
                 Rèn luyện câu hỏi theo chuyên đề bám sát Chương trình GDPT 2018. Hiển thị công thức KaTeX, phân loại rõ độ khó Biết, Hiểu, Vận dụng.
               </p>
             </div>
-            <button type="button" id="btn-start-practice" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-base shadow transition">
+            <button type="button" id="btn-start-practice" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-lg shadow transition">
               Vào Luyện Tập Chuyên Đề (30 câu)
             </button>
           </div>
@@ -205,12 +206,12 @@
           <div class="bg-white p-6 rounded-3xl border-2 border-blue-600/40 shadow-sm space-y-4 flex flex-col justify-between">
             <div>
               <div class="w-14 h-14 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center font-black text-3xl mb-3">🎓</div>
-              <h3 class="text-xl font-bold text-slate-900 mb-1">2. Phòng Thi Chính Thức HSA</h3>
-              <p class="text-sm text-slate-500 leading-relaxed mb-3">
+              <h3 class="text-xl md:text-2xl font-bold text-slate-900 mb-2">2. Phòng Thi Chính Thức HSA</h3>
+              <p class="text-base text-slate-600 leading-relaxed mb-3">
                 Chuỗi 3 phần thi liên tiếp: Toán & Xử lý số liệu (50 câu - 75p) ➔ Đọc hiểu Văn (50 câu - 60p) ➔ Phần Tự chọn (50 câu - 60p).
               </p>
             </div>
-            <button type="button" id="btn-prompt-exam-choice" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-base shadow-lg transition">
+            <button type="button" id="btn-prompt-exam-choice" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-lg shadow-lg transition">
               Vào Phòng Thi Khảo Sát
             </button>
           </div>
@@ -221,37 +222,37 @@
       <div id="student-choice-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white max-w-xl w-full rounded-3xl p-6 shadow-2xl border space-y-5">
           <h3 class="text-xl font-bold text-blue-950 border-b pb-3">Lựa Chọn Môn Thi Phần 3 (Phần Tự Chọn)</h3>
-          <div class="space-y-3 text-sm">
-            <label class="flex items-center gap-3 p-3.5 border rounded-2xl cursor-pointer hover:bg-slate-50">
+          <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer hover:bg-slate-50">
               <input type="radio" name="part3Choice" value="english" checked class="w-5 h-5 text-blue-600" />
               <div>
-                <span class="font-bold text-slate-900 block">Lựa chọn 1: Tiếng Anh (50 câu - 60 phút)</span>
-                <span class="text-xs text-slate-500">Mỗi câu 1 điểm, tối đa 50 điểm.</span>
+                <span class="font-bold text-slate-900 block text-base">Lựa chọn 1: Tiếng Anh (50 câu - 60 phút)</span>
+                <span class="text-sm text-slate-500">Mỗi câu 1 điểm, tối đa 50 điểm.</span>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 border rounded-2xl cursor-pointer hover:bg-slate-50">
+            <label class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer hover:bg-slate-50">
               <input type="radio" name="part3Choice" value="combo" class="w-5 h-5 text-blue-600" />
               <div>
-                <span class="font-bold text-slate-900 block">Lựa chọn 2: Tổ Hợp 3 Môn Tự Chọn (50 điểm - 60 phút)</span>
-                <span class="text-xs text-slate-500">Mỗi môn 17 câu (= 51 câu). Hệ thống ngẫu nhiên cho 1 câu điểm 0.</span>
+                <span class="font-bold text-slate-900 block text-base">Lựa chọn 2: Tổ Hợp 3 Môn Tự Chọn (50 điểm - 60 phút)</span>
+                <span class="text-sm text-slate-500">Mỗi môn 17 câu (= 51 câu). Hệ thống ngẫu nhiên cho 1 câu điểm 0.</span>
               </div>
             </label>
 
             <div id="combo-subjects-box" class="hidden pl-6 pt-2 space-y-2 border-l-2 border-blue-500">
-              <span class="font-bold text-xs text-blue-900 block uppercase">Chọn đúng 3 môn:</span>
-              <div class="grid grid-cols-3 gap-2 text-sm font-semibold">
-                <label class="flex items-center gap-2"><input type="checkbox" value="L" class="combo-sub-check" /> Vật lý</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="H" class="combo-sub-check" /> Hóa học</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="B" class="combo-sub-check" /> Sinh học</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="S" class="combo-sub-check" /> Lịch sử</label>
-                <label class="flex items-center gap-2"><input type="checkbox" value="D" class="combo-sub-check" /> Địa lý</label>
+              <span class="font-bold text-sm text-blue-900 block uppercase">Chọn đúng 3 môn:</span>
+              <div class="grid grid-cols-3 gap-3 text-base font-semibold">
+                <label class="flex items-center gap-2"><input type="checkbox" value="L" class="combo-sub-check w-4 h-4" /> Vật lý</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="H" class="combo-sub-check w-4 h-4" /> Hóa học</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="B" class="combo-sub-check w-4 h-4" /> Sinh học</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="S" class="combo-sub-check w-4 h-4" /> Lịch sử</label>
+                <label class="flex items-center gap-2"><input type="checkbox" value="D" class="combo-sub-check w-4 h-4" /> Địa lý</label>
               </div>
             </div>
           </div>
           <div class="flex gap-3 pt-3 border-t">
-            <button type="button" id="btn-close-exam-choice" class="flex-1 py-2.5 border rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">Hủy</button>
-            <button type="button" id="btn-confirm-start-exam" class="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm shadow">
+            <button type="button" id="btn-close-exam-choice" class="flex-1 py-3 border rounded-xl text-base font-bold text-slate-600 hover:bg-slate-50">Hủy</button>
+            <button type="button" id="btn-confirm-start-exam" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-base shadow">
               Bắt Đầu Làm Bài Thi
             </button>
           </div>
@@ -263,19 +264,19 @@
         <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div>
             <div class="flex items-center gap-2">
-              <span id="exam-part-badge" class="text-xs font-black text-white bg-blue-800 px-3 py-1 rounded-full uppercase">PHẦN 1</span>
-              <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
+              <span id="exam-part-badge" class="text-sm font-black text-white bg-blue-800 px-3.5 py-1 rounded-full uppercase">PHẦN 1</span>
+              <span class="text-sm font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-md border border-rose-200">
                 ⚠️ Cảnh báo chống gian lận: Không rời khỏi màn hình
               </span>
             </div>
-            <h2 id="exam-part-title" class="text-lg font-bold text-slate-900 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
+            <h2 id="exam-part-title" class="text-xl font-bold text-slate-900 mt-1">Phần 1: Toán học & Xử lý số liệu</h2>
           </div>
           <div class="flex items-center space-x-4 self-end md:self-auto">
             <div class="text-right">
               <span class="text-xs text-slate-500 block uppercase font-bold">Thời gian còn lại</span>
-              <span id="exam-timer" class="font-mono text-2xl font-black text-rose-600">75:00</span>
+              <span id="exam-timer" class="font-mono text-3xl font-black text-rose-600">75:00</span>
             </div>
-            <button type="button" id="btn-submit-part" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow">
+            <button type="button" id="btn-submit-part" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-base shadow">
               Nộp Bài Phần Này
             </button>
           </div>
@@ -284,84 +285,85 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div class="lg:col-span-3 bg-white p-6 md:p-8 rounded-2xl border shadow-sm space-y-6">
             <div class="flex justify-between items-center border-b pb-3">
-              <span id="q-number" class="font-bold text-base text-blue-900">Câu 1</span>
+              <span id="q-number" class="font-bold text-lg text-blue-900">Câu 1</span>
               <div class="flex items-center gap-2">
-                <span id="q-level" class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">Mức: H</span>
-                <span id="q-code" class="font-mono text-xs text-slate-500">T01-01</span>
+                <span id="q-level" class="text-sm font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-700">Mức: H</span>
+                <span id="q-code" class="font-mono text-sm text-slate-500">T01-01</span>
               </div>
             </div>
-            <div id="q-content" class="text-base leading-relaxed text-slate-900 space-y-4"></div>
+            <!-- Lỗi 1 & Lỗi 3: Nội dung câu hỏi cỡ chữ to và hiển thị ảnh đúng vị trí -->
+            <div id="q-content" class="text-lg md:text-xl leading-relaxed text-slate-900 space-y-4"></div>
             <div id="q-options" class="space-y-3 pt-2"></div>
             <div class="flex justify-between pt-6 border-t">
-              <button type="button" id="btn-prev-q" class="px-4 py-2 border rounded-xl text-sm font-bold hover:bg-slate-50">← Câu trước</button>
-              <button type="button" id="btn-next-q" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow">Câu sau →</button>
+              <button type="button" id="btn-prev-q" class="px-5 py-2.5 border rounded-xl text-base font-bold hover:bg-slate-50">← Câu trước</button>
+              <button type="button" id="btn-next-q" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-base font-bold shadow">Câu sau →</button>
             </div>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border shadow-sm h-fit space-y-3">
             <div class="flex justify-between items-center">
-              <h4 class="text-xs font-bold text-slate-700 uppercase">Mục lục câu hỏi</h4>
-              <span id="answered-count" class="text-xs font-bold text-emerald-700">0 / 50</span>
+              <h4 class="text-sm font-bold text-slate-700 uppercase">Mục lục câu hỏi</h4>
+              <span id="answered-count" class="text-sm font-bold text-emerald-700">0 / 50</span>
             </div>
-            <div id="q-matrix" class="grid grid-cols-5 gap-1.5 max-h-[420px] overflow-y-auto pr-1"></div>
+            <div id="q-matrix" class="grid grid-cols-5 gap-2 max-h-[460px] overflow-y-auto pr-1"></div>
           </div>
         </div>
       </div>
 
       <!-- Màn hình kết quả tổng thể -->
       <div id="student-result" class="hidden bg-white p-8 rounded-3xl border shadow-sm space-y-6 text-center max-w-2xl mx-auto">
-        <h2 class="text-2xl font-black text-slate-900">KẾT QUẢ BÀI THI HSA</h2>
+        <h2 class="text-3xl font-black text-slate-900">KẾT QUẢ BÀI THI HSA</h2>
         <div class="bg-blue-50 border border-blue-200 px-8 py-5 rounded-3xl inline-block">
-          <span class="text-xs text-blue-700 font-bold uppercase tracking-wider">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
+          <span class="text-sm text-blue-700 font-bold uppercase tracking-wider">Tổng Điểm Quy Đổi HSA (Thang 150)</span>
           <div id="final-total-score" class="text-5xl font-black text-blue-950 mt-1">0 / 150</div>
         </div>
-        <div class="grid grid-cols-3 gap-3 text-sm">
-          <div class="p-3 bg-slate-50 border rounded-2xl">
-            <span class="block text-slate-500 text-xs font-bold">Phần 1: Toán học</span>
-            <span id="res-part1" class="text-xl font-bold text-slate-900">0 / 50</span>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-3.5 bg-slate-50 border rounded-2xl">
+            <span class="block text-slate-500 text-sm font-bold">Phần 1: Toán học</span>
+            <span id="res-part1" class="text-2xl font-bold text-slate-900">0 / 50</span>
           </div>
-          <div class="p-3 bg-slate-50 border rounded-2xl">
-            <span class="block text-slate-500 text-xs font-bold">Phần 2: Đọc hiểu</span>
-            <span id="res-part2" class="text-xl font-bold text-slate-900">0 / 50</span>
+          <div class="p-3.5 bg-slate-50 border rounded-2xl">
+            <span class="block text-slate-500 text-sm font-bold">Phần 2: Đọc hiểu</span>
+            <span id="res-part2" class="text-2xl font-bold text-slate-900">0 / 50</span>
           </div>
-          <div class="p-3 bg-slate-50 border rounded-2xl">
-            <span class="block text-slate-500 text-xs font-bold">Phần 3: Tự chọn</span>
-            <span id="res-part3" class="text-xl font-bold text-slate-900">0 / 50</span>
+          <div class="p-3.5 bg-slate-50 border rounded-2xl">
+            <span class="block text-slate-500 text-sm font-bold">Phần 3: Tự chọn</span>
+            <span id="res-part3" class="text-2xl font-bold text-slate-900">0 / 50</span>
           </div>
         </div>
         <div>
-          <button type="button" id="btn-back-hub" class="px-8 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-base shadow transition">
+          <button type="button" id="btn-back-hub" class="px-8 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-lg shadow transition">
             Trở Về Bảng Điều Khiển
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 3. PHÒNG QUẢN TRỊ (ĐẦY ĐỦ 5 PHÂN HỆ) -->
+    <!-- 3. PHÒNG QUẢN TRỊ -->
     <div id="view-admin" class="hidden space-y-6">
-      <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2 text-sm font-bold">
-        <button id="tab-btn-audit" type="button" class="px-4 py-2 rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
+      <div class="bg-white p-2.5 rounded-2xl shadow-sm border flex flex-wrap gap-2 font-bold text-base">
+        <button id="tab-btn-audit" type="button" class="px-4 py-2.5 rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400">
           📤 1. AI Thẩm Định & Nạp Đề
         </button>
-        <button id="tab-btn-bank" type="button" class="px-4 py-2 rounded-xl transition text-slate-700 hover:bg-slate-100">
+        <button id="tab-btn-bank" type="button" class="px-4 py-2.5 rounded-xl transition text-slate-700 hover:bg-slate-100">
           📚 2. Ngân Hàng Đề Gốc (<span id="bank-count">0</span>)
         </button>
-        <button id="tab-btn-practice" type="button" class="px-4 py-2 rounded-xl transition text-slate-700 hover:bg-slate-100">
+        <button id="tab-btn-practice" type="button" class="px-4 py-2.5 rounded-xl transition text-slate-700 hover:bg-slate-100">
           🎯 3. Ngân Hàng Luyện Thi (<span id="practice-count">0</span>)
         </button>
-        <button id="tab-btn-exams" type="button" class="px-4 py-2 rounded-xl transition text-slate-700 hover:bg-slate-100">
+        <button id="tab-btn-exams" type="button" class="px-4 py-2.5 rounded-xl transition text-slate-700 hover:bg-slate-100">
           🛠️ 4. Quản Lý Đợt Thi
         </button>
-        <button id="tab-btn-users" type="button" class="px-4 py-2 rounded-xl transition text-slate-700 hover:bg-slate-100">
+        <button id="tab-btn-users" type="button" class="px-4 py-2.5 rounded-xl transition text-slate-700 hover:bg-slate-100">
           👥 5. Quản Lý Học Viên & Admin
         </button>
       </div>
 
-      <!-- Tab 1: AI Thẩm Định & Nạp Đề -->
+      <!-- Tab 1: AI Thẩm Định -->
       <div id="admin-tab-audit" class="bg-white p-6 rounded-3xl shadow-sm border space-y-6">
         <div class="border-b pb-3">
-          <h2 class="text-xl font-bold text-blue-950">AI Thẩm Định Đề Thi (gemini-3.8-flash)</h2>
-          <p class="text-sm text-slate-500">Tải file PDF hoặc Ảnh để AI bóc tách chính xác 100% công thức toán KaTeX.</p>
+          <h2 class="text-xl md:text-2xl font-bold text-blue-950">AI Thẩm Định Đề Thi (gemini-3.8-flash)</h2>
+          <p class="text-sm md:text-base text-slate-500">Tải file PDF hoặc Ảnh để AI bóc tách chính xác 100% công thức toán KaTeX.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -370,12 +372,12 @@
               <span class="font-bold text-blue-950 text-sm block uppercase">Cấu hình Đề Nạp:</span>
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Mục tiêu nạp đề:</label>
-                <div class="grid grid-cols-2 gap-3 text-sm font-bold">
-                  <label class="flex items-center gap-2 p-2.5 bg-white border rounded-xl cursor-pointer">
+                <div class="grid grid-cols-2 gap-3 font-bold text-base">
+                  <label class="flex items-center gap-2 p-3 bg-white border rounded-xl cursor-pointer">
                     <input type="radio" name="aiTarget" value="bank" checked />
                     <span>📥 Ngân hàng Đề Gốc</span>
                   </label>
-                  <label class="flex items-center gap-2 p-2.5 bg-white border rounded-xl cursor-pointer">
+                  <label class="flex items-center gap-2 p-3 bg-white border rounded-xl cursor-pointer">
                     <input type="radio" name="aiTarget" value="practice" />
                     <span>🎯 Ngân hàng Luyện Tập</span>
                   </label>
@@ -385,7 +387,7 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Môn thi:</label>
-                  <select id="audit-subject" class="w-full border rounded-xl p-2.5 text-sm font-bold bg-white">
+                  <select id="audit-subject" class="w-full border rounded-xl p-3 text-base font-bold bg-white">
                     <option value="T">[T] - Toán và xử lý số liệu</option>
                     <option value="V">[V] - Ngữ văn - Đọc hiểu</option>
                     <option value="L">[L] - Vật lý</option>
@@ -398,48 +400,48 @@
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Mã đề (Ví dụ: 01, 02):</label>
-                  <input type="text" id="audit-exam-code" value="01" class="w-full border rounded-xl p-2.5 text-sm font-mono font-bold text-blue-900 bg-white" />
+                  <input type="text" id="audit-exam-code" value="01" class="w-full border rounded-xl p-3 text-base font-mono font-bold text-blue-900 bg-white" />
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Gemini API Key:</label>
-                <input type="password" id="input-api-key" placeholder="Dán khóa API của bạn..." class="w-full border rounded-xl p-2.5 text-sm font-mono bg-white outline-none" />
+                <input type="password" id="input-api-key" placeholder="Dán khóa API của bạn..." class="w-full border rounded-xl p-3 text-base font-mono bg-white outline-none" />
               </div>
             </div>
 
             <div>
               <label class="block text-sm font-bold text-slate-700 mb-1">Chọn tệp đề thi (Khuyên dùng PDF hoặc Ảnh):</label>
-              <input type="file" id="file-uploader" accept=".pdf,.png,.jpg,.jpeg,.docx" class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-2xl p-1 bg-white shadow-sm" />
+              <input type="file" id="file-uploader" accept=".pdf,.png,.jpg,.jpeg,.docx" class="w-full text-base text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-2xl p-1 bg-white shadow-sm" />
             </div>
 
-            <button type="button" id="btn-process-ai" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-base shadow transition">
+            <button type="button" id="btn-process-ai" class="w-full py-4 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-lg shadow transition">
               🚀 Bắt Đầu Đọc File & Thẩm Định Bằng AI
             </button>
 
             <div id="ai-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-center space-y-2">
-              <div class="inline-block w-7 h-7 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-sm font-bold text-indigo-950">AI Engine đang phân tích đề thi và cấu trúc hóa câu hỏi...</p>
+              <div class="inline-block w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-base font-bold text-indigo-950">AI Engine đang phân tích đề thi và cấu trúc hóa câu hỏi...</p>
             </div>
           </div>
 
-          <div class="bg-slate-50 border border-dashed rounded-3xl p-5 flex flex-col justify-between text-sm">
+          <div class="bg-slate-50 border border-dashed rounded-3xl p-5 flex flex-col justify-between">
             <div id="audit-result-box" class="space-y-3">
               <div class="h-72 flex flex-col items-center justify-center text-slate-400 text-center">
-                <span class="text-4xl mb-2">📄</span>
-                <span class="font-bold text-slate-600 text-base">Chưa có kết quả bóc tách.</span>
-                <span class="text-xs text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>
+                <span class="text-5xl mb-2">📄</span>
+                <span class="font-bold text-slate-600 text-lg">Chưa có kết quả bóc tách.</span>
+                <span class="text-sm text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>
               </div>
             </div>
 
             <div id="audit-action-box" class="hidden pt-4 border-t mt-3 space-y-2">
               <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-2">
-                <span class="font-bold text-amber-900 block text-sm" id="confirm-msg">Xác nhận lưu vào hệ thống?</span>
+                <span class="font-bold text-amber-900 block text-base" id="confirm-msg">Xác nhận lưu vào hệ thống?</span>
                 <div class="flex gap-2">
-                  <button type="button" id="btn-confirm-save-audit" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow">
+                  <button type="button" id="btn-confirm-save-audit" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base shadow">
                     ✓ Xác Nhận Lưu
                   </button>
-                  <button type="button" id="btn-cancel-audit" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm">
+                  <button type="button" id="btn-cancel-audit" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-base">
                     ✕ Hủy
                   </button>
                 </div>
@@ -453,10 +455,10 @@
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đề Thi Thẩm Định)</h2>
-            <p class="text-xs text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
+            <h2 class="text-xl md:text-2xl font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đề Thi Thẩm Định)</h2>
+            <p class="text-sm md:text-base text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
           </div>
-          <button type="button" id="btn-clear-bank-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
+          <button type="button" id="btn-clear-bank-all" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold">
             🗑️ Xóa Sạch Ngân Hàng Đề Gốc
           </button>
         </div>
@@ -467,10 +469,10 @@
       <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Luyện Thi (Phân Loại CT GDPT 2018)</h2>
-            <p class="text-xs text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
+            <h2 class="text-xl md:text-2xl font-bold text-blue-950">Ngân Hàng Luyện Thi (Phân Loại CT GDPT 2018)</h2>
+            <p class="text-sm md:text-base text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
           </div>
-          <button type="button" id="btn-clear-practice-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
+          <button type="button" id="btn-clear-practice-all" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold">
             🗑️ Xóa Sạch Ngân Hàng Luyện Thi
           </button>
         </div>
@@ -479,53 +481,53 @@
 
       <!-- Tab 4: Quản Lý Đợt Thi -->
       <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-6">
-        <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Quản Lý Đợt Thi HSA (Cấu Hình QR & Lệ Phí)</h2>
+        <h2 class="text-xl md:text-2xl font-bold text-blue-950 border-b pb-3">Quản Lý Đợt Thi HSA (Cấu Hình QR & Lệ Phí)</h2>
         <div class="p-5 bg-slate-50 rounded-2xl border space-y-4">
-          <span class="font-bold text-sm uppercase text-slate-700 block">Tạo Đợt Thi Khảo Sát Mới:</span>
+          <span class="font-bold text-base uppercase text-slate-700 block">Tạo Đợt Thi Khảo Sát Mới:</span>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block font-bold mb-1">Tên đợt thi:</label>
-              <input type="text" id="new-exam-name" value="Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026" class="w-full border rounded-xl p-2.5 bg-white font-semibold" />
+              <label class="block font-bold mb-1 text-sm">Tên đợt thi:</label>
+              <input type="text" id="new-exam-name" value="Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026" class="w-full border rounded-xl p-3 bg-white font-semibold text-base" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Thời gian mở đợt thi:</label>
-              <input type="datetime-local" id="new-exam-time" class="w-full border rounded-xl p-2.5 bg-white font-semibold" />
+              <label class="block font-bold mb-1 text-sm">Thời gian mở đợt thi:</label>
+              <input type="datetime-local" id="new-exam-time" class="w-full border rounded-xl p-3 bg-white font-semibold text-base" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Số tiền lệ phí thi (VNĐ):</label>
-              <input type="text" id="new-exam-fee" value="50.000 VNĐ" placeholder="Ví dụ: 50.000 VNĐ" class="w-full border rounded-xl p-2.5 bg-white font-bold text-rose-600" />
+              <label class="block font-bold mb-1 text-sm">Số tiền lệ phí thi (VNĐ):</label>
+              <input type="text" id="new-exam-fee" value="50.000 VNĐ" placeholder="Ví dụ: 50.000 VNĐ" class="w-full border rounded-xl p-3 bg-white font-bold text-rose-600 text-base" />
             </div>
           </div>
 
-          <div class="p-3.5 bg-white border rounded-2xl space-y-2">
+          <div class="p-4 bg-white border rounded-2xl space-y-2">
             <span class="block text-xs font-bold text-slate-700 uppercase">Tải lên ảnh Mã QR tài khoản đóng lệ phí:</span>
             <div class="flex flex-col md:flex-row items-center gap-4">
-              <input type="file" id="new-exam-qr-file" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
+              <input type="file" id="new-exam-qr-file" accept="image/*" class="text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
               <div id="new-exam-qr-preview-box" class="hidden flex items-center gap-2 border p-1 rounded-xl bg-slate-50">
-                <img id="new-exam-qr-preview" src="" alt="Xem trước QR" class="w-14 h-14 object-contain rounded-lg border bg-white" />
-                <span class="text-xs text-emerald-700 font-bold">✓ Đã tải ảnh QR</span>
+                <img id="new-exam-qr-preview" src="" alt="Xem trước QR" class="w-16 h-16 object-contain rounded-lg border bg-white" />
+                <span class="text-sm text-emerald-700 font-bold">✓ Đã tải ảnh QR</span>
               </div>
             </div>
           </div>
 
-          <button type="button" id="btn-create-exam" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl text-sm shadow transition">
+          <button type="button" id="btn-create-exam" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-xl text-base shadow transition">
             + Kích Hoạt & Mở Đợt Thi Mới
           </button>
         </div>
 
         <div class="space-y-3">
-          <span class="font-bold text-sm uppercase text-slate-700 block">Danh sách đợt thi:</span>
+          <span class="font-bold text-base uppercase text-slate-700 block">Danh sách đợt thi:</span>
           <div id="exams-list" class="space-y-3"></div>
         </div>
       </div>
 
-      <!-- Tab 5: Quản Lý Học Viên & Admin -->
+      <!-- Tab 5: Quản Lý Học Viên -->
       <div id="admin-tab-users" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-8">
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-3">
-            <h3 class="text-lg font-bold text-blue-950">Danh Sách Quản Trị Viên</h3>
-            <button type="button" id="btn-add-admin" class="bg-blue-800 hover:bg-blue-900 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs shadow">
+            <h3 class="text-xl font-bold text-blue-950">Danh Sách Quản Trị Viên</h3>
+            <button type="button" id="btn-add-admin" class="bg-blue-800 hover:bg-blue-900 text-white font-bold px-4 py-2 rounded-xl text-sm shadow">
               + Thêm Quản Trị Viên Mới
             </button>
           </div>
@@ -535,24 +537,24 @@
         <div class="space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-3">
             <div>
-              <h3 class="text-lg font-bold text-blue-950">Danh Sách Thí Sinh & Phê Duyệt Quyền Thi</h3>
-              <p class="text-xs text-slate-500">Mã ID: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code>. Bấm duyệt để mở khóa quyền thi cho học viên.</p>
+              <h3 class="text-xl font-bold text-blue-950">Danh Sách Thí Sinh & Phê Duyệt Quyền Thi</h3>
+              <p class="text-sm text-slate-500">Mã ID: <code>[2 số cuối năm sinh]-[Lớp]-[STT]</code>. Bấm duyệt để mở khóa quyền thi cho học viên.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <label class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow cursor-pointer">
+              <label class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl text-sm shadow cursor-pointer">
                 📂 Tải Danh Sách Học Viên (.csv / .txt)
                 <input type="file" id="batch-file-input" accept=".csv,.txt" class="hidden" />
               </label>
-              <button type="button" id="btn-add-student-single" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow">
+              <button type="button" id="btn-add-student-single" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-sm shadow">
                 + Thêm Từng Học Sinh
               </button>
-              <button type="button" id="btn-export-csv" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow">
+              <button type="button" id="btn-export-csv" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 rounded-xl text-sm shadow">
                 📥 Xuất Bảng Điểm (CSV)
               </button>
             </div>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs md:text-sm">
+            <table class="w-full text-left text-base">
               <thead class="bg-slate-100 text-slate-700 border-b">
                 <tr>
                   <th class="py-3 px-3">Mã ID</th>
@@ -572,74 +574,70 @@
       </div>
     </div>
 
-    <!-- ==================== MODAL CHỈNH SỬA CÂU HỎI (HÌNH ẢNH / NỘI DUNG / ĐÁP ÁN) ==================== -->
+    <!-- MODAL SỬA CÂU HỎI -->
     <div id="modal-edit-question" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-2xl w-full rounded-3xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h3 class="text-lg font-bold text-blue-950">Chỉnh Sửa Câu Hỏi & Bổ Sung Hình Vẽ</h3>
-            <span class="text-xs text-slate-500 font-mono">Mã câu hỏi: <strong id="edit-q-id" class="text-blue-900"></strong></span>
+            <h3 class="text-xl font-bold text-blue-950">Chỉnh Sửa Câu Hỏi & Bổ Sung Hình Vẽ</h3>
+            <span class="text-sm text-slate-500 font-mono">Mã câu hỏi: <strong id="edit-q-id" class="text-blue-900"></strong></span>
           </div>
-          <button type="button" id="btn-close-edit-q-x" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+          <button type="button" id="btn-close-edit-q-x" class="text-slate-400 hover:text-slate-700 font-bold text-2xl">✕</button>
         </div>
 
-        <div class="space-y-3 text-sm">
-          <!-- Nội dung câu hỏi -->
+        <div class="space-y-4 text-base">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label class="block font-bold text-slate-700 text-xs">Nội dung câu hỏi (kèm KaTeX $...$):</label>
-              <button type="button" onclick="insertImageTagToContent()" class="text-xs text-blue-600 font-bold hover:underline cursor-pointer">
+              <label class="block font-bold text-slate-700 text-sm">Nội dung câu hỏi (kèm KaTeX $...$):</label>
+              <button type="button" onclick="insertImageTagToContent()" class="text-sm text-blue-600 font-bold hover:underline cursor-pointer">
                 + Chèn vị trí ảnh [HINH_ANH]
               </button>
             </div>
-            <textarea id="edit-q-content" rows="4" class="w-full border rounded-xl p-3 text-sm font-mono bg-white outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+            <textarea id="edit-q-content" rows="4" class="w-full border rounded-xl p-3 text-base font-mono bg-white outline-none focus:ring-2 focus:ring-blue-600"></textarea>
           </div>
 
-          <!-- Khu vực tải và bổ sung ảnh đồ thị / bảng biến thiên -->
-          <div class="p-3.5 bg-slate-50 border rounded-2xl space-y-2">
-            <label class="block font-bold text-slate-700 text-xs uppercase">Bổ sung / Thay đổi đồ thị, bảng biến thiên, hình vẽ:</label>
-            <input type="file" id="edit-q-img-file" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
+          <div class="p-4 bg-slate-50 border rounded-2xl space-y-2">
+            <label class="block font-bold text-slate-700 text-sm uppercase">Bổ sung / Thay đổi đồ thị, bảng biến thiên, hình vẽ:</label>
+            <input type="file" id="edit-q-img-file" accept="image/*" class="text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
             
-            <div id="edit-q-img-preview-box" class="hidden mt-2 p-2 bg-white rounded-xl border text-center space-y-2">
-              <img id="edit-q-img-preview" src="" alt="Hình ảnh câu hỏi" class="max-h-52 mx-auto rounded-lg border object-contain" />
-              <button type="button" onclick="removeQuestionImage()" class="text-xs font-bold text-rose-600 hover:underline">
+            <div id="edit-q-img-preview-box" class="hidden mt-2 p-3 bg-white rounded-xl border text-center space-y-2">
+              <img id="edit-q-img-preview" src="" alt="Hình ảnh câu hỏi" class="max-h-56 mx-auto rounded-lg border object-contain" />
+              <button type="button" onclick="removeQuestionImage()" class="text-sm font-bold text-rose-600 hover:underline">
                 🗑️ Gỡ bỏ hình ảnh câu này
               </button>
             </div>
           </div>
 
-          <!-- Các phương án trắc nghiệm -->
           <div class="space-y-2">
-            <label class="block font-bold text-slate-700 text-xs">Phương án trả lời (chọn nút tròn để đặt làm đáp án đúng):</label>
-            <div class="space-y-2">
+            <label class="block font-bold text-slate-700 text-sm">Phương án trả lời (chọn nút tròn để đặt làm đáp án đúng):</label>
+            <div class="space-y-2.5">
               <div class="flex items-center gap-2">
-                <input type="radio" name="editCorrectOpt" value="0" id="opt-radio-0" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
-                <span class="font-bold text-xs w-4">A.</span>
-                <input type="text" id="edit-q-opt-0" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+                <input type="radio" name="editCorrectOpt" value="0" id="opt-radio-0" class="w-5 h-5 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold w-5">A.</span>
+                <input type="text" id="edit-q-opt-0" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
               <div class="flex items-center gap-2">
-                <input type="radio" name="editCorrectOpt" value="1" id="opt-radio-1" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
-                <span class="font-bold text-xs w-4">B.</span>
-                <input type="text" id="edit-q-opt-1" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+                <input type="radio" name="editCorrectOpt" value="1" id="opt-radio-1" class="w-5 h-5 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold w-5">B.</span>
+                <input type="text" id="edit-q-opt-1" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
               <div class="flex items-center gap-2">
                 <input type="radio" name="editCorrectOpt" value="2" id="opt-radio-2" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
-                <span class="font-bold text-xs w-4">C.</span>
-                <input type="text" id="edit-q-opt-2" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+                <span class="font-bold w-5">C.</span>
+                <input type="text" id="edit-q-opt-2" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
               <div class="flex items-center gap-2">
-                <input type="radio" name="editCorrectOpt" value="3" id="opt-radio-3" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
-                <span class="font-bold text-xs w-4">D.</span>
-                <input type="text" id="edit-q-opt-3" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+                <input type="radio" name="editCorrectOpt" value="3" id="opt-radio-3" class="w-5 h-5 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold w-5">D.</span>
+                <input type="text" id="edit-q-opt-3" class="flex-1 border rounded-xl p-2.5 text-base bg-white outline-none" />
               </div>
             </div>
           </div>
 
-          <!-- Độ khó và chuyên đề -->
           <div class="grid grid-cols-2 gap-3 pt-1">
             <div>
               <label class="block font-bold text-slate-700 text-xs mb-1">Mức độ nhận thức:</label>
-              <select id="edit-q-level" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
+              <select id="edit-q-level" class="w-full border rounded-xl p-2.5 text-sm font-bold bg-white">
                 <option value="B">Biết (B)</option>
                 <option value="H">Hiểu (H)</option>
                 <option value="VD">Vận dụng (VD)</option>
@@ -648,14 +646,14 @@
             </div>
             <div>
               <label class="block font-bold text-slate-700 text-xs mb-1">Chuyên đề:</label>
-              <input type="text" id="edit-q-topic" class="w-full border rounded-xl p-2 text-xs bg-white" />
+              <input type="text" id="edit-q-topic" class="w-full border rounded-xl p-2.5 text-sm bg-white" />
             </div>
           </div>
         </div>
 
         <div class="flex gap-2 pt-3 border-t">
-          <button type="button" id="btn-close-edit-q-btn" class="flex-1 py-2.5 border rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">Hủy</button>
-          <button type="button" id="btn-save-edit-q" class="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm shadow">
+          <button type="button" id="btn-close-edit-q-btn" class="flex-1 py-3 border rounded-xl text-base font-bold text-slate-600 hover:bg-slate-50">Hủy</button>
+          <button type="button" id="btn-save-edit-q" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-base shadow">
             Lưu Thay Đổi
           </button>
         </div>
@@ -665,24 +663,24 @@
     <!-- MODAL ĐỔI MẬT KHẨU HỌC VIÊN -->
     <div id="modal-change-pass" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl border space-y-4">
-        <h3 class="text-lg font-bold text-slate-900 border-b pb-2">Đổi Mật Khẩu Cá Nhân</h3>
-        <div class="space-y-3 text-sm">
+        <h3 class="text-xl font-bold text-slate-900 border-b pb-2">Đổi Mật Khẩu Cá Nhân</h3>
+        <div class="space-y-3 text-base">
           <div>
-            <label class="block font-semibold mb-1">Mật khẩu cũ:</label>
-            <input type="password" id="cp-old" class="w-full border rounded-xl p-2.5 outline-none" />
+            <label class="block font-semibold mb-1 text-sm">Mật khẩu cũ:</label>
+            <input type="password" id="cp-old" class="w-full border rounded-xl p-3 outline-none" />
           </div>
           <div>
-            <label class="block font-semibold mb-1">Mật khẩu mới:</label>
-            <input type="password" id="cp-new" class="w-full border rounded-xl p-2.5 outline-none" />
+            <label class="block font-semibold mb-1 text-sm">Mật khẩu mới:</label>
+            <input type="password" id="cp-new" class="w-full border rounded-xl p-3 outline-none" />
           </div>
           <div>
-            <label class="block font-semibold mb-1">Xác nhận mật khẩu mới:</label>
-            <input type="password" id="cp-confirm" class="w-full border rounded-xl p-2.5 outline-none" />
+            <label class="block font-semibold mb-1 text-sm">Xác nhận mật khẩu mới:</label>
+            <input type="password" id="cp-confirm" class="w-full border rounded-xl p-3 outline-none" />
           </div>
         </div>
         <div class="flex gap-2 pt-3 border-t">
-          <button type="button" id="btn-close-cp" class="flex-1 py-2 border rounded-xl text-sm font-bold">Hủy</button>
-          <button type="button" id="btn-save-cp" class="flex-1 py-2 bg-blue-700 text-white font-bold rounded-xl text-sm shadow">Lưu Mật Khẩu</button>
+          <button type="button" id="btn-close-cp" class="flex-1 py-2.5 border rounded-xl text-base font-bold">Hủy</button>
+          <button type="button" id="btn-save-cp" class="flex-1 py-2.5 bg-blue-700 text-white font-bold rounded-xl text-base shadow">Lưu Mật Khẩu</button>
         </div>
       </div>
     </div>
@@ -692,14 +690,14 @@
       <div class="bg-white max-w-2xl w-full rounded-3xl p-6 shadow-2xl border space-y-4 max-h-[85vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h3 class="text-lg font-bold text-blue-950">Lịch Sử Thi & Điểm Số Thí Sinh</h3>
-            <span class="text-xs text-slate-500 font-mono" id="score-modal-user-info">-</span>
+            <h3 class="text-xl font-bold text-blue-950">Lịch Sử Thi & Điểm Số Thí Sinh</h3>
+            <span class="text-sm text-slate-500 font-mono" id="score-modal-user-info">-</span>
           </div>
-          <button type="button" id="btn-close-score-x" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+          <button type="button" id="btn-close-score-x" class="text-slate-400 hover:text-slate-700 font-bold text-2xl">✕</button>
         </div>
-        <div id="score-modal-list" class="space-y-3 text-sm"></div>
+        <div id="score-modal-list" class="space-y-3 text-base"></div>
         <div class="pt-3 border-t text-right">
-          <button type="button" id="btn-close-score-btn" class="px-5 py-2 bg-slate-200 text-slate-800 font-bold rounded-xl text-xs">Đóng</button>
+          <button type="button" id="btn-close-score-btn" class="px-6 py-2.5 bg-slate-200 text-slate-800 font-bold rounded-xl text-sm">Đóng</button>
         </div>
       </div>
     </div>
@@ -708,14 +706,14 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // --- 1. DỮ LIỆU CỐT LÕI ---
+    // --- 1. DỮ LIỆU CỐT LÕI (TỰ ĐỘNG LƯU & PHỤC HỒI QUA LOCALSTORAGE - LỖI 2) ---
     var currentUser = null;
 
     var adminAccounts = [
       { id: "ADM-01", username: "admin", name: "Quản Trị Viên HSA", password: "123" }
     ];
 
-    var students = [
+    var defaultStudents = [
       {
         id: "07-12A1-001",
         username: "an",
@@ -724,14 +722,14 @@
         classUnit: "12A1",
         email: "an.nguyen@example.com",
         password: "123",
-        eligible: false,          // Mặc định khóa thi
-        feeStatus: 'unpaid',      // 'unpaid' | 'pending' | 'approved'
+        eligible: false,
+        feeStatus: 'unpaid',
         takenQuestionIds: [],
         examHistory: []
       }
     ];
 
-    var exams = [
+    var defaultExams = [
       {
         id: "EXAM-HSA-01",
         name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026",
@@ -742,18 +740,31 @@
       }
     ];
 
-    // Ngân hàng câu hỏi
-    var dbQuestions = [];
-    var practiceDb = [];
+    // Khởi tạo và đồng bộ LocalStorage chống mất dữ liệu khi thoát ứng dụng
+    var students = JSON.parse(localStorage.getItem('HSA_STUDENTS_V2') || 'null') || defaultStudents;
+    var exams = JSON.parse(localStorage.getItem('HSA_EXAMS_V2') || 'null') || defaultExams;
+    var dbQuestions = JSON.parse(localStorage.getItem('HSA_DB_QUESTIONS_V2') || '[]');
+    var practiceDb = JSON.parse(localStorage.getItem('HSA_PRACTICE_DB_V2') || '[]');
+
     var tempAuditQuestions = [];
     var tempNewExamQR = "";
-
-    // Biến quản lý phiên sửa câu hỏi
-    var currentEditingTarget = null; // 'bank' hoặc 'practice'
+    var currentEditingTarget = null;
     var currentEditingIndex = -1;
     var currentEditingImgData = null;
 
-    // --- 2. HÀM RENDER KATEX ---
+    // Hàm lưu toàn diện dữ liệu vào bộ nhớ máy
+    function persistAllData() {
+      try {
+        localStorage.setItem('HSA_DB_QUESTIONS_V2', JSON.stringify(dbQuestions));
+        localStorage.setItem('HSA_PRACTICE_DB_V2', JSON.stringify(practiceDb));
+        localStorage.setItem('HSA_EXAMS_V2', JSON.stringify(exams));
+        localStorage.setItem('HSA_STUDENTS_V2', JSON.stringify(students));
+      } catch (err) {
+        console.error("Lỗi khi lưu vào LocalStorage:", err);
+      }
+    }
+
+    // --- 2. HÀM RENDER KATEX & XỬ LÝ CHÈN ẢNH ĐÚNG VỊ TRÍ GỐC (LỖI 1) ---
     function parseKaTeX(text) {
       if (!text) return "";
       try {
@@ -773,6 +784,25 @@
         return str;
       } catch(e) {
         return text;
+      }
+    }
+
+    // Lỗi 1: Hàm ghép ảnh chuẩn xác vào vị trí [HINH_ANH] ban đầu
+    function renderContentWithImage(content, hasImage, imageSrc) {
+      if (!content) return "";
+      var raw = content;
+      var imgHtml = "";
+
+      if (hasImage && imageSrc) {
+        imgHtml = '<div class="my-3 p-2 bg-slate-50 border rounded-2xl text-center"><img src="' + imageSrc + '" class="max-h-60 mx-auto rounded-lg shadow-sm object-contain" /></div>';
+      }
+
+      if (raw.indexOf("[HINH_ANH]") !== -1) {
+        // Thay thế đúng ngay tại vị trí xuất hiện trong câu hỏi
+        return parseKaTeX(raw.replace("[HINH_ANH]", imgHtml));
+      } else {
+        // Nếu không có thẻ đánh dấu, đặt ảnh ở ngay bên dưới nội dung
+        return parseKaTeX(raw) + imgHtml;
       }
     }
 
@@ -800,7 +830,6 @@
         return;
       }
 
-      // 1. Kiểm tra Admin
       for (var i = 0; i < adminAccounts.length; i++) {
         if (adminAccounts[i].username.toLowerCase() === u && adminAccounts[i].password === p) {
           currentUser = { ...adminAccounts[i], role: 'admin' };
@@ -810,7 +839,6 @@
         }
       }
 
-      // 2. Kiểm tra Học sinh
       for (var j = 0; j < students.length; j++) {
         if (students[j].username.toLowerCase() === u && students[j].password === p) {
           currentUser = { ...students[j], role: 'student' };
@@ -855,13 +883,14 @@
         classUnit: cls,
         email: email,
         password: pass,
-        eligible: false,          // Mặc định khóa thi
+        eligible: false,
         feeStatus: 'unpaid',
         takenQuestionIds: [],
         examHistory: []
       };
 
       students.push(newStudent);
+      persistAllData();
       alert("✓ Đăng ký thành công! Mã định danh: " + newId + ". Tài khoản mặc định bị khóa quyền thi cho đến khi hoàn tất lệ phí.");
       switchAuthTab('login');
       document.getElementById("login-username").value = username;
@@ -904,12 +933,12 @@
       document.getElementById("view-admin").classList.toggle("hidden", view !== 'admin');
 
       document.getElementById("btn-view-student").className = view === 'student'
-        ? "px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow"
-        : "px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white";
+        ? "px-4 py-2 text-sm md:text-base font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow"
+        : "px-4 py-2 text-sm md:text-base font-bold rounded-lg transition text-blue-200 hover:text-white";
 
       document.getElementById("btn-view-admin").className = view === 'admin'
-        ? "px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow"
-        : "px-3.5 py-1.5 text-xs md:text-sm font-bold rounded-lg transition text-blue-200 hover:text-white";
+        ? "px-4 py-2 text-sm md:text-base font-bold rounded-lg transition bg-amber-400 text-slate-950 shadow"
+        : "px-4 py-2 text-sm md:text-base font-bold rounded-lg transition text-blue-200 hover:text-white";
 
       if (view === 'admin') {
         renderBankList();
@@ -943,11 +972,11 @@
       var actionBox = document.getElementById("shub-fee-action-container");
 
       if (currentUser.eligible) {
-        statusEl.className = "px-4 py-2 rounded-2xl text-sm font-bold border bg-emerald-50 text-emerald-800 border-emerald-200";
+        statusEl.className = "px-4 py-2 rounded-2xl text-base font-bold border bg-emerald-50 text-emerald-800 border-emerald-200";
         statusEl.innerText = "✓ ĐÃ DUYỆT: ĐỦ ĐIỀU KIỆN DỰ THI";
         alertBox.classList.add("hidden");
       } else {
-        statusEl.className = "px-4 py-2 rounded-2xl text-sm font-bold border bg-rose-50 text-rose-800 border-rose-200";
+        statusEl.className = "px-4 py-2 rounded-2xl text-base font-bold border bg-rose-50 text-rose-800 border-rose-200";
         statusEl.innerText = "✗ ĐANG KHÓA QUYỀN THI";
         alertBox.classList.remove("hidden");
 
@@ -970,11 +999,11 @@
         document.getElementById("shub-fee-syntax").innerText = syntaxStr;
 
         if (currentUser.feeStatus === 'pending') {
-          actionBox.innerHTML = '<span class="px-4 py-2.5 bg-amber-200 text-amber-950 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-amber-300">' +
+          actionBox.innerHTML = '<span class="px-5 py-3 bg-amber-200 text-amber-950 font-bold rounded-xl text-sm flex items-center gap-2 border border-amber-300">' +
             '⏳ ĐÃ BÁO NỘP PHÍ: CHỜ QUẢN TRỊ DUYỆT' +
           '</span>';
         } else {
-          actionBox.innerHTML = '<button type="button" onclick="requestFeeApproval()" class="w-full md:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow transition">' +
+          actionBox.innerHTML = '<button type="button" onclick="requestFeeApproval()" class="w-full md:w-auto px-7 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-base shadow transition">' +
             'Tôi Đã Nộp Lệ Phí - Yêu Cầu Mở Khóa' +
           '</button>';
         }
@@ -996,8 +1025,9 @@
       currentUser.feeStatus = 'pending';
       var idx = students.findIndex(function(s) { return s.id === currentUser.id; });
       if (idx !== -1) students[idx].feeStatus = 'pending';
+      persistAllData();
 
-      alert("✓ Yêu cầu mở khóa đã được gửi! Quản trị viên sẽ kiểm tra và phê duyệt quyền dự thi cho bạn.");
+      alert("✓ Yêu cầu mở khóa đã được gửi! Quản trị viên sẽ kiểm tra và kích hoạt quyền dự thi cho bạn.");
       updateStudentHubData();
     }
 
@@ -1198,18 +1228,15 @@
       document.getElementById("q-code").innerText = q.id;
       document.getElementById("q-level").innerText = "Mức: " + (q.level || 'H');
 
-      var contentHtml = parseKaTeX(q.content.replace("[HINH_ANH]", ""));
-      if (q.hasImage && q.imageSrc) {
-        contentHtml += '<div class="my-3 p-3 bg-slate-50 border rounded-2xl text-center"><img src="' + q.imageSrc + '" class="max-h-56 mx-auto rounded-lg shadow-sm" /></div>';
-      }
-      document.getElementById("q-content").innerHTML = contentHtml;
+      // Lỗi 1: Hiển thị hình ảnh chuẩn tại đúng vị trí trong nội dung câu
+      document.getElementById("q-content").innerHTML = renderContentWithImage(q.content, q.hasImage, q.imageSrc);
 
       var optsHtml = q.options.map(function(opt, oIdx) {
         var isSelected = userAnswers[activeQuestionIdx] === oIdx;
         var cls = isSelected
           ? 'bg-blue-50 border-blue-600 font-bold text-blue-900 ring-2 ring-blue-600/30'
           : 'hover:bg-slate-50 bg-white';
-        return '<div onclick="selectAnswer(' + oIdx + ')" class="p-3.5 border rounded-2xl text-base font-medium cursor-pointer transition ' + cls + '">' +
+        return '<div onclick="selectAnswer(' + oIdx + ')" class="p-4 border rounded-2xl text-base md:text-lg font-medium cursor-pointer transition ' + cls + '">' +
           '<span class="mr-2 font-bold">' + String.fromCharCode(65 + oIdx) + '.</span>' +
           parseKaTeX(opt) +
         '</div>';
@@ -1233,7 +1260,7 @@
         var cls = isCurrent ? 'ring-2 ring-blue-700 font-black ' : '';
         cls += isAnswered ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800';
 
-        return '<button type="button" onclick="activeQuestionIdx = ' + idx + '; renderCurrentQuestion(); renderMatrix();" class="h-9 rounded-xl text-xs font-bold transition ' + cls + '">' +
+        return '<button type="button" onclick="activeQuestionIdx = ' + idx + '; renderCurrentQuestion(); renderMatrix();" class="h-10 rounded-xl text-sm font-bold transition ' + cls + '">' +
           (idx + 1) +
         '</button>';
       }).join('');
@@ -1287,6 +1314,7 @@
 
       var idx = students.findIndex(function(s) { return s.id === currentUser.id; });
       if (idx !== -1) students[idx].examHistory = currentUser.examHistory;
+      persistAllData();
 
       document.getElementById("student-exam").classList.add("hidden");
       document.getElementById("student-result").classList.remove("hidden");
@@ -1433,20 +1461,20 @@
       var isPractice = target === 'practice';
 
       var html = '<div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">' +
-        '<div class="p-3 bg-emerald-100 text-emerald-900 rounded-xl font-bold text-xs">✓ Bóc tách thành công ' + questions.length + ' câu hỏi (' + (isPractice ? 'Đề Luyện Tập' : 'Đề Gốc') + ')!</div>';
+        '<div class="p-3 bg-emerald-100 text-emerald-900 rounded-xl font-bold text-sm">✓ Bóc tách thành công ' + questions.length + ' câu hỏi (' + (isPractice ? 'Đề Luyện Tập' : 'Đề Gốc') + ')!</div>';
 
       questions.forEach(function(q) {
-        html += '<div class="p-3.5 bg-white border rounded-2xl space-y-2 text-xs">' +
+        html += '<div class="p-4 bg-white border rounded-2xl space-y-2 text-base">' +
           '<div class="flex justify-between items-center">' +
             '<span class="bg-amber-300 font-mono font-bold text-blue-950 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
-            '<span class="text-slate-500 font-bold">Mức: ' + (q.level || 'H') + ' | Chuyên đề: ' + (q.topic || 'Tổng hợp') + '</span>' +
+            '<span class="text-slate-500 font-bold text-sm">Mức: ' + (q.level || 'H') + ' | Chuyên đề: ' + (q.topic || 'Tổng hợp') + '</span>' +
           '</div>' +
-          '<div class="leading-relaxed">' + parseKaTeX(q.content.replace("[HINH_ANH]", "")) + '</div>' +
-          '<div class="grid grid-cols-2 gap-1.5 pt-1">' +
+          '<div class="leading-relaxed">' + renderContentWithImage(q.content, q.hasImage, q.imageSrc) + '</div>' +
+          '<div class="grid grid-cols-2 gap-2 pt-1 text-sm md:text-base">' +
             q.options.map(function(opt, oIdx) {
               var isCorr = oIdx === q.correctIndex;
               var cClass = isCorr ? 'border-emerald-500 font-bold text-emerald-800' : '';
-              return '<div class="p-1.5 border rounded-lg bg-slate-50 ' + cClass + '">' + parseKaTeX(opt) + '</div>';
+              return '<div class="p-2 border rounded-lg bg-slate-50 ' + cClass + '">' + parseKaTeX(opt) + '</div>';
             }).join('') +
           '</div>' +
         '</div>';
@@ -1470,6 +1498,9 @@
         alert("✓ Đã nạp thành công " + tempAuditQuestions.length + " câu vào Ngân Hàng Đề Gốc!");
       }
 
+      // Lỗi 2: Lưu dữ liệu ngay lập tức
+      persistAllData();
+
       clearAuditBox();
       renderBankList();
       renderPracticeList();
@@ -1478,16 +1509,16 @@
     function clearAuditBox() {
       tempAuditQuestions = [];
       document.getElementById("audit-result-box").innerHTML = '<div class="h-72 flex flex-col items-center justify-center text-slate-400 text-center">' +
-        '<span class="text-4xl mb-2">📄</span>' +
-        '<span class="font-bold text-slate-600 text-base">Chưa có kết quả bóc tách.</span>' +
-        '<span class="text-xs text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>' +
+        '<span class="text-5xl mb-2">📄</span>' +
+        '<span class="font-bold text-slate-600 text-lg">Chưa có kết quả bóc tách.</span>' +
+        '<span class="text-sm text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>' +
       '</div>';
       document.getElementById("audit-action-box").classList.add("hidden");
       var fileInput = document.getElementById("file-uploader");
       if (fileInput) fileInput.value = "";
     }
 
-    // --- 6. QUẢN LÝ ĐỢT THI (ĐÓNG/MỞ ĐỢT THI) ---
+    // --- 6. QUẢN LÝ ĐỢT THI ---
     function renderExamsList() {
       var container = document.getElementById("exams-list");
       if (!container) return;
@@ -1502,18 +1533,18 @@
           : '<button type="button" onclick="toggleExamStatus(' + idx + ')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-3 py-1.5 rounded-xl transition text-xs">🔓 Mở Lại Đợt Thi</button>';
 
         var qrSnippet = ex.qrImage 
-          ? '<img src="' + ex.qrImage + '" class="w-10 h-10 object-contain rounded border bg-white" title="Mã QR nộp phí" />'
-          : '<span class="text-[11px] text-slate-400 italic">Chưa có QR</span>';
+          ? '<img src="' + ex.qrImage + '" class="w-12 h-12 object-contain rounded border bg-white" title="Mã QR nộp phí" />'
+          : '<span class="text-xs text-slate-400 italic">Chưa có QR</span>';
 
-        return '<div class="p-4 bg-white border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-sm shadow-sm">' +
+        return '<div class="p-4 bg-white border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-base shadow-sm">' +
           '<div class="flex items-center gap-3">' +
             qrSnippet +
             '<div>' +
               '<div class="flex items-center gap-2">' +
-                '<span class="font-bold text-base text-blue-950">' + ex.name + '</span>' +
+                '<span class="font-bold text-lg text-blue-950">' + ex.name + '</span>' +
                 statusBadge +
               '</div>' +
-              '<p class="text-xs text-slate-500 mt-1">' +
+              '<p class="text-sm text-slate-500 mt-1">' +
                 'Mở lúc: <strong>' + (ex.openTime ? ex.openTime.replace('T', ' ') : 'Mở tự do') + '</strong> | ' +
                 'Lệ phí: <strong class="text-rose-600">' + (ex.feeAmount || '50.000 VNĐ') + '</strong>' +
               '</p>' +
@@ -1537,6 +1568,7 @@
         exams[idx].status = 'closed';
         alert('🔒 Đã ĐÓNG đợt thi: "' + exams[idx].name + '". Thí sinh sẽ không thể vào thi đợt này nữa!');
       }
+      persistAllData();
       renderExamsList();
       updateStudentHubData();
     }
@@ -1564,6 +1596,7 @@
       document.getElementById("new-exam-qr-file").value = "";
       document.getElementById("new-exam-qr-preview-box").classList.add("hidden");
 
+      persistAllData();
       renderExamsList();
       alert("✓ Đã kích hoạt đợt thi mới với mã QR và mức lệ phí thành công!");
     }
@@ -1571,6 +1604,7 @@
     function deleteExam(idx) {
       if (confirm('Bạn có chắc chắn muốn xóa đợt thi: "' + exams[idx].name + '"?')) {
         exams.splice(idx, 1);
+        persistAllData();
         renderExamsList();
         updateStudentHubData();
       }
@@ -1581,15 +1615,15 @@
       var container = document.getElementById("admins-list");
       if (!container) return;
       container.innerHTML = adminAccounts.map(function(adm, idx) {
-        return '<div class="p-3.5 bg-slate-50 border rounded-2xl text-xs space-y-1.5 shadow-sm">' +
+        return '<div class="p-4 bg-slate-50 border rounded-2xl text-sm space-y-1.5 shadow-sm">' +
           '<div class="flex justify-between items-center">' +
-            '<span class="font-bold text-slate-900 text-sm">' + adm.name + '</span>' +
+            '<span class="font-bold text-slate-900 text-base">' + adm.name + '</span>' +
             '<span class="font-mono text-blue-900 font-bold bg-blue-100 px-2 py-0.5 rounded">' + adm.username + '</span>' +
           '</div>' +
-          '<p class="text-slate-500">Mật khẩu: <code class="font-bold text-rose-700 font-mono">' + adm.password + '</code></p>' +
+          '<p class="text-slate-500">Mật khẩu: <code class="font-bold text-rose-700 font-mono text-base">' + adm.password + '</code></p>' +
           '<div class="pt-2 flex justify-between border-t mt-1">' +
-            '<button type="button" onclick="changeAdminPassPrompt(' + idx + ')" class="text-blue-600 hover:underline font-bold">Thay mật khẩu</button>' +
-            (idx > 0 ? '<button type="button" onclick="adminAccounts.splice(' + idx + ',1); renderAdminsList();" class="text-rose-600 hover:underline font-bold">Xóa</button>' : '') +
+            '<button type="button" onclick="changeAdminPassPrompt(' + idx + ')" class="text-blue-600 hover:underline font-bold text-sm">Thay mật khẩu</button>' +
+            (idx > 0 ? '<button type="button" onclick="adminAccounts.splice(' + idx + ',1); renderAdminsList();" class="text-rose-600 hover:underline font-bold text-sm">Xóa</button>' : '') +
           '</div>' +
         '</div>';
       }).join('');
@@ -1629,11 +1663,11 @@
         var elBadge = st.eligible ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
         var elText = st.eligible ? '✓ ĐỦ ĐIỀU KIỆN' : '✗ KHÓA THI';
 
-        var feeBadge = '<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold text-[11px]">CHƯA NỘP</span>';
+        var feeBadge = '<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded font-bold text-xs">CHƯA NỘP</span>';
         if (st.feeStatus === 'pending') {
-          feeBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[11px] animate-pulse">⏳ CHỜ DUYỆT</span>';
+          feeBadge = '<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded font-bold text-xs animate-pulse">⏳ CHỜ DUYỆT</span>';
         } else if (st.feeStatus === 'approved' || st.eligible) {
-          feeBadge = '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[11px]">ĐÃ NỘP</span>';
+          feeBadge = '<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded font-bold text-xs">ĐÃ NỘP</span>';
         }
 
         return '<tr class="hover:bg-slate-50">' +
@@ -1644,7 +1678,7 @@
           '<td class="py-3 px-3 font-semibold">' + st.classUnit + '</td>' +
           '<td class="py-3 px-3 text-center">' + feeBadge + '</td>' +
           '<td class="py-3 px-3 text-center">' +
-            '<span class="px-2.5 py-1 rounded-full text-xs font-bold ' + elBadge + '">' + elText + '</span>' +
+            '<span class="px-3 py-1 rounded-full text-xs font-bold ' + elBadge + '">' + elText + '</span>' +
           '</td>' +
           '<td class="py-3 px-3 text-right space-x-2">' +
             '<button type="button" onclick="toggleStudentEligibility(' + idx + ')" class="text-blue-600 font-bold hover:underline">' +
@@ -1663,6 +1697,7 @@
       } else {
         students[idx].feeStatus = 'unpaid';
       }
+      persistAllData();
       renderStudentsTable();
       if (currentUser && currentUser.id === students[idx].id) {
         currentUser.eligible = students[idx].eligible;
@@ -1674,6 +1709,7 @@
     function deleteStudent(idx) {
       if (confirm("Bạn có chắc muốn xóa học sinh " + students[idx].name + "?")) {
         students.splice(idx, 1);
+        persistAllData();
         renderStudentsTable();
       }
     }
@@ -1705,6 +1741,7 @@
         examHistory: []
       });
 
+      persistAllData();
       renderStudentsTable();
       alert("✓ Đã thêm thí sinh " + name + " với ID: " + newId + "! (Mặc định ở trạng thái khóa thi)");
     }
@@ -1750,6 +1787,7 @@
           }
         });
 
+        persistAllData();
         renderStudentsTable();
         alert("✓ Đã nạp thành công " + count + " học sinh từ tệp! (Mặc định ở trạng thái khóa thi)");
         input.value = "";
@@ -1768,15 +1806,15 @@
         container.innerHTML = st.examHistory.map(function(h) {
           return '<div class="p-4 bg-slate-50 border rounded-2xl flex justify-between items-center">' +
             '<div>' +
-              '<span class="font-bold text-blue-950 block text-base">' + h.examName + '</span>' +
-              '<span class="text-xs text-slate-500">Nộp bài: ' + h.time + '</span>' +
-              '<div class="text-xs text-slate-600 mt-1">' +
+              '<span class="font-bold text-blue-950 block text-lg">' + h.examName + '</span>' +
+              '<span class="text-sm text-slate-500">Nộp bài: ' + h.time + '</span>' +
+              '<div class="text-sm text-slate-600 mt-1">' +
                 'Phần 1: <strong>' + h.part1 + 'đ</strong> | Phần 2: <strong>' + h.part2 + 'đ</strong> | Phần 3: <strong>' + h.part3 + 'đ</strong>' +
               '</div>' +
             '</div>' +
             '<div class="text-right">' +
               '<span class="text-xs text-blue-700 font-bold block uppercase">Tổng điểm</span>' +
-              '<span class="text-2xl font-black text-blue-950">' + h.total + ' / 150</span>' +
+              '<span class="text-3xl font-black text-blue-950">' + h.total + ' / 150</span>' +
             '</div>' +
           '</div>';
         }).join('');
@@ -1804,7 +1842,7 @@
       document.body.removeChild(link);
     }
 
-    // --- 8. RENDER NGÂN HÀNG CÓ ĐẦY ĐỦ NÚT SỬA & XÓA CÂU HỎI ---
+    // --- 8. RENDER NGÂN HÀNG CÓ NÚT SỬA & XÓA CÂU HỎI ---
     function renderBankList() {
       document.getElementById("bank-count").innerText = dbQuestions.length;
       var container = document.getElementById("bank-list");
@@ -1812,36 +1850,35 @@
 
       if (dbQuestions.length === 0) {
         container.innerHTML = '<div class="p-8 text-center text-slate-400 bg-slate-50 border border-dashed rounded-2xl">' +
-          '<span class="text-3xl block mb-2">📥</span>' +
-          '<p class="font-bold text-slate-600">Ngân hàng đề gốc hiện đang trống.</p>' +
-          '<p class="text-xs text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" để tải đề thi lên.</p>' +
+          '<span class="text-4xl block mb-2">📥</span>' +
+          '<p class="font-bold text-slate-600 text-lg">Ngân hàng đề gốc hiện đang trống.</p>' +
+          '<p class="text-sm text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" để tải đề thi lên.</p>' +
         '</div>';
         return;
       }
 
       container.innerHTML = dbQuestions.map(function(q, idx) {
-        return '<div class="p-4 bg-slate-50 border rounded-2xl text-sm space-y-2">' +
+        return '<div class="p-5 bg-slate-50 border rounded-2xl space-y-3">' +
           '<div class="flex justify-between items-center">' +
-            '<span class="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
+            '<span class="font-mono font-bold text-blue-950 bg-amber-300 px-3 py-1 rounded-lg text-base">' + q.id + '</span>' +
             '<div class="flex items-center gap-2">' +
-              '<span class="text-xs bg-slate-200 px-2 py-0.5 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
-              '<button type="button" onclick="openEditQuestionModal(\'bank\', ' + idx + ')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow">' +
+              '<span class="text-xs bg-slate-200 px-2.5 py-1 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
+              '<button type="button" onclick="openEditQuestionModal(\'bank\', ' + idx + ')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">' +
                 '✏️ Sửa / Thêm ảnh' +
               '</button>' +
-              '<button type="button" onclick="deleteSingleQuestion(\'bank\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-1 rounded-lg bg-white text-xs">' +
+              '<button type="button" onclick="deleteSingleQuestion(\'bank\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-3 py-1.5 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
               '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' +
-            parseKaTeX(q.content.replace("[HINH_ANH]", "")) +
-            (q.hasImage && q.imageSrc ? '<div class="my-2 p-2 bg-slate-50 border rounded-xl text-center"><img src="' + q.imageSrc + '" class="max-h-48 mx-auto rounded shadow-sm" /></div>' : '') +
+          '<div class="bg-white p-4 rounded-xl border leading-relaxed text-base">' +
+            renderContentWithImage(q.content, q.hasImage, q.imageSrc) +
           '</div>' +
-          '<div class="grid grid-cols-2 gap-2 pt-1 text-xs">' +
+          '<div class="grid grid-cols-2 gap-2 pt-1 text-sm md:text-base">' +
             q.options.map(function(opt, oIdx) {
               var isC = oIdx === q.correctIndex;
               var cCls = isC ? 'border-emerald-500 font-bold text-emerald-900 bg-emerald-50' : '';
-              return '<div class="p-2 border rounded-lg bg-white ' + cCls + '">' + String.fromCharCode(65 + oIdx) + '. ' + parseKaTeX(opt) + '</div>';
+              return '<div class="p-2.5 border rounded-lg bg-white ' + cCls + '">' + String.fromCharCode(65 + oIdx) + '. ' + parseKaTeX(opt) + '</div>';
             }).join('') +
           '</div>' +
         '</div>';
@@ -1855,49 +1892,48 @@
 
       if (practiceDb.length === 0) {
         container.innerHTML = '<div class="p-8 text-center text-slate-400 bg-slate-50 border border-dashed rounded-2xl">' +
-          '<span class="text-3xl block mb-2">🎯</span>' +
-          '<p class="font-bold text-slate-600">Ngân hàng luyện thi hiện đang trống.</p>' +
-          '<p class="text-xs text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" và chọn "Ngân hàng Luyện Tập" để nạp câu hỏi.</p>' +
+          '<span class="text-4xl block mb-2">🎯</span>' +
+          '<p class="font-bold text-slate-600 text-lg">Ngân hàng luyện thi hiện đang trống.</p>' +
+          '<p class="text-sm text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" và chọn "Ngân hàng Luyện Tập" để nạp câu hỏi.</p>' +
         '</div>';
         return;
       }
 
       container.innerHTML = practiceDb.map(function(q, idx) {
-        return '<div class="p-4 bg-slate-50 border rounded-2xl text-sm space-y-2">' +
+        return '<div class="p-5 bg-slate-50 border rounded-2xl space-y-3">' +
           '<div class="flex justify-between items-center">' +
-            '<span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
+            '<span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-3 py-1 rounded-lg text-base">' + q.id + '</span>' +
             '<div class="flex items-center gap-2">' +
-              '<span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold">' + (q.topic || 'Chuyên đề GDPT 2018') + '</span>' +
-              '<span class="text-xs bg-slate-200 px-2 py-0.5 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
-              '<button type="button" onclick="openEditQuestionModal(\'practice\', ' + idx + ')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow">' +
+              '<span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded font-bold">' + (q.topic || 'Chuyên đề GDPT 2018') + '</span>' +
+              '<span class="text-xs bg-slate-200 px-2.5 py-1 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
+              '<button type="button" onclick="openEditQuestionModal(\'practice\', ' + idx + ')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow">' +
                 '✏️ Sửa / Thêm ảnh' +
               '</button>' +
-              '<button type="button" onclick="deleteSingleQuestion(\'practice\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-1 rounded-lg bg-white text-xs">' +
+              '<button type="button" onclick="deleteSingleQuestion(\'practice\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-3 py-1.5 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
               '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' +
-            parseKaTeX(q.content.replace("[HINH_ANH]", "")) +
-            (q.hasImage && q.imageSrc ? '<div class="my-2 p-2 bg-slate-50 border rounded-xl text-center"><img src="' + q.imageSrc + '" class="max-h-48 mx-auto rounded shadow-sm" /></div>' : '') +
+          '<div class="bg-white p-4 rounded-xl border leading-relaxed text-base">' +
+            renderContentWithImage(q.content, q.hasImage, q.imageSrc) +
           '</div>' +
-          '<div class="grid grid-cols-2 gap-2 pt-1 text-xs">' +
+          '<div class="grid grid-cols-2 gap-2 pt-1 text-sm md:text-base">' +
             q.options.map(function(opt, oIdx) {
               var isC = oIdx === q.correctIndex;
               var cCls = isC ? 'border-emerald-500 font-bold text-emerald-900 bg-emerald-50' : '';
-              return '<div class="p-2 border rounded-lg bg-white ' + cCls + '">' + String.fromCharCode(65 + oIdx) + '. ' + parseKaTeX(opt) + '</div>';
+              return '<div class="p-2.5 border rounded-lg bg-white ' + cCls + '">' + String.fromCharCode(65 + oIdx) + '. ' + parseKaTeX(opt) + '</div>';
             }).join('') +
           '</div>' +
         '</div>';
       }).join('');
     }
 
-    // Xóa từng câu hỏi trong ngân hàng
     function deleteSingleQuestion(target, idx) {
       var arr = target === 'practice' ? practiceDb : dbQuestions;
       var q = arr[idx];
       if (confirm('Bạn có chắc chắn muốn xóa câu hỏi mã "' + q.id + '" khỏi hệ thống?')) {
         arr.splice(idx, 1);
+        persistAllData();
         if (target === 'practice') {
           renderPracticeList();
         } else {
@@ -1922,12 +1958,10 @@
       document.getElementById("edit-q-level").value = q.level || "H";
       document.getElementById("edit-q-topic").value = q.topic || "Tổng hợp";
 
-      // Chọn radio đáp án đúng
       var cIdx = q.correctIndex !== undefined ? q.correctIndex : 0;
       var rad = document.getElementById("opt-radio-" + cIdx);
       if (rad) rad.checked = true;
 
-      // Xử lý ảnh hiện tại
       currentEditingImgData = q.imageSrc || null;
       var previewBox = document.getElementById("edit-q-img-preview-box");
       var previewImg = document.getElementById("edit-q-img-preview");
@@ -1983,6 +2017,7 @@
       q.imageSrc = currentEditingImgData;
       q.hasImage = !!currentEditingImgData || q.content.includes("[HINH_ANH]");
 
+      persistAllData();
       closeEditQuestionModal();
 
       if (currentEditingTarget === 'practice') {
@@ -2000,8 +2035,8 @@
         var btn = document.getElementById("tab-btn-" + t);
         if (btn) {
           btn.className = t === tab
-            ? "px-4 py-2 rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400"
-            : "px-4 py-2 rounded-xl transition text-slate-700 hover:bg-slate-100";
+            ? "px-4 py-2.5 rounded-xl transition bg-blue-800 text-white shadow ring-2 ring-amber-400"
+            : "px-4 py-2.5 rounded-xl transition text-slate-700 hover:bg-slate-100";
         }
       });
 
@@ -2019,11 +2054,9 @@
         if (inputKey) inputKey.value = savedKey;
       }
 
-      // Tab Auth
       document.getElementById("auth-tab-login-btn").addEventListener("click", function() { switchAuthTab('login'); });
       document.getElementById("auth-tab-register-btn").addEventListener("click", function() { switchAuthTab('register'); });
 
-      // Nút Đăng nhập & Đăng ký
       document.getElementById("btn-submit-login").addEventListener("click", executeLogin);
       document.getElementById("btn-submit-register").addEventListener("click", executeRegister);
 
@@ -2031,18 +2064,15 @@
         if (e.key === "Enter") executeLogin();
       });
 
-      // Header buttons
       document.getElementById("btn-logout").addEventListener("click", executeLogout);
       document.getElementById("btn-view-student").addEventListener("click", function() { switchView('student'); });
       document.getElementById("btn-view-admin").addEventListener("click", function() { switchView('admin'); });
 
-      // Student hub buttons
       document.getElementById("btn-start-practice").addEventListener("click", startPracticeMode);
       document.getElementById("btn-prompt-exam-choice").addEventListener("click", openExamChoiceModal);
       document.getElementById("btn-close-exam-choice").addEventListener("click", closeExamChoiceModal);
       document.getElementById("btn-confirm-start-exam").addEventListener("click", confirmStartOfficialExam);
 
-      // Student exam actions
       document.getElementById("btn-prev-q").addEventListener("click", function() {
         if (activeQuestionIdx > 0) {
           activeQuestionIdx--;
@@ -2060,7 +2090,6 @@
       document.getElementById("btn-submit-part").addEventListener("click", function() { submitCurrentPart(false); });
       document.getElementById("btn-back-hub").addEventListener("click", backToHub);
 
-      // Radio chọn phần 3
       var rChoice = document.querySelectorAll('input[name="part3Choice"]');
       rChoice.forEach(function(r) {
         r.addEventListener("change", function(e) {
@@ -2068,7 +2097,6 @@
         });
       });
 
-      // Đổi mật khẩu học viên
       document.getElementById("btn-open-change-pass").addEventListener("click", function() {
         document.getElementById("cp-old").value = "";
         document.getElementById("cp-new").value = "";
@@ -2099,27 +2127,26 @@
         currentUser.password = newP;
         var idx = students.findIndex(function(s) { return s.id === currentUser.id; });
         if (idx !== -1) students[idx].password = newP;
+        persistAllData();
 
         alert("✓ Đã đổi mật khẩu thành công!");
         document.getElementById("modal-change-pass").classList.add("hidden");
       });
 
-      // Admin tabs
       document.getElementById("tab-btn-audit").addEventListener("click", function() { switchAdminTab('audit'); });
       document.getElementById("tab-btn-bank").addEventListener("click", function() { switchAdminTab('bank'); });
       document.getElementById("tab-btn-practice").addEventListener("click", function() { switchAdminTab('practice'); });
       document.getElementById("tab-btn-exams").addEventListener("click", function() { switchAdminTab('exams'); });
       document.getElementById("tab-btn-users").addEventListener("click", function() { switchAdminTab('users'); });
 
-      // Admin actions
       document.getElementById("btn-process-ai").addEventListener("click", processUploadWithAI);
       document.getElementById("btn-confirm-save-audit").addEventListener("click", confirmAddAuditedToStorage);
       document.getElementById("btn-cancel-audit").addEventListener("click", clearAuditBox);
 
-      // Nút xóa sạch ngân hàng
       document.getElementById("btn-clear-bank-all").addEventListener("click", function() {
         if (confirm("Bạn có chắc chắn muốn xóa toàn bộ câu hỏi trong Ngân Hàng Đề Gốc?")) {
           dbQuestions = [];
+          persistAllData();
           renderBankList();
           alert("✓ Đã làm sạch toàn bộ Ngân Hàng Đề Gốc!");
         }
@@ -2127,12 +2154,12 @@
       document.getElementById("btn-clear-practice-all").addEventListener("click", function() {
         if (confirm("Bạn có chắc chắn muốn xóa toàn bộ câu hỏi trong Ngân Hàng Luyện Thi?")) {
           practiceDb = [];
+          persistAllData();
           renderPracticeList();
           alert("✓ Đã làm sạch toàn bộ Ngân Hàng Luyện Thi!");
         }
       });
 
-      // Xử lý tải ảnh riêng trong Modal Chỉnh Sửa Câu Hỏi
       var editQImgInput = document.getElementById("edit-q-img-file");
       if (editQImgInput) {
         editQImgInput.addEventListener("change", function(e) {
@@ -2149,12 +2176,10 @@
         });
       }
 
-      // Các nút modal sửa câu hỏi
       document.getElementById("btn-close-edit-q-x").addEventListener("click", closeEditQuestionModal);
       document.getElementById("btn-close-edit-q-btn").addEventListener("click", closeEditQuestionModal);
       document.getElementById("btn-save-edit-q").addEventListener("click", saveEditQuestionModalChanges);
 
-      // Xem trước ảnh QR khi tạo đợt thi mới
       var qrFileInput = document.getElementById("new-exam-qr-file");
       if (qrFileInput) {
         qrFileInput.addEventListener("change", function(e) {
@@ -2180,7 +2205,6 @@
         importStudentsBatch(e.target);
       });
 
-      // Score modal buttons
       document.getElementById("btn-close-score-x").addEventListener("click", function() {
         document.getElementById("modal-student-scores").classList.add("hidden");
       });
@@ -2188,7 +2212,6 @@
         document.getElementById("modal-student-scores").classList.add("hidden");
       });
 
-      // Cảnh báo chống rời màn hình thi
       document.addEventListener("visibilitychange", function() {
         var isExamRunning = !document.getElementById("student-exam").classList.contains("hidden");
         if (document.hidden && isExamRunning) {
