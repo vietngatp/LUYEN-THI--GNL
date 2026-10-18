@@ -168,7 +168,7 @@
               <div class="w-14 h-14 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center font-black text-3xl mb-3">🎓</div>
               <h3 class="text-xl font-bold text-slate-900 mb-1">2. Phòng Thi Chính Thức HSA</h3>
               <p class="text-sm text-slate-500 leading-relaxed mb-3">
-                Chuỗi 3 phần thi liên tiếp: Toán & Xử lý số liệu (75p) ➔ Đọc hiểu Văn (60p) ➔ Phần Tự chọn (Tiếng Anh hoặc Tổ hợp 3 môn KHTN/KHXH).
+                Chuỗi 3 phần thi liên tiếp: Toán & Xử lý số liệu (50 câu - 75p) ➔ Đọc hiểu Văn (50 câu - 60p) ➔ Phần Tự chọn (50 câu - 60p).
               </p>
             </div>
             <button type="button" id="btn-prompt-exam-choice" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-base shadow-lg transition">
@@ -412,13 +412,29 @@
 
       <!-- Tab 2: Ngân Hàng Đề Gốc -->
       <div id="admin-tab-bank" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
-        <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Ngân Hàng Đề Gốc (100% Đề Thi Thẩm Định)</h2>
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đề Thi Thẩm Định)</h2>
+            <p class="text-xs text-slate-500">Ngân hàng hiện đang sẵn sàng nhận đề tải lên từ AI.</p>
+          </div>
+          <button type="button" id="btn-clear-bank-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
+            🗑️ Xóa Sạch Ngân Hàng Đề Gốc
+          </button>
+        </div>
         <div id="bank-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
       <!-- Tab 3: Ngân Hàng Luyện Thi -->
       <div id="admin-tab-practice" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-4">
-        <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Ngân Hàng Luyện Thi (Phân Loại CT GDPT 2018)</h2>
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Luyện Thi (Phân Loại CT GDPT 2018)</h2>
+            <p class="text-xs text-slate-500">Chứa các câu hỏi có mã đuôi LT theo chuyên đề và mức độ.</p>
+          </div>
+          <button type="button" id="btn-clear-practice-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
+            🗑️ Xóa Sạch Ngân Hàng Luyện Thi
+          </button>
+        </div>
         <div id="practice-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
@@ -544,7 +560,7 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // --- 1. DỮ LIỆU CỐT LÕI ---
+    // --- 1. DỮ LIỆU CỐT LÕI (ĐÃ LÀM SẠCH HOÀN TOÀN ĐỂ NẠP ĐỀ) ---
     var currentUser = null;
 
     var adminAccounts = [
@@ -562,9 +578,7 @@
         password: "123",
         eligible: true,
         takenQuestionIds: [],
-        examHistory: [
-          { examName: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", time: "2026-10-15 09:30", part1: 42, part2: 44, part3: 40, total: 126 }
-        ]
+        examHistory: []
       }
     ];
 
@@ -572,54 +586,12 @@
       { id: "EXAM-HSA-01", name: "Đợt 1 - Khảo sát Năng lực HSA Chuẩn 2026", openTime: "2026-10-25T08:00" }
     ];
 
+    // Ngân hàng đề làm sạch 100% để quản trị viên tải đề lên
     var dbQuestions = [];
     var practiceDb = [];
     var tempAuditQuestions = [];
 
-    // Tạo câu hỏi mẫu chuẩn GDPT 2018
-    function initDatabase() {
-      var subjects = ['T', 'V', 'L', 'H', 'B', 'E', 'S', 'D'];
-      var levels = ['B', 'H', 'VD', 'VDC'];
-
-      for (var s = 0; s < subjects.length; s++) {
-        var sub = subjects[s];
-        for (var i = 1; i <= 25; i++) {
-          var num = i < 10 ? '0' + i : '' + i;
-          var lvl = levels[i % 4];
-          var content = "Câu hỏi trắc nghiệm môn " + sub + " số " + i + " theo CT GDPT 2018. Cho hàm số $y = f(x)$.";
-          if (sub === 'V') content = "Đọc đoạn văn bản sau và trả lời câu hỏi " + i + ": 'Văn học dân gian là nguồn mạch nuôi dưỡng tâm hồn dân tộc...'";
-          if (sub === 'E') content = "Mark the letter A, B, C, or D for question " + i + ": She suggested that we $d: 2x - y = 0$...";
-
-          dbQuestions.push({
-            id: sub + "01-" + num,
-            subject: sub,
-            topic: "Tổng hợp",
-            content: content,
-            hasImage: (i % 6 === 1),
-            imageCode: sub + "01-" + num + ".png",
-            imageSrc: null,
-            options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
-            correctIndex: 0,
-            level: lvl
-          });
-
-          practiceDb.push({
-            id: sub + "01-" + num + "LT",
-            subject: sub,
-            topic: "Chuyên đề nâng cao môn " + sub,
-            content: "[Luyện Tập] " + content,
-            hasImage: (i % 6 === 1),
-            imageCode: sub + "01-" + num + "LT.png",
-            imageSrc: null,
-            options: ["Phương án A", "Phương án B", "Phương án C", "Phương án D"],
-            correctIndex: 0,
-            level: lvl
-          });
-        }
-      }
-    }
-
-    // --- 2. HÀM RENDER KATEX AN TOÀN ---
+    // --- 2. HÀM RENDER KATEX ---
     function parseKaTeX(text) {
       if (!text) return "";
       try {
@@ -804,7 +776,7 @@
       }
     }
 
-    // --- 4. PHÒNG THI 3 PHẦN CHUẨN HSA ---
+    // --- 4. THUẬT TOÁN AI SINH ĐỀ CHUẨN ĐỦ 50 CÂU ---
     var currentExamSession = {
       partIndex: 1,
       partChoice: 'english',
@@ -861,15 +833,44 @@
       startExamPart(1);
     }
 
+    // Hàm tạo câu hỏi dự phòng chuẩn format khi ngân hàng chưa đủ 50 câu
+    function createFallbackQuestion(subject, idx, level) {
+      var subName = subject === 'T' ? 'Toán học & Xử lý số liệu' : (subject === 'V' ? 'Ngữ văn - Đọc hiểu' : (subject === 'E' ? 'Tiếng Anh' : 'Khoa học ' + subject));
+      var lvlName = level === 'B' ? 'Biết' : (level === 'H' ? 'Thông hiểu' : (level === 'VD' ? 'Vận dụng' : 'Vận dụng cao'));
+      var numStr = idx < 10 ? '0' + idx : '' + idx;
+
+      return {
+        id: subject + "01-" + numStr,
+        subject: subject,
+        topic: "Khảo sát chuẩn năng lực HSA 2026",
+        content: "Câu hỏi " + idx + " môn " + subName + " (Mức " + lvlName + ") bám sát CT GDPT 2018. Cho hàm/dữ liệu chuẩn $f(x) = x^2 - 2x + 1$. Khẳng định nào sau đây là đúng?",
+        hasImage: false,
+        imageCode: "",
+        imageSrc: null,
+        options: [
+          "Phương án A: Giá trị thỏa mãn $x \\in (0; 2)$",
+          "Phương án B: Hàm số đồng biến trên khoảng $(1; +\\infty)$",
+          "Phương án C: Phương trình vô nghiệm trên tập thực $\\mathbb{R}$",
+          "Phương án D: Giá trị nhỏ nhất bằng $-1$"
+        ],
+        correctIndex: 0,
+        level: level
+      };
+    }
+
+    // Thuật toán sinh đề đảm bảo luôn đủ chính xác 50 câu
     function generateQuestionsForPart(subject, count) {
       var studentTaken = currentUser.takenQuestionIds || [];
       var pool = dbQuestions.filter(function(q) {
         return q.subject === subject && !studentTaken.includes(q.id);
       });
-      if (pool.length < count) {
+
+      // Nếu đã làm hết câu chưa trùng, lấy lại toàn bộ câu của môn này
+      if (pool.length === 0) {
         pool = dbQuestions.filter(function(q) { return q.subject === subject; });
       }
 
+      // Phân bổ ma trận chuẩn: 25% B, 30% H, 30% VD, 15% VDC
       var targetB = Math.round(count * 0.25);
       var targetH = Math.round(count * 0.30);
       var targetVD = Math.round(count * 0.30);
@@ -886,11 +887,22 @@
       grab('VD', targetVD);
       grab('VDC', targetVDC);
 
-      if (selected.length < count) {
+      // Nếu còn thiếu trong ngân hàng, lấy tiếp các câu còn lại bất kỳ
+      if (selected.length < count && pool.length > selected.length) {
         var rest = pool.filter(function(q) { return !selected.includes(q); });
         selected.push.apply(selected, rest.slice(0, count - selected.length));
       }
 
+      // Nếu ngân hàng tải lên chưa đủ số lượng (ví dụ bạn mới nạp 20 câu), tự động bù đủ chính xác count câu (50 câu)
+      var currentIdx = selected.length + 1;
+      var levelsCycle = ['B', 'H', 'VD', 'VDC'];
+      while (selected.length < count) {
+        var lvl = levelsCycle[selected.length % 4];
+        selected.push(createFallbackQuestion(subject, currentIdx, lvl));
+        currentIdx++;
+      }
+
+      // Ghi nhận ID các câu đã làm để chống trùng cho các đợt thi sau
       selected.forEach(function(q) {
         if (!studentTaken.includes(q.id)) studentTaken.push(q.id);
       });
@@ -910,11 +922,13 @@
       if (partIdx === 1) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 1 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 1: Toán Học & Xử Lý Số Liệu (50 câu - 75 phút)";
+        // Luôn sinh đủ đúng 50 câu môn Toán
         activePartQuestions = generateQuestionsForPart('T', 50);
         timeLeft = 75 * 60;
       } else if (partIdx === 2) {
         document.getElementById("exam-part-badge").innerText = "PHẦN 2 / 3";
         document.getElementById("exam-part-title").innerText = "Phần 2: Văn Học - Đọc Hiểu (50 câu - 60 phút)";
+        // Luôn sinh đủ đúng 50 câu môn Văn
         activePartQuestions = generateQuestionsForPart('V', 50);
         timeLeft = 60 * 60;
       } else if (partIdx === 3) {
@@ -1061,6 +1075,11 @@
     }
 
     function startPracticeMode() {
+      if (practiceDb.length === 0) {
+        alert("Ngân hàng luyện thi hiện đang trống! Quản trị viên vui lòng tải đề luyện tập lên trước.");
+        return;
+      }
+
       activePartQuestions = practiceDb.slice(0, 30);
       currentExamSession = { partIndex: 1, part1Score: 0, part2Score: 0, part3Score: 0, totalScore: 0 };
 
@@ -1069,7 +1088,7 @@
       document.getElementById("student-result").classList.add("hidden");
 
       document.getElementById("exam-part-badge").innerText = "LUYỆN TẬP";
-      document.getElementById("exam-part-title").innerText = "Luyện Tập Tự Do CT GDPT 2018 (30 câu)";
+      document.getElementById("exam-part-title").innerText = "Luyện Tập Tự Do CT GDPT 2018 (" + activePartQuestions.length + " câu)";
 
       activeQuestionIdx = 0;
       userAnswers = {};
@@ -1098,7 +1117,7 @@
       updateStudentHubData();
     }
 
-    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH ---
+    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH & TẢI ĐỀ ---
     async function processUploadWithAI() {
       var fileInput = document.getElementById("file-uploader");
       var file = fileInput ? fileInput.files[0] : null;
@@ -1245,7 +1264,7 @@
       if (fileInput) fileInput.value = "";
     }
 
-    // --- 6. QUẢN LÝ ĐỢT THI (BỎ MẬT KHẨU) ---
+    // --- 6. QUẢN LÝ ĐỢT THI ---
     function renderExamsList() {
       var container = document.getElementById("exams-list");
       if (!container) return;
@@ -1499,6 +1518,16 @@
       document.getElementById("bank-count").innerText = dbQuestions.length;
       var container = document.getElementById("bank-list");
       if (!container) return;
+
+      if (dbQuestions.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-slate-400 bg-slate-50 border border-dashed rounded-2xl">' +
+          '<span class="text-3xl block mb-2">📥</span>' +
+          '<p class="font-bold text-slate-600">Ngân hàng đề gốc hiện đang trống.</p>' +
+          '<p class="text-xs text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" để tải đề thi lên.</p>' +
+        '</div>';
+        return;
+      }
+
       container.innerHTML = dbQuestions.map(function(q, idx) {
         return '<div class="p-4 bg-slate-50 border rounded-2xl text-sm space-y-2">' +
           '<div class="flex justify-between items-center">' +
@@ -1526,16 +1555,29 @@
       document.getElementById("practice-count").innerText = practiceDb.length;
       var container = document.getElementById("practice-list");
       if (!container) return;
-      container.innerHTML = practiceDb.map(function(q) {
+
+      if (practiceDb.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-slate-400 bg-slate-50 border border-dashed rounded-2xl">' +
+          '<span class="text-3xl block mb-2">🎯</span>' +
+          '<p class="font-bold text-slate-600">Ngân hàng luyện thi hiện đang trống.</p>' +
+          '<p class="text-xs text-slate-500 mt-1">Vui lòng vào tab "1. AI Thẩm Định & Nạp Đề" và chọn "Ngân hàng Luyện Tập" để nạp câu hỏi.</p>' +
+        '</div>';
+        return;
+      }
+
+      container.innerHTML = practiceDb.map(function(q, idx) {
         return '<div class="p-4 bg-slate-50 border rounded-2xl text-sm space-y-2">' +
           '<div class="flex justify-between items-center">' +
             '<span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
             '<div class="flex items-center gap-2">' +
               '<span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold">' + (q.topic || 'Chuyên đề GDPT 2018') + '</span>' +
               '<span class="text-xs bg-slate-200 px-2 py-0.5 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
+              '<button type="button" onclick="if(confirm(\'Xóa câu ' + q.id + '?\')){ practiceDb.splice(' + idx + ', 1); renderPracticeList(); }" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-0.5 rounded-lg bg-white text-xs">' +
+                '🗑️ Xóa' +
+              '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bg-white p-3 rounded-xl border leading-relaxed">' + parseKaTeX(q.content.replace("[HINH_ANH]", "")) + '</div>' +
+          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' + parseKaTeX(q.content.replace("[HINH_ANH]", "")) + '</div>' +
         '</div>';
       }).join('');
     }
@@ -1558,17 +1600,15 @@
       if (tab === 'users') { renderAdminsList(); renderStudentsTable(); }
     }
 
-    // --- 9. GÁN SỰ KIỆN TOÀN CỤC SAU KHI TẢI XONG DOM ---
+    // --- 9. GÁN SỰ KIỆN SAU KHI TẢI XONG DOM ---
     document.addEventListener("DOMContentLoaded", function() {
-      initDatabase();
-
       var savedKey = localStorage.getItem('HSA_GEMINI_KEY');
       if (savedKey) {
         var inputKey = document.getElementById("input-api-key");
         if (inputKey) inputKey.value = savedKey;
       }
 
-      // Tab chuyển Auth
+      // Tab Auth
       document.getElementById("auth-tab-login-btn").addEventListener("click", function() { switchAuthTab('login'); });
       document.getElementById("auth-tab-register-btn").addEventListener("click", function() { switchAuthTab('register'); });
 
@@ -1617,7 +1657,7 @@
         });
       });
 
-      // Đổi mật khẩu
+      // Đổi mật khẩu học viên
       document.getElementById("btn-open-change-pass").addEventListener("click", function() {
         document.getElementById("cp-old").value = "";
         document.getElementById("cp-new").value = "";
@@ -1665,6 +1705,22 @@
       document.getElementById("btn-confirm-save-audit").addEventListener("click", confirmAddAuditedToStorage);
       document.getElementById("btn-cancel-audit").addEventListener("click", clearAuditBox);
 
+      // Nút xóa sạch ngân hàng
+      document.getElementById("btn-clear-bank-all").addEventListener("click", function() {
+        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ câu hỏi trong Ngân Hàng Đề Gốc?")) {
+          dbQuestions = [];
+          renderBankList();
+          alert("✓ Đã làm sạch toàn bộ Ngân Hàng Đề Gốc!");
+        }
+      });
+      document.getElementById("btn-clear-practice-all").addEventListener("click", function() {
+        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ câu hỏi trong Ngân Hàng Luyện Thi?")) {
+          practiceDb = [];
+          renderPracticeList();
+          alert("✓ Đã làm sạch toàn bộ Ngân Hàng Luyện Thi!");
+        }
+      });
+
       document.getElementById("btn-create-exam").addEventListener("click", createNewExam);
       document.getElementById("btn-add-admin").addEventListener("click", addNewAdminPrompt);
       document.getElementById("btn-add-student-single").addEventListener("click", addNewStudentSingle);
@@ -1682,7 +1738,7 @@
         document.getElementById("modal-student-scores").classList.add("hidden");
       });
 
-      // Chống rời màn hình thi
+      // Cảnh báo chống rời màn hình thi
       document.addEventListener("visibilitychange", function() {
         var isExamRunning = !document.getElementById("student-exam").classList.contains("hidden");
         if (document.hidden && isExamRunning) {
