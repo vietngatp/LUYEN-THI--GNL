@@ -23,12 +23,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Chưa có Gemini API Key.' });
     }
 
-    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đính kèm và trích xuất câu hỏi:
-1. Đọc và trích xuất các biểu thức toán học, hàm số, ký hiệu toán học và bao quanh chúng bằng dấu đô la đơn (ví dụ: $f(x)$, $\int_{0}^{1} f(x)dx$).
+    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và:
+1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $d: 2x - y + 3 = 0$, $\\vec{u} = (1; 2)$).
 2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
-3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí.
+3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
 4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
-5. Xác định độ khó (B, H, VD, VDC).
+5. Tự động sinh 3 câu tương đương cho mỗi câu gốc.
 
 Trả về kết quả DUY NHẤT dưới dạng JSON:
 {
@@ -38,9 +38,15 @@ Trả về kết quả DUY NHẤT dưới dạng JSON:
       "subject": "${subject}",
       "content": "Nội dung câu hỏi kèm $...$ và [HINH_ANH] nếu có",
       "hasImage": true,
-      "options": ["A. $...$", "B. $...$", "C. $...$", "D. $...$"],
+      "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "correctIndex": 0,
-      "level": "VD"
+      "level": "VD",
+      "solution": "Lời giải chi tiết",
+      "variants": [
+        { "id": "${subject}${examCode}-011", "content": "Câu tương đương 1", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 0 },
+        { "id": "${subject}${examCode}-012", "content": "Câu tương đương 2", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 1 },
+        { "id": "${subject}${examCode}-013", "content": "Câu tương đương 3", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctIndex": 2 }
+      ]
     }
   ]
 }`;
