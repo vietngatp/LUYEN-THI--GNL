@@ -31,21 +31,21 @@
       </div>
 
       <div class="flex bg-slate-100 p-1.5 rounded-2xl">
-        <button id="tab-login-btn" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-sm font-bold rounded-xl transition bg-white text-blue-950 shadow-sm cursor-pointer">Đăng Nhập</button>
-        <button id="tab-register-btn" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 text-sm font-bold rounded-xl transition text-slate-600 hover:text-slate-900 cursor-pointer">Đăng Ký Mới</button>
+        <button type="button" id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-sm font-bold rounded-xl transition bg-white text-blue-950 shadow-sm cursor-pointer">Đăng Nhập</button>
+        <button type="button" id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2.5 text-sm font-bold rounded-xl transition text-slate-600 hover:text-slate-900 cursor-pointer">Đăng Ký Mới</button>
       </div>
 
       <!-- Form Đăng Nhập -->
       <div id="form-login" class="space-y-4 text-sm">
         <div>
           <label class="block font-bold text-slate-700 mb-1.5">Tên người dùng:</label>
-          <input type="text" id="login-username" autocomplete="off" data-lpignore="true" placeholder="Nhập tên tài khoản..." class="w-full border rounded-xl p-3.5 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600 font-medium" />
+          <input type="text" id="login-username" autocomplete="off" placeholder="Nhập tên tài khoản..." class="w-full border rounded-xl p-3.5 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600 font-medium" />
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1.5">Mật khẩu:</label>
-          <input type="password" id="login-password" autocomplete="new-password" data-lpignore="true" placeholder="Nhập mật khẩu..." class="w-full border rounded-xl p-3.5 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600 font-medium" />
+          <input type="password" id="login-password" autocomplete="new-password" placeholder="Nhập mật khẩu..." class="w-full border rounded-xl p-3.5 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-600 font-medium" />
         </div>
-        <button type="button" id="btn-submit-login" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-lg transition text-base cursor-pointer">
+        <button type="button" onclick="handleLogin()" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-lg transition text-base cursor-pointer">
           Đăng Nhập Hệ Thống
         </button>
       </div>
@@ -80,7 +80,7 @@
           <label class="block font-bold text-slate-700 mb-1">Mật khẩu:</label>
           <input type="password" id="reg-password" placeholder="Mật khẩu..." class="w-full border rounded-xl p-3 bg-slate-50 outline-none" />
         </div>
-        <button type="button" id="btn-submit-register" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition text-base mt-2 cursor-pointer">
+        <button type="button" onclick="handleRegister()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition text-base mt-2 cursor-pointer">
           Đăng Ký Tài Khoản Học Viên
         </button>
       </div>
@@ -108,7 +108,7 @@
 
         <div id="view-switchers" class="flex bg-blue-950/80 p-1 rounded-xl border border-blue-700/60 shadow"></div>
 
-        <button type="button" id="btn-logout" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow cursor-pointer">
+        <button type="button" onclick="handleLogout()" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow cursor-pointer">
           Đăng Xuất
         </button>
       </div>
@@ -135,7 +135,7 @@
             <span id="st-hub-status" class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-2xl text-xs font-bold">
               ✓ ĐỦ ĐIỀU KIỆN DỰ THI
             </span>
-            <button type="button" id="btn-open-changepass" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-2xl text-xs transition cursor-pointer">
+            <button type="button" onclick="openChangePasswordModal()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-2xl text-xs transition cursor-pointer">
               🔒 Đổi Mật Khẩu
             </button>
           </div>
@@ -186,7 +186,7 @@
               <span class="text-[10px] text-slate-500 block uppercase font-bold">Thời gian phần này</span>
               <span id="exam-room-timer" class="font-mono text-xl font-black text-rose-600">75:00</span>
             </div>
-            <button type="button" id="btn-submit-part" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow transition cursor-pointer">
+            <button type="button" onclick="submitCurrentExamPart()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow transition cursor-pointer">
               Nộp Bài Phần Này →
             </button>
           </div>
@@ -203,8 +203,8 @@
             <div id="exam-q-options" class="space-y-3 pt-2"></div>
 
             <div class="flex justify-between pt-4 border-t">
-              <button type="button" id="btn-prev-q" class="px-4 py-2.5 border rounded-xl text-sm font-semibold hover:bg-slate-50 cursor-pointer">← Câu trước</button>
-              <button type="button" id="btn-next-q" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow cursor-pointer">Câu sau →</button>
+              <button type="button" onclick="prevExamQuestion()" class="px-4 py-2.5 border rounded-xl text-sm font-semibold hover:bg-slate-50 cursor-pointer">← Câu trước</button>
+              <button type="button" onclick="nextExamQuestion()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow cursor-pointer">Câu sau →</button>
             </div>
           </div>
 
@@ -221,7 +221,7 @@
         <h2 class="text-2xl font-bold text-slate-950" id="summary-main-title">Hoàn Thành Phần Thi</h2>
         <div id="summary-content-box" class="p-5 bg-slate-50 rounded-2xl border text-sm space-y-2 text-left"></div>
         <div>
-          <button type="button" id="btn-summary-next" class="px-8 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-lg transition cursor-pointer">
+          <button type="button" onclick="proceedNextExamStep()" class="px-8 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-lg transition cursor-pointer">
             Chuyển sang Phần Tiếp Theo →
           </button>
         </div>
@@ -299,7 +299,7 @@
               <input type="file" id="file-uploader" accept=".docx,.pdf,.png,.jpg,.jpeg" class="w-full text-xs text-slate-500 file:mr-3 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-xl p-1 bg-white shadow-sm" />
             </div>
 
-            <button type="button" id="btn-process-ai" class="w-full py-4 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+            <button type="button" onclick="processUploadWithAI()" class="w-full py-4 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
               <span>🚀 Bắt Đầu Đọc File & Thẩm Định Đề Tự Động</span>
             </button>
 
@@ -324,10 +324,10 @@
                   Xác nhận thêm các câu hỏi vào Ngân hàng tương ứng?
                 </span>
                 <div class="flex gap-2">
-                  <button type="button" id="btn-confirm-add" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition cursor-pointer">
+                  <button type="button" onclick="confirmAddAuditedToBank()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow transition cursor-pointer">
                     ✓ Xác Nhận Thêm Vào Ngân Hàng
                   </button>
-                  <button type="button" id="btn-clear-audit" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm transition cursor-pointer">
+                  <button type="button" onclick="clearAuditBox()" class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm transition cursor-pointer">
                     ✕ Hủy
                   </button>
                 </div>
@@ -372,7 +372,7 @@
               <input type="text" id="new-exam-time" value="Từ 08:00 - 22:00 ngày 30/10/2026" class="w-full border rounded-xl p-3 bg-white font-medium" />
             </div>
           </div>
-          <button type="button" id="btn-create-exam" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-2xl text-sm shadow-md transition cursor-pointer">
+          <button type="button" onclick="createNewExam()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-2xl text-sm shadow-md transition cursor-pointer">
             + Tạo Đợt Thi Mới Ngay
           </button>
         </div>
@@ -391,10 +391,10 @@
             <p class="text-sm text-slate-500">Quản lý tài khoản, mật khẩu, xuất báo cáo điểm thi.</p>
           </div>
           <div class="flex gap-2">
-            <button type="button" id="btn-add-student" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow cursor-pointer">
+            <button type="button" onclick="addNewStudentPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow cursor-pointer">
               + Thêm Thí Sinh Mới
             </button>
-            <button type="button" id="btn-export-csv" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow cursor-pointer">
+            <button type="button" onclick="exportStudentResultsCSV()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow cursor-pointer">
               📥 Xuất File Kết Quả Đợt Thi
             </button>
           </div>
@@ -403,7 +403,7 @@
         <div class="p-5 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
             <span class="font-bold text-amber-900 uppercase">Danh Sách Quản Trị Viên Hệ Thống</span>
-            <button type="button" id="btn-add-admin" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs cursor-pointer">+ Thêm Admin</button>
+            <button type="button" onclick="addNewAdminPrompt()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs cursor-pointer">+ Thêm Admin</button>
           </div>
           <div id="admin-list-container" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
         </div>
@@ -411,7 +411,7 @@
         <div class="p-5 bg-slate-50 border rounded-2xl space-y-2">
           <span class="font-bold text-slate-800 block">Thêm danh sách học sinh hàng loạt:</span>
           <textarea id="bulk-students-input" rows="3" placeholder="Họ tên, Năm sinh, Lớp, Email (Ví dụ: Nguyễn Văn A, 2007, 12A1, a@gmail.com)" class="w-full border rounded-xl p-3 font-mono"></textarea>
-          <button type="button" id="btn-bulk-add" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl cursor-pointer">
+          <button type="button" onclick="handleBulkAddStudents()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl cursor-pointer">
             Thêm Hàng Loạt Vào Hệ Thống
           </button>
         </div>
@@ -458,7 +458,7 @@
         </div>
         <div class="flex gap-2 pt-2 border-t">
           <button type="button" onclick="closeChangePasswordModal()" class="flex-1 py-2.5 border rounded-xl font-semibold hover:bg-slate-50 cursor-pointer">Hủy</button>
-          <button type="button" id="btn-submit-changepass" class="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow cursor-pointer">Xác Nhận</button>
+          <button type="button" onclick="submitChangePassword()" class="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow cursor-pointer">Xác Nhận</button>
         </div>
       </div>
     </div>
@@ -505,7 +505,7 @@
           </div>
         </div>
 
-        <button type="button" id="btn-confirm-start-exam" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-lg cursor-pointer">
+        <button type="button" onclick="confirmStartExam()" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-sm shadow-lg cursor-pointer">
           Bắt Đầu Vào Phòng Thi Chính Thức →
         </button>
       </div>
@@ -541,30 +541,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       showAuthScreen();
-
-      const bindClick = (id, fn) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('click', fn);
-      };
-
-      bindClick('btn-submit-login', handleLogin);
-      bindClick('btn-submit-register', handleRegister);
-      bindClick('btn-logout', handleLogout);
-      bindClick('btn-open-changepass', openChangePasswordModal);
-      bindClick('btn-submit-changepass', submitChangePassword);
-      bindClick('btn-submit-part', submitCurrentExamPart);
-      bindClick('btn-prev-q', prevExamQuestion);
-      bindClick('btn-next-q', nextExamQuestion);
-      bindClick('btn-summary-next', proceedNextExamStep);
-      bindClick('btn-process-ai', processUploadWithAI);
-      bindClick('btn-confirm-add', confirmAddAuditedToBank);
-      bindClick('btn-clear-audit', clearAuditBox);
-      bindClick('btn-create-exam', createNewExam);
-      bindClick('btn-add-student', addNewStudentPrompt);
-      bindClick('btn-export-csv', exportStudentResultsCSV);
-      bindClick('btn-add-admin', addNewAdminPrompt);
-      bindClick('btn-bulk-add', handleBulkAddStudents);
-      bindClick('btn-confirm-start-exam', confirmStartExam);
     });
 
     function switchAuthTab(tab) {
@@ -1196,12 +1172,12 @@ Mã ID của bạn là: ${generatedId}`);
       document.getElementById("audit-action-box").classList.add("hidden");
     }
 
-    // BỘ PHÂN TÍCH LATEX CHUẨN XÁC VỚI KATEX (Hỗ trợ định dạng KaTeX mạnh mẽ không bị mất công thức)
+    // Bộ phân tích KaTeX hỗ trợ mọi biểu thức toán học
     function parseKaTeX(text) {
       if (!text) return "";
       try {
         let cleanText = String(text).normalize('NFC');
-        // Render biểu thức trong $...$return cleanText.replace(/\$([^$]+?)\$/g, (match, formula) => {
+        return cleanText.replace(/\$([^$]+?)\$/g, (match, formula) => {
           try {
             if (window.katex) {
               return window.katex.renderToString(formula, { throwOnError: false });
@@ -1221,79 +1197,4 @@ Mã ID của bạn là: ${generatedId}`);
         container.innerHTML = `<div class="text-center py-12 text-slate-400 font-medium">Ngân hàng đề gốc đang trống. Vui lòng sử dụng tab AI Thẩm Định để tải đề lên!</div>`;
         return;
       }
-      container.innerHTML = dbQuestions.map((q, idx) => `
-        <div class="p-5 bg-slate-50 border rounded-2xl space-y-3 shadow-sm">
-          <div class="flex justify-between items-center">
-            <span class="font-mono font-bold text-blue-950 bg-amber-300 px-3 py-1 rounded text-sm">${q.id}</span>
-            <div class="space-x-2">
-              <span class="bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded text-xs">Mức độ: ${q.level}</span>
-              <button type="button" onclick="dbQuestions.splice(${idx}, 1); renderBankList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>
-            </div>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border leading-relaxed">${parseKaTeX(q.content)}</div>
-          ${q.imageSrc ? `<div class="my-2 text-center"><img src="${q.imageSrc}" class="max-h-48 mx-auto rounded shadow" /></div>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderPracticeList() {
-      document.getElementById("practice-count").innerText = practiceQuestions.length;
-      const container = document.getElementById("practice-list");
-      if (practiceQuestions.length === 0) {
-        container.innerHTML = `<div class="text-center py-12 text-slate-400 font-medium">Ngân hàng luyện tập đang trống. Vui lòng tải đề luyện tập qua tab AI Thẩm Định!</div>`;
-        return;
-      }
-      container.innerHTML = practiceQuestions.map((q, idx) => `
-        <div class="p-5 bg-slate-50 border rounded-2xl space-y-3 shadow-sm">
-          <div class="flex justify-between items-center">
-            <span class="font-mono font-bold text-indigo-950 bg-indigo-100 px-3 py-1 rounded text-sm">${q.id}</span>
-            <button type="button" onclick="practiceQuestions.splice(${idx}, 1); renderPracticeList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border leading-relaxed">${parseKaTeX(q.content)}</div>
-          ${q.imageSrc ? `<div class="my-2 text-center"><img src="${q.imageSrc}" class="max-h-48 mx-auto rounded shadow" /></div>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderExamsList() {
-      const container = document.getElementById("exams-list");
-      if (!container) return;
-      container.innerHTML = examsList.map((ex, idx) => `
-        <div class="p-5 bg-white border rounded-2xl flex justify-between items-center shadow-sm">
-          <div>
-            <h4 class="font-bold text-base text-blue-950">${ex.name}</h4>
-            <p class="text-slate-500 mt-1">⏰ ${ex.timeStr}</p>
-          </div>
-          <button type="button" onclick="examsList.splice(${idx}, 1); renderExamsList();" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-2 rounded-xl transition cursor-pointer">
-            🗑️ Xóa Đợt Thi
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function createNewExam() {
-      const name = document.getElementById("new-exam-name").value.trim();
-      const timeStr = document.getElementById("new-exam-time").value.trim();
-      if (!name) {
-        alert("Vui lòng nhập tên đợt thi!");
-        return;
-      }
-      examsList.push({
-        id: "EXAM-" + Date.now().toString().slice(-4),
-        name: name,
-        timeStr: timeStr || "Thời gian mở linh hoạt"
-      });
-      renderExamsList();
-      alert("✓ TẠO ĐỢT THI MỚI THÀNH CÔNG!");
-    }
-
-    function renderAdminList() {
-      const container = document.getElementById("admin-list-container");
-      if (!container) return;
-      container.innerHTML = admins.map((ad, idx) => `
-        <div class="p-3.5 bg-white border rounded-xl flex justify-between items-center">
-          <div>
-            <div class="font-bold text-blue-950">${ad.name}</div>
-            <div class="text-xs text-slate-500 font-mono">User: ${ad.username} • Pass: ${ad.password}</div>
-          </div>
-          ${admins.length > 1 ? `<button type
+      container.innerHTML = dbQuestions.map
