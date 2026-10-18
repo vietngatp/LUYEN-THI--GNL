@@ -27,7 +27,7 @@
           HSA
         </div>
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">CỔNG KHẢO SÁT & LUYỆN THI ĐGNL</h1>
-        <p class="text-sm text-slate-500">CT GDPT 2018 • Phiên bản V23A (Nền tảng V22)</p>
+        <p class="text-sm text-slate-500">CT GDPT 2018 • Phiên bản V23A</p>
       </div>
 
       <div class="flex bg-slate-100 p-1.5 rounded-2xl">
@@ -35,7 +35,7 @@
         <button id="tab-register-btn" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 text-sm font-bold rounded-xl transition text-slate-600 hover:text-slate-900 cursor-pointer">Đăng Ký Mới</button>
       </div>
 
-      <!-- Form Đăng Nhập (Tắt autocomplete bảo mật) -->
+      <!-- Form Đăng Nhập -->
       <div id="form-login" class="space-y-4 text-sm">
         <div>
           <label class="block font-bold text-slate-700 mb-1.5">Tên người dùng:</label>
@@ -251,8 +251,8 @@
       <!-- Tab 1: AI Thẩm Định Đề (2 Chế Độ) -->
       <div id="admin-tab-audit" class="bg-white p-6 rounded-3xl shadow-sm border space-y-6">
         <div class="border-b pb-3">
-          <h2 class="text-xl font-bold text-blue-950">AI Phân Rã & Thẩm Định Đề Thi (gemini-2.5-flash)</h2>
-          <p class="text-sm text-slate-500">Tải đề gốc hoặc đề luyện tập, render LaTeX trực quan, gắn ảnh độc lập cho từng câu.</p>
+          <h2 class="text-xl font-bold text-blue-950">AI Phân Rã & Thẩm Định Đề Thi (gemini-3.8-flash)</h2>
+          <p class="text-sm text-slate-500">Tải đề gốc hoặc đề luyện tập, render KaTeX trực quan chuẩn xác, gắn ảnh độc lập cho từng câu.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -642,7 +642,8 @@
         history: []
       });
 
-      alert(`✓ ĐĂNG KÝ THÀNH CÔNG!\nMã ID của bạn là: ${generatedId}`);
+      alert(`✓ ĐĂNG KÝ THÀNH CÔNG!
+Mã ID của bạn là: ${generatedId}`);
       switchAuthTab('login');
       document.getElementById("login-username").value = username;
     }
@@ -1195,12 +1196,12 @@
       document.getElementById("audit-action-box").classList.add("hidden");
     }
 
-    // Bộ phân tích LaTeX chuẩn xác KaTeX (hỗ trợ \bot, tích phân, vector...)
+    // BỘ PHÂN TÍCH LATEX CHUẨN XÁC VỚI KATEX (Hỗ trợ định dạng KaTeX mạnh mẽ không bị mất công thức)
     function parseKaTeX(text) {
       if (!text) return "";
       try {
         let cleanText = String(text).normalize('NFC');
-        return cleanText.replace(/\$([^$]+?)\$/g, (match, formula) => {
+        // Render biểu thức trong $...$return cleanText.replace(/\$([^$]+?)\$/g, (match, formula) => {
           try {
             if (window.katex) {
               return window.katex.renderToString(formula, { throwOnError: false });
@@ -1295,155 +1296,4 @@
             <div class="font-bold text-blue-950">${ad.name}</div>
             <div class="text-xs text-slate-500 font-mono">User: ${ad.username} • Pass: ${ad.password}</div>
           </div>
-          ${admins.length > 1 ? `<button type="button" onclick="admins.splice(${idx}, 1); renderAdminList();" class="text-rose-600 font-bold text-xs cursor-pointer">Xóa</button>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function addNewAdminPrompt() {
-      const name = prompt("Tên quản trị viên:");
-      if (!name) return;
-      const username = prompt("Tên đăng nhập:");
-      if (!username) return;
-      const password = prompt("Mật khẩu:", "admin123") || "admin123";
-      admins.push({ name, username, password });
-      renderAdminList();
-      alert("✓ Đã thêm quản trị viên mới!");
-    }
-
-    function renderStudentsTable() {
-      const tbody = document.getElementById("students-table-body");
-      if (!tbody) return;
-      tbody.innerHTML = students.map((st, idx) => `
-        <tr class="hover:bg-slate-50">
-          <td class="py-3.5 px-3 font-mono font-bold text-blue-900">${st.id}</td>
-          <td class="py-3.5 px-3 font-semibold cursor-pointer text-blue-600 hover:underline" onclick="openStudentDetailModal(${idx})">${st.name}</td>
-          <td class="py-3.5 px-3">${st.birthYear}</td>
-          <td class="py-3.5 px-3">${st.classUnit}</td>
-          <td class="py-3.5 px-3 font-mono">${st.password}</td>
-          <td class="py-3.5 px-3 text-center">
-            <span class="px-3 py-1 rounded-full font-bold text-xs ${st.eligible ? 'bg-emerald-500 text-white' : 'bg-rose-100 text-rose-800'}">
-              ${st.eligible ? '✓ ĐỦ ĐIỀU KIỆN' : '✗ KHÓA THI'}
-            </span>
-          </td>
-          <td class="py-3.5 px-3 text-right space-x-2">
-            <button type="button" onclick="students[${idx}].eligible = !students[${idx}].eligible; renderStudentsTable();" class="text-blue-600 font-bold hover:underline cursor-pointer">${st.eligible ? 'Khóa' : 'Mở'}</button>
-            <button type="button" onclick="students.splice(${idx}, 1); renderStudentsTable();" class="text-rose-600 font-bold hover:underline cursor-pointer">Xóa</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function addNewStudentPrompt() {
-      const name = prompt("Họ và tên thí sinh:");
-      if (!name) return;
-      const birthYear = prompt("Năm sinh:", "2007") || "2007";
-      const classUnit = prompt("Đơn vị lớp:", "12A1") || "12A1";
-      const email = prompt("Email:", "hocsinh@gmail.com") || "";
-
-      const yShort = birthYear.slice(-2);
-      const sttNum = students.length + 1;
-      const sttStr = sttNum < 10 ? '00' + sttNum : (sttNum < 100 ? '0' + sttNum : '' + sttNum);
-      const generatedId = `${yShort}-${classUnit}-${sttStr}`;
-
-      students.push({
-        id: generatedId,
-        name: name,
-        username: "hs" + sttNum,
-        birthYear: birthYear,
-        classUnit: classUnit,
-        email: email,
-        password: "123",
-        eligible: true,
-        history: []
-      });
-
-      renderStudentsTable();
-      alert(`✓ Đã thêm thí sinh ${name} với ID: ${generatedId}!`);
-    }
-
-    function handleBulkAddStudents() {
-      const text = document.getElementById("bulk-students-input").value.trim();
-      if (!text) {
-        alert("Vui lòng nhập danh sách!");
-        return;
-      }
-      const lines = text.split('\n');
-      let count = 0;
-      lines.forEach(line => {
-        const parts = line.split(',').map(p => p.trim());
-        if (parts.length >= 1 && parts[0]) {
-          const name = parts[0];
-          const birthYear = parts[1] || "2007";
-          const classUnit = parts[2] || "12A1";
-          const email = parts[3] || "";
-
-          const yShort = birthYear.slice(-2);
-          const sttNum = students.length + 1;
-          const sttStr = sttNum < 10 ? '00' + sttNum : (sttNum < 100 ? '0' + sttNum : '' + sttNum);
-          const generatedId = `${yShort}-${classUnit}-${sttStr}`;
-
-          students.push({
-            id: generatedId,
-            name: name,
-            username: "hs" + sttNum,
-            birthYear: birthYear,
-            classUnit: classUnit,
-            email: email,
-            password: "123",
-            eligible: true,
-            history: []
-          });
-          count++;
-        }
-      });
-
-      document.getElementById("bulk-students-input").value = "";
-      renderStudentsTable();
-      alert(`✓ Đã thêm thành công ${count} học sinh!`);
-    }
-
-    function openStudentDetailModal(idx) {
-      const st = students[idx];
-      document.getElementById("modal-student-title").innerText = `Hồ Sơ & Điểm Thi: ${st.name} (${st.id})`;
-      const contentBox = document.getElementById("modal-student-content");
-
-      if (!st.history || st.history.length === 0) {
-        contentBox.innerHTML = `<p class="text-slate-500 py-6 text-center">Thí sinh này chưa tham gia đợt thi nào.</p>`;
-      } else {
-        contentBox.innerHTML = st.history.map(h => `
-          <div class="p-4 bg-slate-50 border rounded-2xl space-y-1">
-            <div class="font-bold text-blue-950">${h.examName}</div>
-            <div class="text-slate-600">Toán & Số liệu: <strong>${h.mathScore}/50</strong> | Đọc hiểu: <strong>${h.litScore}/50</strong> | Lựa chọn: <strong>${h.choiceScore}/50</strong></div>
-            <div class="text-emerald-800 font-black">Tổng điểm: ${h.totalScore}/150 (Nộp lúc: ${h.submitTime})</div>
-          </div>
-        `).join('');
-      }
-      document.getElementById("student-detail-modal").classList.remove("hidden");
-    }
-
-    function closeStudentDetailModal() {
-      document.getElementById("student-detail-modal").classList.add("hidden");
-    }
-
-    function exportStudentResultsCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,Mã ID,Họ và Tên,Lớp,Đợt Thi,Toán,Đọc Hiểu,Lựa Chọn,Tổng Điểm,Thời Gian Nộp\r\n";
-      students.forEach(st => {
-        if (st.history && st.history.length > 0) {
-          st.history.forEach(h => {
-            csvContent += `"${st.id}","${st.name}","${st.classUnit}","${h.examName}",${h.mathScore},${h.litScore},${h.choiceScore},${h.totalScore},"${h.submitTime}"\r\n`;
-          });
-        }
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "Ket_Qua_Thi_HSA.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  </script>
-</body>
-</html>
+          ${admins.length > 1 ? `<button type
