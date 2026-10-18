@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
-  <!-- Mammoth.js để đọc file Word .docx -->
+  <!-- Mammoth.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
   <style>
@@ -61,7 +61,7 @@
   <!-- ==================== MAIN CONTAINER ==================== -->
   <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1 flex flex-col justify-center">
 
-    <!-- 1. GIAO DIỆN MỞ ĐẦU (MẶC ĐỊNH) -->
+    <!-- 1. GIAO DIỆN MỞ ĐẦU -->
     <div id="view-auth" class="max-w-md w-full mx-auto bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-200 my-auto">
       <div class="text-center space-y-2 mb-6">
         <div class="w-16 h-16 bg-blue-900 text-amber-400 rounded-2xl flex items-center justify-center font-black text-3xl mx-auto shadow-md">HSA</div>
@@ -133,7 +133,7 @@
     <div id="view-student" class="hidden space-y-6">
       <div id="student-hub" class="space-y-6">
         
-        <!-- Khung nhắc nộp lệ phí kèm Mã QR, Số tiền và Cú pháp chuẩn -->
+        <!-- Khung nhắc nộp lệ phí -->
         <div id="shub-fee-alert" class="hidden p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl shadow-sm space-y-4">
           <div class="flex items-center gap-2 border-b border-amber-200 pb-2">
             <span class="text-2xl">⚠️</span>
@@ -141,14 +141,12 @@
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <!-- Cột hiển thị mã QR -->
             <div class="bg-white p-3 rounded-2xl border border-amber-200 text-center shadow-sm">
               <span class="block text-xs font-bold text-slate-600 mb-2 uppercase">Mã QR Thanh Toán</span>
               <img id="shub-fee-qr" src="" alt="Mã QR Lệ Phí" class="w-44 h-44 object-contain mx-auto rounded-xl border" />
               <span id="shub-fee-no-qr" class="hidden text-xs text-slate-400 py-16 block font-medium">Chưa có mã QR</span>
             </div>
 
-            <!-- Cột thông tin lệ phí và cú pháp chuyển khoản -->
             <div class="md:col-span-2 space-y-3 text-sm">
               <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-amber-200">
                 <span class="text-slate-600 font-semibold">Mức lệ phí đợt thi:</span>
@@ -168,9 +166,7 @@
                 </p>
               </div>
 
-              <div id="shub-fee-action-container" class="pt-1">
-                <!-- Nút hoặc trạng thái sẽ được cập nhật động bằng JavaScript -->
-              </div>
+              <div id="shub-fee-action-container" class="pt-1"></div>
             </div>
           </div>
         </div>
@@ -365,7 +361,7 @@
       <div id="admin-tab-audit" class="bg-white p-6 rounded-3xl shadow-sm border space-y-6">
         <div class="border-b pb-3">
           <h2 class="text-xl font-bold text-blue-950">AI Thẩm Định Đề Thi (gemini-3.8-flash)</h2>
-          <p class="text-sm text-slate-500">Tải đề gốc (thẩm định) hoặc tải đề luyện tập (phân loại chuyên đề CT GDPT 2018 & độ khó B, H, VD, VDC).</p>
+          <p class="text-sm text-slate-500">Tải file PDF hoặc Ảnh để AI bóc tách chính xác 100% công thức toán KaTeX.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -413,8 +409,8 @@
             </div>
 
             <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">Chọn tệp đề thi (Word .docx, PDF hoặc Ảnh):</label>
-              <input type="file" id="file-uploader" accept=".docx,.pdf,.png,.jpg,.jpeg" class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-2xl p-1 bg-white shadow-sm" />
+              <label class="block text-sm font-bold text-slate-700 mb-1">Chọn tệp đề thi (Khuyên dùng PDF hoặc Ảnh):</label>
+              <input type="file" id="file-uploader" accept=".pdf,.png,.jpg,.jpeg,.docx" class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-blue-700 file:text-white file:font-bold hover:file:bg-blue-800 cursor-pointer border rounded-2xl p-1 bg-white shadow-sm" />
             </div>
 
             <button type="button" id="btn-process-ai" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-2xl text-base shadow transition">
@@ -432,7 +428,7 @@
               <div class="h-72 flex flex-col items-center justify-center text-slate-400 text-center">
                 <span class="text-4xl mb-2">📄</span>
                 <span class="font-bold text-slate-600 text-base">Chưa có kết quả bóc tách.</span>
-                <span class="text-xs text-slate-500 mt-1">Chọn file và nhấn Bắt Đầu để nạp dữ liệu.</span>
+                <span class="text-xs text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>
               </div>
             </div>
 
@@ -458,7 +454,7 @@
         <div class="flex justify-between items-center border-b pb-3">
           <div>
             <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Đề Gốc (100% Đề Thi Thẩm Định)</h2>
-            <p class="text-xs text-slate-500">Ngân hàng hiện đang sẵn sàng nhận đề tải lên từ AI.</p>
+            <p class="text-xs text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
           </div>
           <button type="button" id="btn-clear-bank-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
             🗑️ Xóa Sạch Ngân Hàng Đề Gốc
@@ -472,7 +468,7 @@
         <div class="flex justify-between items-center border-b pb-3">
           <div>
             <h2 class="text-xl font-bold text-blue-950">Ngân Hàng Luyện Thi (Phân Loại CT GDPT 2018)</h2>
-            <p class="text-xs text-slate-500">Chứa các câu hỏi có mã đuôi LT theo chuyên đề và mức độ.</p>
+            <p class="text-xs text-slate-500">Mỗi câu đều có nút chỉnh sửa (đồ thị, hình ảnh) và nút xóa riêng biệt.</p>
           </div>
           <button type="button" id="btn-clear-practice-all" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">
             🗑️ Xóa Sạch Ngân Hàng Luyện Thi
@@ -481,7 +477,7 @@
         <div id="practice-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
       </div>
 
-      <!-- Tab 4: Quản Lý Đợt Thi (Tải mã QR & Nhập lệ phí thi) -->
+      <!-- Tab 4: Quản Lý Đợt Thi -->
       <div id="admin-tab-exams" class="hidden bg-white p-6 rounded-3xl shadow-sm border space-y-6">
         <h2 class="text-xl font-bold text-blue-950 border-b pb-3">Quản Lý Đợt Thi HSA (Cấu Hình QR & Lệ Phí)</h2>
         <div class="p-5 bg-slate-50 rounded-2xl border space-y-4">
@@ -502,7 +498,6 @@
             </div>
           </div>
 
-          <!-- Tải mã QR tài khoản nhận tiền -->
           <div class="p-3.5 bg-white border rounded-2xl space-y-2">
             <span class="block text-xs font-bold text-slate-700 uppercase">Tải lên ảnh Mã QR tài khoản đóng lệ phí:</span>
             <div class="flex flex-col md:flex-row items-center gap-4">
@@ -577,6 +572,96 @@
       </div>
     </div>
 
+    <!-- ==================== MODAL CHỈNH SỬA CÂU HỎI (HÌNH ẢNH / NỘI DUNG / ĐÁP ÁN) ==================== -->
+    <div id="modal-edit-question" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div class="bg-white max-w-2xl w-full rounded-3xl p-6 shadow-2xl border space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h3 class="text-lg font-bold text-blue-950">Chỉnh Sửa Câu Hỏi & Bổ Sung Hình Vẽ</h3>
+            <span class="text-xs text-slate-500 font-mono">Mã câu hỏi: <strong id="edit-q-id" class="text-blue-900"></strong></span>
+          </div>
+          <button type="button" id="btn-close-edit-q-x" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+        </div>
+
+        <div class="space-y-3 text-sm">
+          <!-- Nội dung câu hỏi -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block font-bold text-slate-700 text-xs">Nội dung câu hỏi (kèm KaTeX $...$):</label>
+              <button type="button" onclick="insertImageTagToContent()" class="text-xs text-blue-600 font-bold hover:underline cursor-pointer">
+                + Chèn vị trí ảnh [HINH_ANH]
+              </button>
+            </div>
+            <textarea id="edit-q-content" rows="4" class="w-full border rounded-xl p-3 text-sm font-mono bg-white outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+          </div>
+
+          <!-- Khu vực tải và bổ sung ảnh đồ thị / bảng biến thiên -->
+          <div class="p-3.5 bg-slate-50 border rounded-2xl space-y-2">
+            <label class="block font-bold text-slate-700 text-xs uppercase">Bổ sung / Thay đổi đồ thị, bảng biến thiên, hình vẽ:</label>
+            <input type="file" id="edit-q-img-file" accept="image/*" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:font-bold hover:file:bg-blue-700 cursor-pointer" />
+            
+            <div id="edit-q-img-preview-box" class="hidden mt-2 p-2 bg-white rounded-xl border text-center space-y-2">
+              <img id="edit-q-img-preview" src="" alt="Hình ảnh câu hỏi" class="max-h-52 mx-auto rounded-lg border object-contain" />
+              <button type="button" onclick="removeQuestionImage()" class="text-xs font-bold text-rose-600 hover:underline">
+                🗑️ Gỡ bỏ hình ảnh câu này
+              </button>
+            </div>
+          </div>
+
+          <!-- Các phương án trắc nghiệm -->
+          <div class="space-y-2">
+            <label class="block font-bold text-slate-700 text-xs">Phương án trả lời (chọn nút tròn để đặt làm đáp án đúng):</label>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <input type="radio" name="editCorrectOpt" value="0" id="opt-radio-0" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold text-xs w-4">A.</span>
+                <input type="text" id="edit-q-opt-0" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="radio" name="editCorrectOpt" value="1" id="opt-radio-1" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold text-xs w-4">B.</span>
+                <input type="text" id="edit-q-opt-1" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="radio" name="editCorrectOpt" value="2" id="opt-radio-2" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold text-xs w-4">C.</span>
+                <input type="text" id="edit-q-opt-2" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="radio" name="editCorrectOpt" value="3" id="opt-radio-3" class="w-4 h-4 text-emerald-600 cursor-pointer" title="Chọn làm đáp án đúng" />
+                <span class="font-bold text-xs w-4">D.</span>
+                <input type="text" id="edit-q-opt-3" class="flex-1 border rounded-xl p-2 text-sm bg-white outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Độ khó và chuyên đề -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="block font-bold text-slate-700 text-xs mb-1">Mức độ nhận thức:</label>
+              <select id="edit-q-level" class="w-full border rounded-xl p-2 text-xs font-bold bg-white">
+                <option value="B">Biết (B)</option>
+                <option value="H">Hiểu (H)</option>
+                <option value="VD">Vận dụng (VD)</option>
+                <option value="VDC">Vận dụng cao (VDC)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 text-xs mb-1">Chuyên đề:</label>
+              <input type="text" id="edit-q-topic" class="w-full border rounded-xl p-2 text-xs bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-3 border-t">
+          <button type="button" id="btn-close-edit-q-btn" class="flex-1 py-2.5 border rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">Hủy</button>
+          <button type="button" id="btn-save-edit-q" class="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm shadow">
+            Lưu Thay Đổi
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL ĐỔI MẬT KHẨU HỌC VIÊN -->
     <div id="modal-change-pass" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl border space-y-4">
@@ -646,7 +731,6 @@
       }
     ];
 
-    // Đợt thi kèm Lệ phí thi và Mã QR mẫu
     var exams = [
       {
         id: "EXAM-HSA-01",
@@ -658,10 +742,16 @@
       }
     ];
 
+    // Ngân hàng câu hỏi
     var dbQuestions = [];
     var practiceDb = [];
     var tempAuditQuestions = [];
-    var tempNewExamQR = ""; // Biến tạm lưu ảnh QR khi tạo đợt thi mới
+    var tempNewExamQR = "";
+
+    // Biến quản lý phiên sửa câu hỏi
+    var currentEditingTarget = null; // 'bank' hoặc 'practice'
+    var currentEditingIndex = -1;
+    var currentEditingImgData = null;
 
     // --- 2. HÀM RENDER KATEX ---
     function parseKaTeX(text) {
@@ -766,7 +856,7 @@
         email: email,
         password: pass,
         eligible: false,          // Mặc định khóa thi
-        feeStatus: 'unpaid',      // Mặc định chưa nộp lệ phí
+        feeStatus: 'unpaid',
         takenQuestionIds: [],
         examHistory: []
       };
@@ -832,14 +922,12 @@
       }
     }
 
-    // Trích xuất số thứ tự đợt thi từ chuỗi tên đợt thi (Ví dụ: "Đợt 1 - ..." -> "1")
     function extractExamRoundNumber(examName) {
       if (!examName) return "1";
       var match = examName.match(/đợt\s*(\d+)/i);
       return match ? match[1] : "1";
     }
 
-    // Cập nhật giao diện phòng học viên & hiển thị QR, Lệ phí, Cú pháp chuyển khoản
     function updateStudentHubData() {
       if (!currentUser || currentUser.role !== 'student') return;
       document.getElementById("shub-name").innerText = currentUser.name;
@@ -863,11 +951,9 @@
         statusEl.innerText = "✗ ĐANG KHÓA QUYỀN THI";
         alertBox.classList.remove("hidden");
 
-        // Cập nhật số tiền lệ phí
         var feeAmt = activeEx && activeEx.feeAmount ? activeEx.feeAmount : "50.000 VNĐ";
         document.getElementById("shub-fee-amount").innerText = feeAmt;
 
-        // Cập nhật mã QR
         var qrImgEl = document.getElementById("shub-fee-qr");
         var noQrEl = document.getElementById("shub-fee-no-qr");
         if (activeEx && activeEx.qrImage) {
@@ -879,12 +965,10 @@
           noQrEl.classList.remove("hidden");
         }
 
-        // Tạo cú pháp chuyển tiền chuẩn: ID[mã ID thí sinh] chuyen tien dot[đợt thi]
         var roundNum = extractExamRoundNumber(activeEx ? activeEx.name : "Đợt 1");
         var syntaxStr = "ID" + currentUser.id + " chuyen tien dot " + roundNum;
         document.getElementById("shub-fee-syntax").innerText = syntaxStr;
 
-        // Trạng thái nút bấm
         if (currentUser.feeStatus === 'pending') {
           actionBox.innerHTML = '<span class="px-4 py-2.5 bg-amber-200 text-amber-950 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-amber-300">' +
             '⏳ ĐÃ BÁO NỘP PHÍ: CHỜ QUẢN TRỊ DUYỆT' +
@@ -897,7 +981,6 @@
       }
     }
 
-    // Sao chép nhanh cú pháp chuyển khoản
     function copyTransferSyntax() {
       var text = document.getElementById("shub-fee-syntax").innerText;
       if (navigator.clipboard) {
@@ -909,13 +992,12 @@
       }
     }
 
-    // Thí sinh nhấn nút báo đã nộp lệ phí
     function requestFeeApproval() {
       currentUser.feeStatus = 'pending';
       var idx = students.findIndex(function(s) { return s.id === currentUser.id; });
       if (idx !== -1) students[idx].feeStatus = 'pending';
 
-      alert("✓ Yêu cầu mở khóa đã được gửi! Quản trị viên sẽ kiểm tra tài khoản và phê duyệt quyền dự thi cho bạn.");
+      alert("✓ Yêu cầu mở khóa đã được gửi! Quản trị viên sẽ kiểm tra và phê duyệt quyền dự thi cho bạn.");
       updateStudentHubData();
     }
 
@@ -1258,12 +1340,12 @@
       updateStudentHubData();
     }
 
-    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH ---
+    // --- 5. QUẢN TRỊ VIÊN: AI THẨM ĐỊNH (TỐI ƯU PDF/ẢNH) ---
     async function processUploadWithAI() {
       var fileInput = document.getElementById("file-uploader");
       var file = fileInput ? fileInput.files[0] : null;
       if (!file) {
-        alert("Vui lòng chọn một tệp đề thi (.docx, .pdf hoặc ảnh)!");
+        alert("Vui lòng chọn một tệp đề thi (PDF hoặc Ảnh)!");
         return;
       }
 
@@ -1289,25 +1371,25 @@
           apiKey: apiKey
         };
 
+        var base64Data = await new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function() { 
+            var res = reader.result;
+            resolve(res.split(',')[1]); 
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        payload.fileData = base64Data;
+        payload.fileName = file.name;
+        
         if (file.name.endsWith('.docx')) {
-          var arrayBuffer = await file.arrayBuffer();
-          var mammothResult = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-          var rawText = mammothResult.value;
-          if (!rawText.trim()) throw new Error("File Word rỗng hoặc không có văn bản.");
-          var utf8Bytes = new TextEncoder().encode(rawText);
-          var binary = '';
-          utf8Bytes.forEach(function(b) { binary += String.fromCharCode(b); });
-          payload.fileData = btoa(binary);
-          payload.mimeType = 'text/plain';
+          payload.mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        } else if (file.name.endsWith('.pdf')) {
+          payload.mimeType = 'application/pdf';
         } else {
-          var base64 = await new Promise(function(resolve, reject) {
-            var reader = new FileReader();
-            reader.onload = function() { resolve(reader.result.split(',')[1]); };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-          payload.fileData = base64;
-          payload.mimeType = file.type || 'application/pdf';
+          payload.mimeType = file.type || 'image/jpeg';
         }
 
         var response = await fetch('/api/upload', {
@@ -1321,7 +1403,7 @@
         document.getElementById("btn-process-ai").disabled = false;
 
         if (!response.ok || result.error) {
-          alert("Lỗi từ server: " + (result.error || "Không rõ"));
+          alert("Lỗi từ server: " + (result.error || "Không rõ nguyên nhân"));
           return;
         }
 
@@ -1398,14 +1480,14 @@
       document.getElementById("audit-result-box").innerHTML = '<div class="h-72 flex flex-col items-center justify-center text-slate-400 text-center">' +
         '<span class="text-4xl mb-2">📄</span>' +
         '<span class="font-bold text-slate-600 text-base">Chưa có kết quả bóc tách.</span>' +
-        '<span class="text-xs text-slate-500 mt-1">Chọn file và nhấn Bắt Đầu để nạp dữ liệu.</span>' +
+        '<span class="text-xs text-slate-500 mt-1">Chọn file PDF và nhấn Bắt Đầu để nạp dữ liệu.</span>' +
       '</div>';
       document.getElementById("audit-action-box").classList.add("hidden");
       var fileInput = document.getElementById("file-uploader");
       if (fileInput) fileInput.value = "";
     }
 
-    // --- 6. QUẢN LÝ ĐỢT THI (HIỂN THỊ LỆ PHÍ & QR CODE TRÊN DANH SÁCH) ---
+    // --- 6. QUẢN LÝ ĐỢT THI (ĐÓNG/MỞ ĐỢT THI) ---
     function renderExamsList() {
       var container = document.getElementById("exams-list");
       if (!container) return;
@@ -1478,7 +1560,6 @@
         qrImage: tempNewExamQR || "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(name)
       });
 
-      // Reset form
       tempNewExamQR = "";
       document.getElementById("new-exam-qr-file").value = "";
       document.getElementById("new-exam-qr-preview-box").classList.add("hidden");
@@ -1618,7 +1699,7 @@
         classUnit: cls,
         email: email,
         password: pass,
-        eligible: false,          // Mặc định khóa thi
+        eligible: false,
         feeStatus: 'unpaid',
         takenQuestionIds: [],
         examHistory: []
@@ -1660,7 +1741,7 @@
               classUnit: cls,
               email: em,
               password: pw,
-              eligible: false,      // Mặc định khóa thi
+              eligible: false,
               feeStatus: 'unpaid',
               takenQuestionIds: [],
               examHistory: []
@@ -1723,7 +1804,7 @@
       document.body.removeChild(link);
     }
 
-    // --- 8. RENDER NGÂN HÀNG & CHUYỂN TAB QUẢN TRỊ ---
+    // --- 8. RENDER NGÂN HÀNG CÓ ĐẦY ĐỦ NÚT SỬA & XÓA CÂU HỎI ---
     function renderBankList() {
       document.getElementById("bank-count").innerText = dbQuestions.length;
       var container = document.getElementById("bank-list");
@@ -1744,12 +1825,18 @@
             '<span class="font-mono font-bold text-blue-950 bg-amber-300 px-2.5 py-0.5 rounded-lg">' + q.id + '</span>' +
             '<div class="flex items-center gap-2">' +
               '<span class="text-xs bg-slate-200 px-2 py-0.5 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
-              '<button type="button" onclick="if(confirm(\'Xóa câu ' + q.id + '?\')){ dbQuestions.splice(' + idx + ', 1); renderBankList(); }" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-0.5 rounded-lg bg-white text-xs">' +
+              '<button type="button" onclick="openEditQuestionModal(\'bank\', ' + idx + ')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow">' +
+                '✏️ Sửa / Thêm ảnh' +
+              '</button>' +
+              '<button type="button" onclick="deleteSingleQuestion(\'bank\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-1 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
               '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' + parseKaTeX(q.content.replace("[HINH_ANH]", "")) + '</div>' +
+          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' +
+            parseKaTeX(q.content.replace("[HINH_ANH]", "")) +
+            (q.hasImage && q.imageSrc ? '<div class="my-2 p-2 bg-slate-50 border rounded-xl text-center"><img src="' + q.imageSrc + '" class="max-h-48 mx-auto rounded shadow-sm" /></div>' : '') +
+          '</div>' +
           '<div class="grid grid-cols-2 gap-2 pt-1 text-xs">' +
             q.options.map(function(opt, oIdx) {
               var isC = oIdx === q.correctIndex;
@@ -1782,14 +1869,128 @@
             '<div class="flex items-center gap-2">' +
               '<span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold">' + (q.topic || 'Chuyên đề GDPT 2018') + '</span>' +
               '<span class="text-xs bg-slate-200 px-2 py-0.5 rounded font-bold">Mức: ' + (q.level || 'H') + '</span>' +
-              '<button type="button" onclick="if(confirm(\'Xóa câu ' + q.id + '?\')){ practiceDb.splice(' + idx + ', 1); renderPracticeList(); }" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-0.5 rounded-lg bg-white text-xs">' +
+              '<button type="button" onclick="openEditQuestionModal(\'practice\', ' + idx + ')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow">' +
+                '✏️ Sửa / Thêm ảnh' +
+              '</button>' +
+              '<button type="button" onclick="deleteSingleQuestion(\'practice\', ' + idx + ')" class="text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-2.5 py-1 rounded-lg bg-white text-xs">' +
                 '🗑️ Xóa' +
               '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' + parseKaTeX(q.content.replace("[HINH_ANH]", "")) + '</div>' +
+          '<div class="bg-white p-3.5 rounded-xl border leading-relaxed">' +
+            parseKaTeX(q.content.replace("[HINH_ANH]", "")) +
+            (q.hasImage && q.imageSrc ? '<div class="my-2 p-2 bg-slate-50 border rounded-xl text-center"><img src="' + q.imageSrc + '" class="max-h-48 mx-auto rounded shadow-sm" /></div>' : '') +
+          '</div>' +
+          '<div class="grid grid-cols-2 gap-2 pt-1 text-xs">' +
+            q.options.map(function(opt, oIdx) {
+              var isC = oIdx === q.correctIndex;
+              var cCls = isC ? 'border-emerald-500 font-bold text-emerald-900 bg-emerald-50' : '';
+              return '<div class="p-2 border rounded-lg bg-white ' + cCls + '">' + String.fromCharCode(65 + oIdx) + '. ' + parseKaTeX(opt) + '</div>';
+            }).join('') +
+          '</div>' +
         '</div>';
       }).join('');
+    }
+
+    // Xóa từng câu hỏi trong ngân hàng
+    function deleteSingleQuestion(target, idx) {
+      var arr = target === 'practice' ? practiceDb : dbQuestions;
+      var q = arr[idx];
+      if (confirm('Bạn có chắc chắn muốn xóa câu hỏi mã "' + q.id + '" khỏi hệ thống?')) {
+        arr.splice(idx, 1);
+        if (target === 'practice') {
+          renderPracticeList();
+        } else {
+          renderBankList();
+        }
+      }
+    }
+
+    // --- 9. MODAL CHỈNH SỬA CÂU HỎI & BỔ SUNG ẢNH ĐỒ THỊ ---
+    function openEditQuestionModal(target, idx) {
+      currentEditingTarget = target;
+      currentEditingIndex = idx;
+      var arr = target === 'practice' ? practiceDb : dbQuestions;
+      var q = arr[idx];
+
+      document.getElementById("edit-q-id").innerText = q.id;
+      document.getElementById("edit-q-content").value = q.content;
+      document.getElementById("edit-q-opt-0").value = q.options[0] || "";
+      document.getElementById("edit-q-opt-1").value = q.options[1] || "";
+      document.getElementById("edit-q-opt-2").value = q.options[2] || "";
+      document.getElementById("edit-q-opt-3").value = q.options[3] || "";
+      document.getElementById("edit-q-level").value = q.level || "H";
+      document.getElementById("edit-q-topic").value = q.topic || "Tổng hợp";
+
+      // Chọn radio đáp án đúng
+      var cIdx = q.correctIndex !== undefined ? q.correctIndex : 0;
+      var rad = document.getElementById("opt-radio-" + cIdx);
+      if (rad) rad.checked = true;
+
+      // Xử lý ảnh hiện tại
+      currentEditingImgData = q.imageSrc || null;
+      var previewBox = document.getElementById("edit-q-img-preview-box");
+      var previewImg = document.getElementById("edit-q-img-preview");
+
+      if (currentEditingImgData) {
+        previewImg.src = currentEditingImgData;
+        previewBox.classList.remove("hidden");
+      } else {
+        previewBox.classList.add("hidden");
+      }
+
+      document.getElementById("edit-q-img-file").value = "";
+      document.getElementById("modal-edit-question").classList.remove("hidden");
+    }
+
+    function closeEditQuestionModal() {
+      document.getElementById("modal-edit-question").classList.add("hidden");
+      currentEditingTarget = null;
+      currentEditingIndex = -1;
+      currentEditingImgData = null;
+    }
+
+    function insertImageTagToContent() {
+      var textarea = document.getElementById("edit-q-content");
+      textarea.value += " [HINH_ANH] ";
+      textarea.focus();
+    }
+
+    function removeQuestionImage() {
+      currentEditingImgData = null;
+      document.getElementById("edit-q-img-preview-box").classList.add("hidden");
+      document.getElementById("edit-q-img-file").value = "";
+    }
+
+    function saveEditQuestionModalChanges() {
+      if (currentEditingIndex < 0 || !currentEditingTarget) return;
+      var arr = currentEditingTarget === 'practice' ? practiceDb : dbQuestions;
+      var q = arr[currentEditingIndex];
+
+      q.content = document.getElementById("edit-q-content").value.trim();
+      q.options = [
+        document.getElementById("edit-q-opt-0").value.trim(),
+        document.getElementById("edit-q-opt-1").value.trim(),
+        document.getElementById("edit-q-opt-2").value.trim(),
+        document.getElementById("edit-q-opt-3").value.trim()
+      ];
+
+      var radChecked = document.querySelector('input[name="editCorrectOpt"]:checked');
+      q.correctIndex = radChecked ? parseInt(radChecked.value) : 0;
+      q.level = document.getElementById("edit-q-level").value;
+      q.topic = document.getElementById("edit-q-topic").value.trim() || "Tổng hợp";
+
+      q.imageSrc = currentEditingImgData;
+      q.hasImage = !!currentEditingImgData || q.content.includes("[HINH_ANH]");
+
+      closeEditQuestionModal();
+
+      if (currentEditingTarget === 'practice') {
+        renderPracticeList();
+      } else {
+        renderBankList();
+      }
+      alert('✓ Đã lưu thay đổi cho câu "' + q.id + '" thành công!');
     }
 
     function switchAdminTab(tab) {
@@ -1810,7 +2011,7 @@
       if (tab === 'users') { renderAdminsList(); renderStudentsTable(); }
     }
 
-    // --- 9. GÁN SỰ KIỆN SAU KHI TẢI XONG DOM ---
+    // --- 10. GÁN SỰ KIỆN SAU KHI TẢI XONG DOM ---
     document.addEventListener("DOMContentLoaded", function() {
       var savedKey = localStorage.getItem('HSA_GEMINI_KEY');
       if (savedKey) {
@@ -1931,7 +2132,29 @@
         }
       });
 
-      // Xem trước ảnh QR khi chọn file ảnh QR
+      // Xử lý tải ảnh riêng trong Modal Chỉnh Sửa Câu Hỏi
+      var editQImgInput = document.getElementById("edit-q-img-file");
+      if (editQImgInput) {
+        editQImgInput.addEventListener("change", function(e) {
+          var f = e.target.files[0];
+          if (f) {
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+              currentEditingImgData = evt.target.result;
+              document.getElementById("edit-q-img-preview").src = currentEditingImgData;
+              document.getElementById("edit-q-img-preview-box").classList.remove("hidden");
+            };
+            reader.readAsDataURL(f);
+          }
+        });
+      }
+
+      // Các nút modal sửa câu hỏi
+      document.getElementById("btn-close-edit-q-x").addEventListener("click", closeEditQuestionModal);
+      document.getElementById("btn-close-edit-q-btn").addEventListener("click", closeEditQuestionModal);
+      document.getElementById("btn-save-edit-q").addEventListener("click", saveEditQuestionModalChanges);
+
+      // Xem trước ảnh QR khi tạo đợt thi mới
       var qrFileInput = document.getElementById("new-exam-qr-file");
       if (qrFileInput) {
         qrFileInput.addEventListener("change", function(e) {
