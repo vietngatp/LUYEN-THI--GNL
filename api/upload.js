@@ -23,8 +23,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Chưa có Gemini API Key.' });
     }
 
-    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm (Word/PDF/Ảnh) và:
-1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $SA \bot (ABC)$).
+    const promptText = `Bạn là chuyên gia thẩm định đề thi ĐGNL HSA. Đọc tài liệu đề thi đính kèm và:
+1. Chuyển TẤT CẢ công thức toán học sang LaTeX đặt trong $...$ (ví dụ: $SA \bot (ABC)$, $\int_{0}^{1} f(x)dx$).
 2. Giữ nguyên 100% câu chữ tiếng Việt và thứ tự đề bài.
 3. Nếu có hình vẽ, đồ thị, bảng biến thiên, hãy chèn thẻ [HINH_ANH] vào đúng vị trí của câu.
 4. Gắn mã: ${subject}${examCode}-01, ${subject}${examCode}-02...
@@ -45,7 +45,6 @@ Trả về kết quả DUY NHẤT dưới dạng JSON cấu trúc sau:
   ]
 }`;
 
-    // Sử dụng model gemini-2.5-flash hoặc gemini-3.8-flash
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
